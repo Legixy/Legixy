@@ -1,0 +1,240 @@
+import { PrismaService } from '../../database/prisma.service';
+import { CreateContractDto, UpdateContractDto, UpdateStatusDto, ListContractsQueryDto } from './dto/contract.dto';
+import { ContractStatus } from 'generated/prisma/client';
+export declare class ContractsService {
+    private readonly prisma;
+    private readonly logger;
+    constructor(prisma: PrismaService);
+    private readonly validTransitions;
+    create(tenantId: string, userId: string, dto: CreateContractDto): Promise<{
+        template: {
+            id: string;
+            name: string;
+            category: import("generated/prisma/client").TemplateCategory;
+        } | null;
+        createdBy: {
+            id: string;
+            email: string;
+            name: string | null;
+        };
+    } & {
+        id: string;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        title: string;
+        templateId: string | null;
+        content: string | null;
+        parties: import("@prisma/client/runtime/client").JsonValue;
+        contractValue: import("@prisma/client-runtime-utils").Decimal | null;
+        currency: string;
+        effectiveDate: Date | null;
+        expirationDate: Date | null;
+        status: ContractStatus;
+        riskScore: number | null;
+        monthlyImpact: import("@prisma/client-runtime-utils").Decimal | null;
+        signedAt: Date | null;
+        lastReviewedAt: Date | null;
+        createdById: string;
+    }>;
+    findAll(tenantId: string, query: ListContractsQueryDto): Promise<{
+        data: ({
+            _count: {
+                analyses: number;
+            };
+            template: {
+                id: string;
+                name: string;
+                category: import("generated/prisma/client").TemplateCategory;
+            } | null;
+            createdBy: {
+                id: string;
+                email: string;
+                name: string | null;
+            };
+            clauses: {
+                id: string;
+                type: import("generated/prisma/client").ClauseType;
+                riskLevel: import("generated/prisma/client").RiskLevel;
+            }[];
+        } & {
+            id: string;
+            tenantId: string;
+            createdAt: Date;
+            updatedAt: Date;
+            title: string;
+            templateId: string | null;
+            content: string | null;
+            parties: import("@prisma/client/runtime/client").JsonValue;
+            contractValue: import("@prisma/client-runtime-utils").Decimal | null;
+            currency: string;
+            effectiveDate: Date | null;
+            expirationDate: Date | null;
+            status: ContractStatus;
+            riskScore: number | null;
+            monthlyImpact: import("@prisma/client-runtime-utils").Decimal | null;
+            signedAt: Date | null;
+            lastReviewedAt: Date | null;
+            createdById: string;
+        })[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>;
+    findOne(tenantId: string, id: string): Promise<{
+        template: {
+            id: string;
+            name: string;
+            category: import("generated/prisma/client").TemplateCategory;
+        } | null;
+        createdBy: {
+            id: string;
+            email: string;
+            name: string | null;
+        };
+        versions: {
+            id: string;
+            createdAt: Date;
+            changeNote: string | null;
+            version: number;
+            changedBy: string;
+        }[];
+        clauses: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            contractId: string;
+            type: import("generated/prisma/client").ClauseType;
+            section: string | null;
+            originalText: string;
+            suggestedText: string | null;
+            riskLevel: import("generated/prisma/client").RiskLevel;
+            riskReason: string | null;
+            estimatedImpact: import("@prisma/client-runtime-utils").Decimal | null;
+            impactPeriod: string | null;
+            isAccepted: boolean;
+        }[];
+        analyses: ({
+            riskFindings: {
+                id: string;
+                createdAt: Date;
+                title: string;
+                clause: string;
+                severity: import("generated/prisma/client").RiskLevel;
+                analysisId: string;
+                impact: string;
+                suggestion: string;
+                legalRef: string | null;
+                estimatedRisk: import("@prisma/client-runtime-utils").Decimal | null;
+            }[];
+        } & {
+            id: string;
+            createdAt: Date;
+            status: import("generated/prisma/client").AnalysisStatus;
+            contractId: string;
+            type: import("generated/prisma/client").AnalysisType;
+            tokensUsed: number;
+            modelUsed: string | null;
+            processingMs: number | null;
+            errorMessage: string | null;
+            retryCount: number;
+            startedAt: Date | null;
+            completedAt: Date | null;
+        })[];
+    } & {
+        id: string;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        title: string;
+        templateId: string | null;
+        content: string | null;
+        parties: import("@prisma/client/runtime/client").JsonValue;
+        contractValue: import("@prisma/client-runtime-utils").Decimal | null;
+        currency: string;
+        effectiveDate: Date | null;
+        expirationDate: Date | null;
+        status: ContractStatus;
+        riskScore: number | null;
+        monthlyImpact: import("@prisma/client-runtime-utils").Decimal | null;
+        signedAt: Date | null;
+        lastReviewedAt: Date | null;
+        createdById: string;
+    }>;
+    update(tenantId: string, id: string, userId: string, dto: UpdateContractDto): Promise<{
+        template: {
+            id: string;
+            name: string;
+            category: import("generated/prisma/client").TemplateCategory;
+        } | null;
+        createdBy: {
+            id: string;
+            email: string;
+            name: string | null;
+        };
+    } & {
+        id: string;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        title: string;
+        templateId: string | null;
+        content: string | null;
+        parties: import("@prisma/client/runtime/client").JsonValue;
+        contractValue: import("@prisma/client-runtime-utils").Decimal | null;
+        currency: string;
+        effectiveDate: Date | null;
+        expirationDate: Date | null;
+        status: ContractStatus;
+        riskScore: number | null;
+        monthlyImpact: import("@prisma/client-runtime-utils").Decimal | null;
+        signedAt: Date | null;
+        lastReviewedAt: Date | null;
+        createdById: string;
+    }>;
+    updateStatus(tenantId: string, id: string, dto: UpdateStatusDto): Promise<{
+        id: string;
+        tenantId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        title: string;
+        templateId: string | null;
+        content: string | null;
+        parties: import("@prisma/client/runtime/client").JsonValue;
+        contractValue: import("@prisma/client-runtime-utils").Decimal | null;
+        currency: string;
+        effectiveDate: Date | null;
+        expirationDate: Date | null;
+        status: ContractStatus;
+        riskScore: number | null;
+        monthlyImpact: import("@prisma/client-runtime-utils").Decimal | null;
+        signedAt: Date | null;
+        lastReviewedAt: Date | null;
+        createdById: string;
+    }>;
+    acceptClauseFix(tenantId: string, contractId: string, clauseId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        contractId: string;
+        type: import("generated/prisma/client").ClauseType;
+        section: string | null;
+        originalText: string;
+        suggestedText: string | null;
+        riskLevel: import("generated/prisma/client").RiskLevel;
+        riskReason: string | null;
+        estimatedImpact: import("@prisma/client-runtime-utils").Decimal | null;
+        impactPeriod: string | null;
+        isAccepted: boolean;
+    }>;
+    getDashboardStats(tenantId: string): Promise<{
+        totalContracts: number;
+        activeContracts: number;
+        draftContracts: number;
+        highRiskClauses: number;
+        analysesThisMonth: number;
+    }>;
+}

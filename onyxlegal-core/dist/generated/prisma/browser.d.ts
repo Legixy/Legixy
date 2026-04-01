@@ -1,0 +1,13 @@
+import * as Prisma from './internal/prismaNamespaceBrowser';
+export { Prisma };
+export * as $Enums from './enums';
+export * from './enums';
+export type Tenant = Prisma.TenantModel;
+export type User = Prisma.UserModel;
+export type Template = Prisma.TemplateModel;
+export type Contract = Prisma.ContractModel;
+export type ContractVersion = Prisma.ContractVersionModel;
+export type Clause = Prisma.ClauseModel;
+export type AIAnalysis = Prisma.AIAnalysisModel;
+export type RiskFinding = Prisma.RiskFindingModel;
+export type Notification = Prisma.NotificationModel;
