@@ -20,19 +20,25 @@ const themeMap = {
     icon: CheckCircle2,
     iconColor: 'text-emerald-500',
     iconBg: 'bg-emerald-50',
-    border: 'border-slate-200',
+    glowClass: 'onyx-glow-emerald',
+    riskBg: '',
+    riskText: '',
   },
   warning: {
     icon: Clock,
     iconColor: 'text-amber-500',
     iconBg: 'bg-amber-50',
-    border: 'border-amber-200',
+    glowClass: 'onyx-glow-amber',
+    riskBg: 'bg-amber-50/60',
+    riskText: 'text-amber-800',
   },
   notice: {
     icon: RefreshCw,
     iconColor: 'text-indigo-500',
     iconBg: 'bg-indigo-50',
-    border: 'border-indigo-200',
+    glowClass: 'onyx-glow-indigo',
+    riskBg: 'bg-indigo-50/60',
+    riskText: 'text-indigo-800',
   },
 };
 
@@ -68,12 +74,14 @@ export function PriorityAlertCard({ severity, title, subtitle, riskMessage, prim
   // ── Resolved / success state ─────────────────────
   if (severity === 'resolved') {
     return (
-      <div className="rounded-xl border border-slate-200 p-6 flex flex-col items-center justify-center bg-white flex-1 min-h-[160px] text-center gap-3">
-        <div className="w-11 h-11 rounded-full bg-emerald-50 flex items-center justify-center">
+      <div
+        className="onyx-card p-6 flex flex-col items-center justify-center flex-1 min-h-[170px] text-center gap-3"
+      >
+        <div className="w-11 h-11 rounded-full bg-emerald-50 flex items-center justify-center" style={{ boxShadow: '0 0 16px rgba(16, 185, 129, 0.12)' }}>
           <CheckCircle2 className="text-emerald-500" size={22} />
         </div>
         <div>
-          <p className="font-semibold text-slate-800 text-base">{title}</p>
+          <p className="font-display font-semibold text-slate-800 text-base">{title}</p>
           <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>
         </div>
       </div>
@@ -81,23 +89,26 @@ export function PriorityAlertCard({ severity, title, subtitle, riskMessage, prim
   }
 
   return (
-    <div className={`rounded-xl border ${theme.border} p-5 flex flex-col justify-between bg-white flex-1 min-h-[160px]`}>
+    <div className="onyx-card p-5 flex flex-col justify-between flex-1 min-h-[170px]">
       <div>
         {/* Icon + Title Row */}
         <div className="flex items-start gap-3 mb-4">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${theme.iconBg}`}>
+          <div
+            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${theme.iconBg}`}
+            style={{ boxShadow: severity === 'warning' ? '0 0 16px rgba(245, 158, 11, 0.1)' : '0 0 16px rgba(79, 70, 229, 0.1)' }}
+          >
             <Icon className={theme.iconColor} size={18} />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900 leading-tight">{title}</h3>
+            <h3 className="font-display font-semibold text-slate-900 leading-tight">{title}</h3>
             <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>
           </div>
         </div>
 
-        {/* Risk Message Box */}
-        <div className={`rounded-lg p-3 flex items-start gap-2 mb-5 ${severity === 'warning' ? 'bg-amber-50' : 'bg-indigo-50'}`}>
+        {/* Risk Message Box — subtle glow background */}
+        <div className={`rounded-xl p-3 flex items-start gap-2 mb-5 ${theme.riskBg}`}>
           <AlertTriangle className={`mt-0.5 shrink-0 ${theme.iconColor}`} size={13} />
-          <p className={`text-xs font-medium leading-relaxed ${severity === 'warning' ? 'text-amber-800' : 'text-indigo-800'}`}>
+          <p className={`text-xs font-medium leading-relaxed ${theme.riskText}`}>
             {riskMessage}
           </p>
         </div>
@@ -108,7 +119,12 @@ export function PriorityAlertCard({ severity, title, subtitle, riskMessage, prim
         {primaryAction && (
           <Button
             onClick={handlePrimary}
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white h-9 text-sm"
+            className="flex-1 text-white h-9 text-sm rounded-xl font-semibold"
+            style={{
+              background: 'var(--onyx-gradient)',
+              boxShadow: '0 2px 8px rgba(79, 70, 229, 0.2)',
+              transition: 'all 0.3s var(--onyx-ease)',
+            }}
           >
             {primaryAction}
           </Button>
@@ -117,7 +133,8 @@ export function PriorityAlertCard({ severity, title, subtitle, riskMessage, prim
           <Button
             variant="outline"
             onClick={handleSecondary}
-            className="flex-1 border-slate-200 text-slate-700 hover:bg-slate-50 h-9 text-sm"
+            className="flex-1 text-slate-600 hover:bg-slate-50 h-9 text-sm rounded-xl font-medium"
+            style={{ border: '1px solid var(--border)', transition: 'all 0.3s var(--onyx-ease)' }}
           >
             {secondaryAction}
           </Button>

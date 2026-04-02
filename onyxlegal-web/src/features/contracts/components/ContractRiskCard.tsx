@@ -25,52 +25,56 @@ const config = {
     iconBg: 'bg-red-50',
     iconColor: 'text-red-500',
     badgeText: 'HIGH RISK',
-    badgeClass: 'bg-red-100 text-red-700 border-red-200',
-    footerBg: 'bg-[#FFF8F8]',
+    badgeClass: 'bg-red-50 text-red-600',
+    footerBg: 'rgba(255, 248, 248, 0.6)',
     labelColor: 'text-red-500',
     bodyColor: 'text-red-800',
     actionText: '✨ Fix with AI',
-    actionClass: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm',
+    actionGradient: true,
     actionVariant: 'default' as const,
+    glowShadow: '0 0 20px rgba(239, 68, 68, 0.08)',
   },
   needs_action: {
     icon: AlertTriangle,
     iconBg: 'bg-red-50',
     iconColor: 'text-red-500',
     badgeText: 'NEEDS ACTION',
-    badgeClass: 'bg-rose-50 text-rose-600 border-rose-200',
-    footerBg: 'bg-[#FFF8F8]',
+    badgeClass: 'bg-rose-50 text-rose-600',
+    footerBg: 'rgba(255, 248, 248, 0.6)',
     labelColor: 'text-red-500',
     bodyColor: 'text-red-800',
     actionText: 'Renegotiate',
-    actionClass: 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50',
+    actionGradient: false,
     actionVariant: 'outline' as const,
+    glowShadow: '0 0 20px rgba(239, 68, 68, 0.06)',
   },
   verified_safe: {
     icon: ShieldCheck,
     iconBg: 'bg-emerald-50',
     iconColor: 'text-emerald-500',
     badgeText: 'VERIFIED SAFE',
-    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    footerBg: 'bg-[#F6FFFA]',
+    badgeClass: 'bg-emerald-50 text-emerald-600',
+    footerBg: 'rgba(246, 255, 250, 0.6)',
     labelColor: 'text-emerald-600',
     bodyColor: 'text-emerald-900',
     actionText: 'View Standard Clause',
-    actionClass: 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50',
+    actionGradient: false,
     actionVariant: 'outline' as const,
+    glowShadow: '0 0 20px rgba(16, 185, 129, 0.06)',
   },
   ai_suggested_fix: {
     icon: Sparkles,
     iconBg: 'bg-amber-50',
     iconColor: 'text-amber-500',
     badgeText: 'AI SUGGESTED FIX',
-    badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
-    footerBg: 'bg-[#FFFDF5]',
+    badgeClass: 'bg-amber-50 text-amber-600',
+    footerBg: 'rgba(255, 253, 245, 0.6)',
     labelColor: 'text-amber-600',
     bodyColor: 'text-amber-900',
     actionText: 'Compare Versions',
-    actionClass: 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50',
+    actionGradient: false,
     actionVariant: 'outline' as const,
+    glowShadow: '0 0 20px rgba(245, 158, 11, 0.06)',
   },
 };
 
@@ -85,7 +89,7 @@ function FixWithAIModal({ title, onClose }: { title: string; onClose: () => void
   };
   return (
     <div className="space-y-4">
-      <div className="flex items-start gap-3 p-3 bg-indigo-50 rounded-lg">
+      <div className="flex items-start gap-3 p-4 rounded-xl" style={{ background: 'var(--onyx-gradient-subtle)' }}>
         <Bot className="text-indigo-500 shrink-0 mt-0.5" size={18} />
         <div>
           <p className="text-sm font-semibold text-indigo-800">Onyx AI Recommendation</p>
@@ -95,13 +99,13 @@ function FixWithAIModal({ title, onClose }: { title: string; onClose: () => void
       <div className="grid grid-cols-2 gap-3">
         <div>
           <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider mb-1.5">Before</p>
-          <div className="bg-red-50 border border-red-100 rounded-lg p-3 font-mono text-xs text-slate-500 line-through decoration-red-300">
+          <div className="bg-red-50/60 rounded-xl p-3 font-mono text-xs text-slate-500 line-through decoration-red-300/60" style={{ border: '1px solid rgba(239, 68, 68, 0.08)' }}>
             Client shall pay within 90 days of receipt.
           </div>
         </div>
         <div>
           <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider mb-1.5">After (AI Fix)</p>
-          <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 font-mono text-xs text-slate-800">
+          <div className="bg-emerald-50/60 rounded-xl p-3 font-mono text-xs text-slate-800" style={{ border: '1px solid rgba(16, 185, 129, 0.08)' }}>
             Client shall pay within 30 days of receipt, per MSME norms.
           </div>
         </div>
@@ -109,7 +113,8 @@ function FixWithAIModal({ title, onClose }: { title: string; onClose: () => void
       <Button
         onClick={handleApply}
         disabled={applied}
-        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-10"
+        className="w-full text-white h-10 rounded-xl"
+        style={{ background: 'var(--onyx-gradient)', boxShadow: '0 3px 12px rgba(79, 70, 229, 0.2)' }}
       >
         {applied ? '✓ Applied' : '✨ Apply Fix to Contract'}
       </Button>
@@ -127,7 +132,7 @@ function RenegotiateModal({ title, onClose }: { title: string; onClose: () => vo
   return (
     <div className="space-y-4">
       <p className="text-sm text-slate-600">Onyx AI has prepared revised terms. Review before sending to the counterparty.</p>
-      <div className="bg-amber-50 border border-amber-100 rounded-lg p-4 space-y-2">
+      <div className="bg-amber-50/60 rounded-xl p-4 space-y-2" style={{ border: '1px solid rgba(245, 158, 11, 0.1)' }}>
         <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">AI Suggested Terms</p>
         <ul className="text-sm text-amber-800 space-y-1 list-disc list-inside">
           <li>Cap auto-renewal clause to 1 year at current rates</li>
@@ -135,7 +140,12 @@ function RenegotiateModal({ title, onClose }: { title: string; onClose: () => vo
           <li>Price increase capped at CPI + 3%</li>
         </ul>
       </div>
-      <Button onClick={handleSend} disabled={sent} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-10">
+      <Button
+        onClick={handleSend}
+        disabled={sent}
+        className="w-full text-white h-10 rounded-xl"
+        style={{ background: 'var(--onyx-gradient)', boxShadow: '0 3px 12px rgba(79, 70, 229, 0.2)' }}
+      >
         {sent ? '✓ Request Sent' : 'Send Renegotiation Request'}
       </Button>
     </div>
@@ -145,7 +155,7 @@ function RenegotiateModal({ title, onClose }: { title: string; onClose: () => vo
 function StandardClauseModal() {
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 p-3 bg-emerald-50 rounded-lg">
+      <div className="flex items-center gap-2 p-3 bg-emerald-50/60 rounded-xl" style={{ border: '1px solid rgba(16, 185, 129, 0.08)' }}>
         <ShieldCheck className="text-emerald-500" size={18} />
         <p className="text-sm font-medium text-emerald-800">All terms are within standard parameters</p>
       </div>
@@ -156,7 +166,7 @@ function StandardClauseModal() {
           { label: 'Termination', value: '30-day notice — Standard' },
           { label: 'Governing Law', value: 'Indian Contract Act 1872 — Compliant' },
         ].map((row) => (
-          <div key={row.label} className="flex justify-between gap-4 py-2 border-b border-slate-100 last:border-0">
+          <div key={row.label} className="flex justify-between gap-4 py-2 last:border-0" style={{ borderBottom: '1px solid var(--border)' }}>
             <span className="text-xs font-semibold text-slate-500">{row.label}</span>
             <span className="text-xs text-slate-800 text-right">{row.value}</span>
           </div>
@@ -173,15 +183,15 @@ function CompareVersionsModal() {
       <div className="grid grid-cols-2 gap-3 text-xs">
         <div>
           <p className="font-bold text-slate-500 uppercase tracking-wider mb-2 text-[10px]">Current Version</p>
-          <div className="bg-red-50 border border-red-100 rounded-lg p-3 space-y-2 font-mono text-slate-600">
-            <p className="line-through decoration-red-400">No indemnification cap defined.</p>
-            <p className="line-through decoration-red-400">Vendor liability unlimited.</p>
-            <p className="line-through decoration-red-400">No breach notification timeline.</p>
+          <div className="bg-red-50/60 rounded-xl p-3 space-y-2 font-mono text-slate-600" style={{ border: '1px solid rgba(239, 68, 68, 0.08)' }}>
+            <p className="line-through decoration-red-400/50">No indemnification cap defined.</p>
+            <p className="line-through decoration-red-400/50">Vendor liability unlimited.</p>
+            <p className="line-through decoration-red-400/50">No breach notification timeline.</p>
           </div>
         </div>
         <div>
           <p className="font-bold text-emerald-600 uppercase tracking-wider mb-2 text-[10px]">AI Suggested Fix</p>
-          <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 space-y-2 font-mono text-slate-800">
+          <div className="bg-emerald-50/60 rounded-xl p-3 space-y-2 font-mono text-slate-800" style={{ border: '1px solid rgba(16, 185, 129, 0.08)' }}>
             <p>Indemnification capped at ₹50L.</p>
             <p>Vendor liability = 1× annual fees.</p>
             <p>Breach notification within 72 hrs.</p>
@@ -190,7 +200,8 @@ function CompareVersionsModal() {
       </div>
       <Button
         onClick={() => toast.success('AI version accepted', { description: 'Indemnification cap applied to contract.' })}
-        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-10"
+        className="w-full text-white h-10 rounded-xl"
+        style={{ background: 'var(--onyx-gradient)', boxShadow: '0 3px 12px rgba(79, 70, 229, 0.2)' }}
       >
         <Sparkles size={14} className="mr-1.5" />
         Accept AI Version
@@ -210,25 +221,40 @@ export function ContractRiskCard({ title, type, status, date, riskLevel, aiDiagn
 
   return (
     <>
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col hover:shadow-md transition-shadow duration-200">
+      <div
+        className="bg-white rounded-2xl overflow-hidden flex flex-col"
+        style={{
+          boxShadow: `var(--onyx-shadow-sm), ${c.glowShadow}`,
+          border: '1px solid var(--border)',
+          transition: 'all 0.4s var(--onyx-ease)',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.boxShadow = `var(--onyx-shadow-lg), ${c.glowShadow}`;
+          e.currentTarget.style.transform = 'translateY(-2px)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.boxShadow = `var(--onyx-shadow-sm), ${c.glowShadow}`;
+          e.currentTarget.style.transform = 'translateY(0)';
+        }}
+      >
         {/* ── Card Header ─────── */}
         <div className="px-6 py-5 flex items-center justify-between gap-4">
           <div className="flex items-start gap-4">
-            <div className={`w-9 h-9 rounded-full ${c.iconBg} flex items-center justify-center shrink-0`}>
+            <div className={`w-10 h-10 rounded-xl ${c.iconBg} flex items-center justify-center shrink-0`}>
               <Icon className={c.iconColor} size={18} />
             </div>
             <div>
               <div className="flex items-center gap-2.5 flex-wrap mb-1.5">
-                <h3 className="font-semibold text-slate-900 text-[15px] leading-tight">{title}</h3>
+                <h3 className="font-display font-semibold text-slate-900 text-[15px] leading-tight">{title}</h3>
                 <Badge
                   variant="outline"
-                  className={`${c.badgeClass} text-[10px] tracking-wider uppercase px-2 py-0.5 pointer-events-none font-semibold`}
+                  className={`${c.badgeClass} text-[10px] tracking-wider uppercase px-2 py-0.5 pointer-events-none font-bold rounded-md border-transparent`}
                 >
                   {c.badgeText}
                 </Badge>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[11px]">{type}</span>
+                <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-md text-[11px]">{type}</span>
                 <span className="text-slate-300 mx-0.5">•</span>
                 <span>{status}</span>
                 <span className="text-slate-300 mx-0.5">•</span>
@@ -240,14 +266,23 @@ export function ContractRiskCard({ title, type, status, date, riskLevel, aiDiagn
           <Button
             variant={c.actionVariant}
             onClick={handleAction}
-            className={`${c.actionClass} h-9 text-sm shrink-0`}
+            className="h-9 text-sm shrink-0 rounded-xl font-semibold"
+            style={c.actionGradient ? {
+              background: 'var(--onyx-gradient)',
+              color: 'white',
+              boxShadow: '0 2px 8px rgba(79, 70, 229, 0.2)',
+              border: 'none',
+            } : {
+              border: '1px solid var(--border)',
+              transition: 'all 0.3s var(--onyx-ease)',
+            }}
           >
             {c.actionText}
           </Button>
         </div>
 
         {/* ── AI Diagnosis Footer ── */}
-        <div className={`${c.footerBg} px-6 py-4 border-t border-slate-100 grid grid-cols-2 gap-8`}>
+        <div className="px-6 py-4 grid grid-cols-2 gap-8" style={{ background: c.footerBg, borderTop: '1px solid var(--border)' }}>
           <div>
             <p className={`text-[9px] font-bold uppercase tracking-[0.14em] ${c.labelColor} mb-1.5`}>AI Diagnosis</p>
             <p className={`text-[13px] font-medium leading-snug ${c.bodyColor}`}>{aiDiagnosis}</p>

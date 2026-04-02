@@ -16,30 +16,50 @@ export default function DashboardPage() {
   const firstName = user?.name?.split(' ')[0] || 'there';
 
   return (
-    <div className="w-full flex flex-col pt-4 pb-12 animate-in fade-in duration-500">
+    <div className="w-full flex flex-col animate-fade-up">
 
       {/* ── Welcome Header ─────────────────────────────────── */}
-      <div className="flex justify-between items-start mb-8">
+      <div className="flex justify-between items-start mb-10">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Welcome back, {firstName}</h1>
-          <p className="text-slate-500 mt-1 text-sm">
+          <h1 className="font-display text-3xl font-bold text-slate-900 tracking-tight">
+            Welcome back, {firstName}
+          </h1>
+          <p className="text-slate-500 mt-1.5 text-sm leading-relaxed">
             Onyx AI has analyzed your legal operations and prioritized your next steps.
           </p>
         </div>
-        {/* Navigates to Templates page to start a new contract */}
         <Button
           onClick={() => router.push('/dashboard/templates')}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 gap-2 h-10 shrink-0"
+          className="text-white gap-2 h-10 shrink-0 rounded-xl text-sm font-semibold px-5"
+          style={{
+            background: 'var(--onyx-gradient)',
+            boxShadow: '0 4px 16px rgba(79, 70, 229, 0.25), 0 1px 3px rgba(79, 70, 229, 0.1)',
+            transition: 'all 0.3s var(--onyx-ease)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = '0 6px 24px rgba(79, 70, 229, 0.35), 0 2px 6px rgba(79, 70, 229, 0.15)';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(79, 70, 229, 0.25), 0 1px 3px rgba(79, 70, 229, 0.1)';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+          onMouseDown={(e) => {
+            e.currentTarget.style.transform = 'translateY(0) scale(0.98)';
+          }}
+          onMouseUp={(e) => {
+            e.currentTarget.style.transform = 'translateY(-1px) scale(1)';
+          }}
         >
-          <Sparkles size={16} className="text-indigo-200" />
+          <Sparkles size={15} className="text-indigo-200" />
           Start Smart Contract Setup
         </Button>
       </div>
 
       {/* ── AI Priority Actions ─────────────────────────────── */}
-      <div className="mb-1">
-        <p className="text-xs font-bold tracking-[0.15em] text-indigo-600 uppercase flex items-center gap-1.5 mb-4">
-          <Sparkles size={13} />
+      <div className="mb-2">
+        <p className="text-[10px] font-bold tracking-[0.16em] text-indigo-600/80 uppercase flex items-center gap-1.5 mb-5">
+          <Sparkles size={12} />
           AI Priority Actions
         </p>
       </div>

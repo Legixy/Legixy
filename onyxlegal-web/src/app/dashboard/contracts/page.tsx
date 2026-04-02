@@ -14,17 +14,22 @@ export default function ContractsPage() {
   const router = useRouter();
 
   return (
-    <div className="w-full flex flex-col pt-2 pb-12 animate-in fade-in duration-500">
+    <div className="w-full flex flex-col pt-2 pb-12 animate-fade-up">
 
       {/* ── Page Header ──────────────────────────── */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Contracts</h1>
+          <h1 className="font-display text-2xl font-bold text-slate-900 tracking-tight">Contracts</h1>
           <p className="text-slate-500 mt-0.5 text-sm">Manage and monitor all your legal agreements in one place.</p>
         </div>
         <Button
           onClick={() => router.push('/dashboard/templates')}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 gap-2 h-10 shrink-0"
+          className="text-white gap-2 h-10 shrink-0 rounded-xl text-sm font-semibold px-5"
+          style={{
+            background: 'var(--onyx-gradient)',
+            boxShadow: '0 4px 16px rgba(79, 70, 229, 0.25)',
+            transition: 'all 0.3s var(--onyx-ease)',
+          }}
         >
           <Plus size={16} />
           New Contract
@@ -32,15 +37,31 @@ export default function ContractsPage() {
       </div>
 
       {/* ── Stats Row ────────────────────────────── */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Total', value: '4', icon: FileSignature, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-          { label: 'High Risk', value: '1', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-50' },
-          { label: 'Verified Safe', value: '1', icon: Shield, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-          { label: 'Pending Action', value: '2', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50' },
+          { label: 'Total', value: '4', icon: FileSignature, color: 'text-indigo-600', bg: 'bg-indigo-50', glow: 'rgba(79, 70, 229, 0.06)' },
+          { label: 'High Risk', value: '1', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-50', glow: 'rgba(239, 68, 68, 0.06)' },
+          { label: 'Verified Safe', value: '1', icon: Shield, color: 'text-emerald-500', bg: 'bg-emerald-50', glow: 'rgba(16, 185, 129, 0.06)' },
+          { label: 'Pending Action', value: '2', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50', glow: 'rgba(245, 158, 11, 0.06)' },
         ].map((stat) => (
-          <div key={stat.label} className="bg-white rounded-xl border border-slate-200 px-4 py-3 flex items-center gap-3 hover:shadow-sm transition-shadow">
-            <div className={`w-9 h-9 rounded-lg ${stat.bg} flex items-center justify-center shrink-0`}>
+          <div
+            key={stat.label}
+            className="bg-white rounded-xl px-4 py-4 flex items-center gap-3"
+            style={{
+              border: '1px solid var(--border)',
+              boxShadow: `var(--onyx-shadow-sm), 0 0 20px ${stat.glow}`,
+              transition: 'all 0.3s var(--onyx-ease)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = `var(--onyx-shadow-md), 0 0 24px ${stat.glow}`;
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = `var(--onyx-shadow-sm), 0 0 20px ${stat.glow}`;
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center shrink-0`}>
               <stat.icon size={17} className={stat.color} />
             </div>
             <div>
@@ -52,40 +73,47 @@ export default function ContractsPage() {
       </div>
 
       {/* ── Filters & Search ─────────────────────── */}
-      <div className="flex items-center gap-3 mb-5">
-        <div className="flex items-center gap-1 bg-slate-50 rounded-lg p-1 border border-slate-200">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-1 bg-slate-50 rounded-xl p-1" style={{ border: '1px solid var(--border)' }}>
           {statusFilters.map((f) => (
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                 activeFilter === f
-                  ? 'bg-white text-indigo-700 shadow-sm'
+                  ? 'bg-white text-indigo-700'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
+              style={activeFilter === f ? { boxShadow: 'var(--onyx-shadow-sm)' } : undefined}
             >
               {f}
             </button>
           ))}
         </div>
         <div className="relative ml-auto">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
           <input
             type="text"
             placeholder="Search contracts..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 pl-8 pr-3 bg-white border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 w-56 transition-all placeholder:text-slate-400"
+            className="h-9 pl-8 pr-3 bg-white rounded-xl text-xs outline-none w-56 placeholder:text-slate-400"
+            style={{
+              border: '1px solid var(--border)',
+              transition: 'all 0.3s var(--onyx-ease)',
+            }}
+            onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 3px rgba(79, 70, 229, 0.08)'; e.currentTarget.style.borderColor = '#818CF8'; }}
+            onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}
           />
         </div>
-        <Button variant="outline" className="h-8 text-xs gap-1.5 border-slate-200 text-slate-600 hover:bg-slate-50">
+        <Button variant="outline" className="h-9 text-xs gap-1.5 text-slate-600 hover:bg-slate-50 rounded-xl" style={{ border: '1px solid var(--border)' }}>
           <Filter size={13} />
           Filter
         </Button>
       </div>
 
       {/* ── Contract Cards ───────────────────────── */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5">
         <ContractRiskCard
           title="Globex Master Service Agreement"
           type="MSA"

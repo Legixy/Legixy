@@ -10,12 +10,12 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthProvider>
-      <div className="flex min-h-screen bg-white">
+      <div className="flex min-h-screen" style={{ background: 'var(--background)' }}>
         <Sidebar />
         <div className="flex-1 flex flex-col h-screen overflow-hidden">
           <Header />
-          <main className="flex-1 overflow-y-auto bg-white">
-            <div className="w-full max-w-[1100px] mx-auto px-8 py-6">
+          <main className="flex-1 overflow-y-auto" style={{ background: 'var(--background)' }}>
+            <div className="w-full max-w-[1120px] mx-auto px-8 py-8">
               {children}
             </div>
           </main>
@@ -25,7 +25,7 @@ export default function DashboardLayout({
           position="bottom-right"
           richColors
           toastOptions={{
-            style: { fontFamily: 'inherit' },
+            style: { fontFamily: 'inherit', borderRadius: '0.75rem' },
             duration: 4000,
           }}
         />

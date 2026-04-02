@@ -27,7 +27,6 @@ export default function TemplatesPage() {
         setTemplatesList(data);
       } catch (err) {
         console.warn('Failed to load templates from API, using fallback:', err);
-        // Fallback mock data if API unavailable
         setTemplatesList([]);
       } finally {
         setIsLoading(false);
@@ -36,26 +35,30 @@ export default function TemplatesPage() {
     loadTemplates();
   }, []);
 
-  // Show loading state
   if (isLoading) {
     return (
       <div className="w-full flex flex-col pt-4 pb-12 items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-        <p className="text-slate-400 mt-3 text-sm">Loading templates...</p>
+        <div className="onyx-shimmer w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--onyx-gradient)' }}>
+          <Loader2 className="w-5 h-5 text-white animate-spin" />
+        </div>
+        <p className="text-slate-400 mt-4 text-sm font-medium">Loading templates...</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full flex flex-col pt-4 pb-12 animate-in fade-in duration-500 items-center">
+    <div className="w-full flex flex-col pt-4 pb-12 animate-fade-up items-center">
       
       {/* Header Container */}
       <div className="max-w-2xl text-center mb-10 mt-4">
-        <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold tracking-widest uppercase mb-6">
+        <div
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full text-indigo-700 text-xs font-bold tracking-widest uppercase mb-6"
+          style={{ background: 'var(--onyx-gradient-subtle)', border: '1px solid rgba(79, 70, 229, 0.1)' }}
+        >
           <Sparkles size={14} /> AI Recommendation Engine
         </div>
-        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-4">Smart Contract Templates</h1>
-        <p className="text-slate-500 text-lg">Onyx AI has analyzed your company profile and recommends the following optimized legal structures for your current growth stage.</p>
+        <h1 className="font-display text-4xl font-extrabold text-slate-900 tracking-tight mb-4">Smart Contract Templates</h1>
+        <p className="text-slate-500 text-lg leading-relaxed">Onyx AI has analyzed your company profile and recommends the following optimized legal structures for your current growth stage.</p>
         
         {/* Trust Indicators */}
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 mt-8 text-sm font-semibold text-slate-600">
@@ -74,7 +77,7 @@ export default function TemplatesPage() {
         </div>
       </div>
 
-      {/* Templates Grid — now from real API data */}
+      {/* Templates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl mx-auto px-4 mt-6">
         {templatesList.length > 0 ? (
           templatesList.map((template, idx) => (
@@ -89,7 +92,6 @@ export default function TemplatesPage() {
             />
           ))
         ) : (
-          // Fallback to hardcoded data if API returned empty
           <>
             <TemplateDiscoveryCard 
               isRecommended
@@ -116,7 +118,6 @@ export default function TemplatesPage() {
           </>
         )}
       </div>
-
     </div>
   );
 }

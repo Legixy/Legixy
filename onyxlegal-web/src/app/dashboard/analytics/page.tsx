@@ -33,25 +33,43 @@ function useCounter(end: number, duration = 1200) {
 
 // ── Stat Card ──────────────────────────────────────────────────────────────
 function StatCard({
-  label, value, suffix, trend, trendLabel, icon: Icon, color, gradient,
+  label, value, suffix, trend, trendLabel, icon: Icon, gradient, glow,
 }: {
   label: string; value: number; suffix?: string; trend?: 'up' | 'down';
-  trendLabel?: string; icon: React.ElementType; color: string; gradient: string;
+  trendLabel?: string; icon: React.ElementType; gradient: string; glow: string;
 }) {
   const animatedValue = useCounter(value);
   const TrendIcon = trend === 'up' ? TrendingUp : TrendingDown;
   const trendColor = trend === 'up' ? 'text-emerald-600' : 'text-red-500';
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 relative overflow-hidden group hover:shadow-lg hover:shadow-slate-100/50 transition-all duration-300">
-      <div className={`absolute top-0 right-0 w-24 h-24 ${gradient} rounded-full blur-[40px] opacity-30 group-hover:opacity-50 transition-opacity`} />
+    <div
+      className="bg-white rounded-2xl p-6 relative overflow-hidden group"
+      style={{
+        border: '1px solid var(--border)',
+        boxShadow: `var(--onyx-shadow-sm), 0 0 24px ${glow}`,
+        transition: 'all 0.4s var(--onyx-ease)',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = `var(--onyx-shadow-lg), 0 0 32px ${glow}`;
+        e.currentTarget.style.transform = 'translateY(-2px)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = `var(--onyx-shadow-sm), 0 0 24px ${glow}`;
+        e.currentTarget.style.transform = 'translateY(0)';
+      }}
+    >
+      <div className={`absolute top-0 right-0 w-28 h-28 ${gradient} rounded-full blur-[50px] opacity-20 group-hover:opacity-40 transition-opacity duration-500`} />
       <div className="relative z-10">
-        <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center mb-4`}>
-          <Icon size={20} className="text-white" />
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+          style={{ background: 'var(--onyx-gradient)', boxShadow: '0 4px 12px rgba(79, 70, 229, 0.2)' }}
+        >
+          <Icon size={18} className="text-white" />
         </div>
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{label}</p>
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-extrabold text-slate-900 tracking-tight">{animatedValue}</span>
+          <span className="font-display text-3xl font-extrabold text-slate-900 tracking-tight">{animatedValue}</span>
           {suffix && <span className="text-lg font-bold text-slate-400">{suffix}</span>}
         </div>
         {trendLabel && (
@@ -74,8 +92,8 @@ function RiskGauge({ label, value, color }: { label: string; value: number; colo
       <span className="text-xs font-medium text-slate-500 w-28 shrink-0">{label}</span>
       <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-1000 ease-out ${color}`}
-          style={{ width: `${width}%` }}
+          className={`h-full rounded-full ${color}`}
+          style={{ width: `${width}%`, transition: 'width 1.2s var(--onyx-ease)' }}
         />
       </div>
       <span className="text-xs font-bold text-slate-700 w-8 text-right">{value}%</span>
@@ -90,7 +108,7 @@ function ActivityItem({ title, time, type }: { title: string; time: string; type
   const Icon = icons[type];
   const colorClass = colors[type];
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-slate-50 last:border-0">
+    <div className="flex items-start gap-3 py-3 last:border-0" style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
       <div className={`w-7 h-7 rounded-lg ${colorClass} flex items-center justify-center shrink-0 mt-0.5`}>
         <Icon size={13} />
       </div>
@@ -105,20 +123,23 @@ function ActivityItem({ title, time, type }: { title: string; time: string; type
 // ── Main Analytics Page ────────────────────────────────────────────────────
 export default function AnalyticsPage() {
   return (
-    <div className="w-full flex flex-col pt-4 pb-12 animate-in fade-in duration-500">
+    <div className="w-full flex flex-col pt-4 pb-12 animate-fade-up">
 
       {/* ── Page Header ──────────────────────────── */}
-      <div className="mb-8">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold tracking-widest uppercase mb-4">
+      <div className="mb-10">
+        <div
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-indigo-700 text-xs font-bold tracking-widest uppercase mb-4"
+          style={{ background: 'var(--onyx-gradient-subtle)', border: '1px solid rgba(79, 70, 229, 0.1)' }}
+        >
           <BarChart3 size={13} />
           AI Analytics Dashboard
         </div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Legal Operations Intelligence</h1>
+        <h1 className="font-display text-3xl font-bold text-slate-900 tracking-tight">Legal Operations Intelligence</h1>
         <p className="text-slate-500 mt-1 text-sm">Real-time insights powered by Onyx AI across your contract portfolio.</p>
       </div>
 
       {/* ── Stat Cards Grid ──────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
         <StatCard
           label="Cost Saved"
           value={120}
@@ -126,8 +147,8 @@ export default function AnalyticsPage() {
           trend="up"
           trendLabel="+₹18K this week"
           icon={TrendingUp}
-          color="bg-emerald-500"
           gradient="bg-emerald-400"
+          glow="rgba(16, 185, 129, 0.08)"
         />
         <StatCard
           label="Risk Reduced"
@@ -136,8 +157,8 @@ export default function AnalyticsPage() {
           trend="up"
           trendLabel="+8% vs last month"
           icon={Shield}
-          color="bg-indigo-500"
           gradient="bg-indigo-400"
+          glow="rgba(79, 70, 229, 0.08)"
         />
         <StatCard
           label="Hours Saved"
@@ -146,8 +167,8 @@ export default function AnalyticsPage() {
           trend="up"
           trendLabel="3.2 hrs this week"
           icon={Clock}
-          color="bg-amber-500"
           gradient="bg-amber-400"
+          glow="rgba(245, 158, 11, 0.08)"
         />
         <StatCard
           label="Contracts Active"
@@ -155,18 +176,21 @@ export default function AnalyticsPage() {
           trend="up"
           trendLabel="6 new this month"
           icon={FileText}
-          color="bg-violet-500"
           gradient="bg-violet-400"
+          glow="rgba(124, 58, 237, 0.08)"
         />
       </div>
 
       {/* ── Charts Row ───────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-10">
 
         {/* Risk Distribution */}
-        <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 p-6">
+        <div
+          className="lg:col-span-3 bg-white rounded-2xl p-6"
+          style={{ border: '1px solid var(--border)', boxShadow: 'var(--onyx-shadow-sm)' }}
+        >
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-sm font-bold text-slate-800">Risk Distribution by Clause Type</h2>
+            <h2 className="font-display text-sm font-bold text-slate-800">Risk Distribution by Clause Type</h2>
             <span className="text-xs text-slate-400 font-medium">Last 30 days</span>
           </div>
           <div className="space-y-4">
@@ -181,9 +205,12 @@ export default function AnalyticsPage() {
         </div>
 
         {/* AI Activity Feed */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6">
+        <div
+          className="lg:col-span-2 bg-white rounded-2xl p-6"
+          style={{ border: '1px solid var(--border)', boxShadow: 'var(--onyx-shadow-sm)' }}
+        >
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-sm font-bold text-slate-800">AI Activity Feed</h2>
+            <h2 className="font-display text-sm font-bold text-slate-800">AI Activity Feed</h2>
             <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live
@@ -201,22 +228,32 @@ export default function AnalyticsPage() {
       </div>
 
       {/* ── AI Performance Summary ────────────────── */}
-      <div className="bg-gradient-to-r from-[#1E1B4B] to-[#312E81] rounded-2xl p-8 text-white relative overflow-hidden">
+      <div
+        className="rounded-2xl p-8 text-white relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 40%, #3730A3 70%, #4338CA 100%)',
+          boxShadow: '0 8px 32px rgba(30, 27, 75, 0.25)',
+        }}
+      >
         <div className="absolute -top-10 right-1/4 w-80 h-48 bg-indigo-500/15 rounded-full blur-[80px] pointer-events-none" />
         <div className="absolute -bottom-10 left-1/3 w-60 h-40 bg-purple-500/10 rounded-full blur-[60px] pointer-events-none" />
+        <div className="absolute top-1/2 left-[10%] w-24 h-24 bg-cyan-400/8 rounded-full blur-[40px] pointer-events-none animate-float" />
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center"
+              style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}
+            >
               <Sparkles size={20} className="text-indigo-300" />
             </div>
             <div>
-              <h3 className="font-bold text-lg">Onyx AI Monthly Summary</h3>
-              <p className="text-indigo-200/60 text-xs">Performance metrics for April 2026</p>
+              <h3 className="font-display font-bold text-lg">Onyx AI Monthly Summary</h3>
+              <p className="text-indigo-200/50 text-xs">Performance metrics for April 2026</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
             {[
               { label: 'Contracts Analyzed', value: '47', sub: 'Last 30 days' },
               { label: 'Clauses Reviewed', value: '312', sub: '92% auto-resolved' },
@@ -224,9 +261,9 @@ export default function AnalyticsPage() {
               { label: 'Accuracy Rate', value: '96.8%', sub: 'Verified by legal' },
             ].map((m) => (
               <div key={m.label} className="text-center">
-                <p className="text-2xl font-extrabold mb-1">{m.value}</p>
-                <p className="text-xs font-semibold text-indigo-200/80 uppercase tracking-wider">{m.label}</p>
-                <p className="text-[10px] text-indigo-300/50 mt-0.5">{m.sub}</p>
+                <p className="font-display text-2xl font-extrabold mb-1">{m.value}</p>
+                <p className="text-xs font-semibold text-indigo-200/70 uppercase tracking-wider">{m.label}</p>
+                <p className="text-[10px] text-indigo-300/40 mt-0.5">{m.sub}</p>
               </div>
             ))}
           </div>
@@ -234,7 +271,12 @@ export default function AnalyticsPage() {
 
         {/* CTA */}
         <div className="mt-8 flex items-center justify-center relative z-10">
-          <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-sm font-semibold transition-colors">
+          <button
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300"
+            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.18)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+          >
             <ArrowUpRight size={15} />
             Export Full Report
           </button>
