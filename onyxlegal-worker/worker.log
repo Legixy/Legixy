@@ -1,0 +1,10 @@
+
+> onyxlegal-worker@1.0.0 dev
+> ts-node src/index.ts
+
+[dotenv@17.3.1] injecting env (12) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+🚀 OnyxLegal Worker Node Booting...
+✅ Connected to Redis successfully
+✅ Connected to database
+👷 Registered Worker for queue: contract-analysis
+SIGTERM signal received: closing HTTP server

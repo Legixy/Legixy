@@ -1,0 +1,166 @@
+
+> onyxlegal-core@0.0.1 start:dev
+> nest start --watch
+
+[2J[3J[H[[90m2:17:14 AM[0m] Starting compilation in watch mode...
+
+[[90m2:17:17 AM[0m] Found 0 errors. Watching for file changes.
+
+[02:17:18.115] [32mINFO[39m (56629): [36mStarting Nest application...[39m [90m{"context":"NestFactory"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mPassportModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mConfigHostModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mDiscoveryModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mConfigModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mConfigModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mLoggerModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mDatabaseModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mBullModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mBullModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mAppModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mJwtModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mContractsModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mTemplatesModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mAnalyticsModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mNotificationsModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mAuthModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mBullModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mAiOrchestratorModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:17:18.115] [33mWARN[39m (56629): [36mUnsupported route path: "/api/v1/*". In previous versions, the symbols ?, *, and + were used to denote optional or repeating path parameters. The latest version of "path-to-regexp" now requires the use of named parameters. For example, instead of using a route like /users/* to capture all routes starting with "/users", you should use /users/*path. For more details, refer to the migration guide. Attempting to auto-convert...[39m [90m{"context":"LegacyRouteConverter"}[39m
+[02:17:18.115] [33mWARN[39m (56629): [36mUnsupported route path: "/api/v1/*". In previous versions, the symbols ?, *, and + were used to denote optional or repeating path parameters. The latest version of "path-to-regexp" now requires the use of named parameters. For example, instead of using a route like /users/* to capture all routes starting with "/users", you should use /users/*path. For more details, refer to the migration guide. Attempting to auto-convert...[39m [90m{"context":"LegacyRouteConverter"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mAuthController {/api/v1/auth}:[39m [90m{"context":"RoutesResolver"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/auth/signup, POST} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/auth/me, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mContractsController {/api/v1/contracts}:[39m [90m{"context":"RoutesResolver"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/contracts, POST} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/contracts, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/contracts/stats, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/contracts/:id, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/contracts/:id, PATCH} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/contracts/:id/status, PATCH} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/contracts/:contractId/clauses/:clauseId/accept-fix, POST} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mTemplatesController {/api/v1/templates}:[39m [90m{"context":"RoutesResolver"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/templates, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/templates/:id, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/templates/seed, POST} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mAiOrchestratorController {/api/v1/ai}:[39m [90m{"context":"RoutesResolver"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/ai/analyze/:contractId, POST} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/ai/analysis/:contractId, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/ai/suggestions/:contractId, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mAnalyticsController {/api/v1/analytics}:[39m [90m{"context":"RoutesResolver"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/analytics/dashboard, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/analytics/risk-overview, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mNotificationsController {/api/v1/notifications}:[39m [90m{"context":"RoutesResolver"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/notifications, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/notifications/count, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/notifications/:id/read, PATCH} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mMapped {/api/v1/notifications/read-all, PATCH} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mDatabase connected[39m [90m{"context":"PrismaService"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36mNest application successfully started[39m [90m{"context":"NestApplication"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36m🚀 OnyxLegal API running on http://localhost:3001/api/v1[39m [90m{"context":"Bootstrap"}[39m
+[02:17:18.115] [32mINFO[39m (56629): [36m📋 Modules: auth, contracts, templates, ai, analytics, notifications[39m [90m{"context":"Bootstrap"}[39m
+[02:18:38.560] [33mWARN[39m (56629): [36m[GET] /api/v1/templates - 401 - Unauthorized[39m [90m{"req":{"id":1,"method":"GET","url":"/api/v1/templates","query":{},"params":{"path":["templates"]},"headers":{"host":"localhost:3001","connection":"keep-alive","sec-ch-ua":"\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"","sec-ch-ua-mobile":"?0","sec-ch-ua-platform":"\"macOS\"","upgrade-insecure-requests":"1","user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36","accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7","sec-fetch-site":"none","sec-fetch-mode":"navigate","sec-fetch-user":"?1","sec-fetch-dest":"document","accept-encoding":"gzip, deflate, br, zstd","accept-language":"en-GB,en-US;q=0.9,en;q=0.8,hi;q=0.7,hy;q=0.6","cookie":"__stripe_mid=120dee7b-ce7c-4864-96e1-3fd8d03a87f57f548c; ph_phc_xAvL2Iq4tFmANRE7kzbKwaSqp1HJjN7x48s3vr0CMjs_posthog=%7B%22%24device_id%22%3A%22019c756a-4b41-724b-a53e-53ee97ce7ad2%22%2C%22distinct_id%22%3A%22019c756a-4b41-724b-a53e-53ee97ce7ad2%22%2C%22%24sesid%22%3A%5B1773401225092%2C%22019ce6db-5816-7ae1-bb67-73619a1d474c%22%2C1773399660527%5D%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22http%3A%2F%2Flocalhost%3A3000%2F%22%2C%22u%22%3A%22http%3A%2F%2Flocalhost%3A3000%2F%22%7D%7D"},"remoteAddress":"::1","remotePort":50501},"context":"HttpExceptionFilter"}[39m
+[02:18:38.572] [32mINFO[39m (56629): [36mrequest completed[39m [90m{"req":{"id":1,"method":"GET","url":"/api/v1/templates","query":{},"params":{"path":["templates"]},"headers":{"host":"localhost:3001","connection":"keep-alive","sec-ch-ua":"\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"","sec-ch-ua-mobile":"?0","sec-ch-ua-platform":"\"macOS\"","upgrade-insecure-requests":"1","user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36","accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7","sec-fetch-site":"none","sec-fetch-mode":"navigate","sec-fetch-user":"?1","sec-fetch-dest":"document","accept-encoding":"gzip, deflate, br, zstd","accept-language":"en-GB,en-US;q=0.9,en;q=0.8,hi;q=0.7,hy;q=0.6","cookie":"__stripe_mid=120dee7b-ce7c-4864-96e1-3fd8d03a87f57f548c; ph_phc_xAvL2Iq4tFmANRE7kzbKwaSqp1HJjN7x48s3vr0CMjs_posthog=%7B%22%24device_id%22%3A%22019c756a-4b41-724b-a53e-53ee97ce7ad2%22%2C%22distinct_id%22%3A%22019c756a-4b41-724b-a53e-53ee97ce7ad2%22%2C%22%24sesid%22%3A%5B1773401225092%2C%22019ce6db-5816-7ae1-bb67-73619a1d474c%22%2C1773399660527%5D%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22http%3A%2F%2Flocalhost%3A3000%2F%22%2C%22u%22%3A%22http%3A%2F%2Flocalhost%3A3000%2F%22%7D%7D"},"remoteAddress":"::1","remotePort":50501},"res":{"statusCode":401,"headers":{"x-powered-by":"Express","access-control-allow-origin":"http://localhost:3000","vary":"Origin","access-control-allow-credentials":"true","content-type":"application/json; charset=utf-8","content-length":"178","etag":"W/\"b2-In64fpEwpZiaVoV5gPq0twEP3ck\""}},"responseTime":32}[39m
+[02:18:57.220] [33mWARN[39m (56629): [36m[GET] /health - 404 - Cannot GET /health[39m [90m{"context":"HttpExceptionFilter"}[39m
+[02:19:03.214] [33mWARN[39m (56629): [36m[GET] /api/v1/health - 404 - Cannot GET /api/v1/health[39m [90m{"req":{"id":2,"method":"GET","url":"/api/v1/health","query":{},"params":{"path":["health"]},"headers":{"host":"localhost:3001","connection":"keep-alive","sec-ch-ua":"\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"","sec-ch-ua-mobile":"?0","sec-ch-ua-platform":"\"macOS\"","upgrade-insecure-requests":"1","user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36","accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7","sec-fetch-site":"none","sec-fetch-mode":"navigate","sec-fetch-user":"?1","sec-fetch-dest":"document","accept-encoding":"gzip, deflate, br, zstd","accept-language":"en-GB,en-US;q=0.9,en;q=0.8,hi;q=0.7,hy;q=0.6","cookie":"__stripe_mid=120dee7b-ce7c-4864-96e1-3fd8d03a87f57f548c; ph_phc_xAvL2Iq4tFmANRE7kzbKwaSqp1HJjN7x48s3vr0CMjs_posthog=%7B%22%24device_id%22%3A%22019c756a-4b41-724b-a53e-53ee97ce7ad2%22%2C%22distinct_id%22%3A%22019c756a-4b41-724b-a53e-53ee97ce7ad2%22%2C%22%24sesid%22%3A%5B1773401225092%2C%22019ce6db-5816-7ae1-bb67-73619a1d474c%22%2C1773399660527%5D%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22http%3A%2F%2Flocalhost%3A3000%2F%22%2C%22u%22%3A%22http%3A%2F%2Flocalhost%3A3000%2F%22%7D%7D; _dd_s=logs=1&id=d1730f77-7514-483d-9dd9-25fd20b23cb0&created=1775681321405&expire=1775682239326"},"remoteAddress":"::1","remotePort":50502},"context":"HttpExceptionFilter"}[39m
+[02:19:03.215] [32mINFO[39m (56629): [36mrequest completed[39m [90m{"req":{"id":2,"method":"GET","url":"/api/v1/health","query":{},"params":{"path":["health"]},"headers":{"host":"localhost:3001","connection":"keep-alive","sec-ch-ua":"\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"","sec-ch-ua-mobile":"?0","sec-ch-ua-platform":"\"macOS\"","upgrade-insecure-requests":"1","user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36","accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7","sec-fetch-site":"none","sec-fetch-mode":"navigate","sec-fetch-user":"?1","sec-fetch-dest":"document","accept-encoding":"gzip, deflate, br, zstd","accept-language":"en-GB,en-US;q=0.9,en;q=0.8,hi;q=0.7,hy;q=0.6","cookie":"__stripe_mid=120dee7b-ce7c-4864-96e1-3fd8d03a87f57f548c; ph_phc_xAvL2Iq4tFmANRE7kzbKwaSqp1HJjN7x48s3vr0CMjs_posthog=%7B%22%24device_id%22%3A%22019c756a-4b41-724b-a53e-53ee97ce7ad2%22%2C%22distinct_id%22%3A%22019c756a-4b41-724b-a53e-53ee97ce7ad2%22%2C%22%24sesid%22%3A%5B1773401225092%2C%22019ce6db-5816-7ae1-bb67-73619a1d474c%22%2C1773399660527%5D%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22http%3A%2F%2Flocalhost%3A3000%2F%22%2C%22u%22%3A%22http%3A%2F%2Flocalhost%3A3000%2F%22%7D%7D; _dd_s=logs=1&id=d1730f77-7514-483d-9dd9-25fd20b23cb0&created=1775681321405&expire=1775682239326"},"remoteAddress":"::1","remotePort":50502},"res":{"statusCode":404,"headers":{"x-powered-by":"Express","access-control-allow-origin":"http://localhost:3000","vary":"Origin","access-control-allow-credentials":"true","content-type":"application/json; charset=utf-8","content-length":"184","etag":"W/\"b8-6AwIyjMVU/vd21QYq+FabdtNzDc\""}},"responseTime":6}[39m
+[02:19:08.829] [33mWARN[39m (56629): [36m[GET] /docs - 404 - Cannot GET /docs[39m [90m{"context":"HttpExceptionFilter"}[39m
+[02:19:17.035] [33mWARN[39m (56629): [36m[GET] / - 404 - Cannot GET /[39m [90m{"context":"HttpExceptionFilter"}[39m
+[02:20:10.666] [31mERROR[39m (56629): [36m[POST] /api/v1/templates/seed - 
+Invalid `this.prisma.template.count()` invocation in
+/Users/abdulkadir/LEGAL_OPS/onyxlegal-core/src/modules/templates/templates.service.ts:50:46
+
+  47  * Idempotent — skips if templates already exist.
+  48  */
+  49 async seedSystemTemplates() {
+→ 50   const count = await this.prisma.template.count(
+
+PrismaClientKnownRequestError: 
+Invalid `this.prisma.template.count()` invocation in
+/Users/abdulkadir/LEGAL_OPS/onyxlegal-core/src/modules/templates/templates.service.ts:50:46
+
+  47  * Idempotent — skips if templates already exist.
+  48  */
+  49 async seedSystemTemplates() {
+→ 50   const count = await this.prisma.template.count(
+
+    at Gr.handleRequestError (/Users/abdulkadir/LEGAL_OPS/onyxlegal-core/node_modules/@prisma/client/src/runtime/RequestHandler.ts:237:13)
+    at Gr.handleAndLogRequestError (/Users/abdulkadir/LEGAL_OPS/onyxlegal-core/node_modules/@prisma/client/src/runtime/RequestHandler.ts:183:12)
+    at Gr.request (/Users/abdulkadir/LEGAL_OPS/onyxlegal-core/node_modules/@prisma/client/src/runtime/RequestHandler.ts:152:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (/Users/abdulkadir/LEGAL_OPS/onyxlegal-core/node_modules/@prisma/client/src/runtime/getPrismaClient.ts:938:24)
+    at async TemplatesService.seedSystemTemplates (/Users/abdulkadir/LEGAL_OPS/onyxlegal-core/src/modules/templates/templates.service.ts:50:19)
+    at async /Users/abdulkadir/LEGAL_OPS/onyxlegal-core/node_modules/@nestjs/core/router/router-execution-context.js:46:28
+    at async /Users/abdulkadir/LEGAL_OPS/onyxlegal-core/node_modules/@nestjs/core/router/router-proxy.js:9:17[39m [90m{"req":{"id":3,"method":"POST","url":"/api/v1/templates/seed","query":{},"params":{"path":["templates","seed"]},"headers":{"host":"localhost:3001","user-agent":"curl/8.7.1","accept":"*/*"},"remoteAddress":"::1","remotePort":50524},"context":"HttpExceptionFilter"}[39m
+[02:20:10.672] [32mINFO[39m (56629): [36mrequest errored[39m [90m{"req":{"id":3,"method":"POST","url":"/api/v1/templates/seed","query":{},"params":{"path":["templates","seed"]},"headers":{"host":"localhost:3001","user-agent":"curl/8.7.1","accept":"*/*"},"remoteAddress":"::1","remotePort":50524},"res":{"statusCode":500,"headers":{"x-powered-by":"Express","access-control-allow-origin":"http://localhost:3000","vary":"Origin","access-control-allow-credentials":"true","content-type":"application/json; charset=utf-8","content-length":"192","etag":"W/\"c0-iynXzvupI8A/+OkH0YS77G5NVRw\""}},"responseTime":530}[39m
+    err: {
+      "type": "Error",
+      "message": "failed with status code 500",
+      "stack":
+          Error: failed with status code 500
+              at onResFinished (/Users/abdulkadir/LEGAL_OPS/onyxlegal-core/node_modules/pino-http/logger.js:115:39)
+              at ServerResponse.onResponseComplete (/Users/abdulkadir/LEGAL_OPS/onyxlegal-core/node_modules/pino-http/logger.js:178:14)
+              at ServerResponse.emit (node:events:520:35)
+              at onFinish (node:_http_outgoing:1024:10)
+              at callback (node:internal/streams/writable:764:21)
+              at afterWrite (node:internal/streams/writable:708:5)
+              at afterWriteTick (node:internal/streams/writable:694:10)
+              at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+    }
+[2J[3J[H[[90m2:21:03 AM[0m] File change detected. Starting incremental compilation...
+
+[[90m2:21:03 AM[0m] Found 0 errors. Watching for file changes.
+
+[02:21:05.062] [32mINFO[39m (57334): [36mStarting Nest application...[39m [90m{"context":"NestFactory"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mPassportModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mConfigHostModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mDiscoveryModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mConfigModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mConfigModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mLoggerModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mDatabaseModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mBullModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mBullModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mAppModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mJwtModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mContractsModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mTemplatesModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mAnalyticsModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mNotificationsModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mAuthModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mBullModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mAiOrchestratorModule dependencies initialized[39m [90m{"context":"InstanceLoader"}[39m
+[02:21:05.062] [33mWARN[39m (57334): [36mUnsupported route path: "/api/v1/*". In previous versions, the symbols ?, *, and + were used to denote optional or repeating path parameters. The latest version of "path-to-regexp" now requires the use of named parameters. For example, instead of using a route like /users/* to capture all routes starting with "/users", you should use /users/*path. For more details, refer to the migration guide. Attempting to auto-convert...[39m [90m{"context":"LegacyRouteConverter"}[39m
+[02:21:05.062] [33mWARN[39m (57334): [36mUnsupported route path: "/api/v1/*". In previous versions, the symbols ?, *, and + were used to denote optional or repeating path parameters. The latest version of "path-to-regexp" now requires the use of named parameters. For example, instead of using a route like /users/* to capture all routes starting with "/users", you should use /users/*path. For more details, refer to the migration guide. Attempting to auto-convert...[39m [90m{"context":"LegacyRouteConverter"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mAuthController {/api/v1/auth}:[39m [90m{"context":"RoutesResolver"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/auth/signup, POST} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/auth/me, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mContractsController {/api/v1/contracts}:[39m [90m{"context":"RoutesResolver"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/contracts, POST} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/contracts, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/contracts/stats, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/contracts/:id, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/contracts/:id, PATCH} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/contracts/:id/status, PATCH} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/contracts/:contractId/clauses/:clauseId/accept-fix, POST} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mTemplatesController {/api/v1/templates}:[39m [90m{"context":"RoutesResolver"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/templates, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/templates/:id, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/templates/seed, POST} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mAiOrchestratorController {/api/v1/ai}:[39m [90m{"context":"RoutesResolver"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/ai/analyze/:contractId, POST} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/ai/analysis/:contractId, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/ai/suggestions/:contractId, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mAnalyticsController {/api/v1/analytics}:[39m [90m{"context":"RoutesResolver"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/analytics/dashboard, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/analytics/risk-overview, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mNotificationsController {/api/v1/notifications}:[39m [90m{"context":"RoutesResolver"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/notifications, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/notifications/count, GET} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/notifications/:id/read, PATCH} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mMapped {/api/v1/notifications/read-all, PATCH} route[39m [90m{"context":"RouterExplorer"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mDatabase connected[39m [90m{"context":"PrismaService"}[39m
+[02:21:05.062] [32mINFO[39m (57334): [36mNest application successfully started[39m [90m{"context":"NestApplication"}[39m
+[02:21:05.063] [32mINFO[39m (57334): [36m🚀 OnyxLegal API running on http://localhost:3001/api/v1[39m [90m{"context":"Bootstrap"}[39m
+[02:21:05.063] [32mINFO[39m (57334): [36m📋 Modules: auth, contracts, templates, ai, analytics, notifications[39m [90m{"context":"Bootstrap"}[39m
+[02:21:35.637] [32mINFO[39m (57334): [36mSeeded 3 system templates[39m [90m{"req":{"id":1,"method":"POST","url":"/api/v1/templates/seed","query":{},"params":{"path":["templates","seed"]},"headers":{"host":"localhost:3001","user-agent":"curl/8.7.1","accept":"*/*"},"remoteAddress":"::1","remotePort":50547},"context":"TemplatesService"}[39m
+[02:21:35.641] [32mINFO[39m (57334): [36mrequest completed[39m [90m{"req":{"id":1,"method":"POST","url":"/api/v1/templates/seed","query":{},"params":{"path":["templates","seed"]},"headers":{"host":"localhost:3001","user-agent":"curl/8.7.1","accept":"*/*"},"remoteAddress":"::1","remotePort":50547},"res":{"statusCode":201,"headers":{"x-powered-by":"Express","access-control-allow-origin":"http://localhost:3000","vary":"Origin","access-control-allow-credentials":"true","content-type":"application/json; charset=utf-8","content-length":"25","etag":"W/\"19-eKdwJtIaJVPhiZ8n9NqclOjVfAw\""}},"responseTime":401}[39m
