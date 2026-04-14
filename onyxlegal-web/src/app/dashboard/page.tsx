@@ -7,6 +7,8 @@ import { Sparkles, FileSignature, AlertTriangle, Shield, TrendingDown, Clock, Za
 import { Button } from '@/components/ui/button';
 import { AiCommandCenter } from '@/features/ai/components/AiCommandCenter';
 import { AiActivityFeed } from '@/features/ai/components/AiActivityFeed';
+import { AiRecommendedActions } from '@/features/ai/components/AiRecommendedActions';
+import { AiAlerts } from '@/features/ai/components/AiAlerts';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -22,6 +24,16 @@ export default function DashboardPage() {
       {/* ── AI COMMAND CENTER (Top Priority) ─────────────── */}
       <div className="mb-8">
         <AiCommandCenter />
+      </div>
+
+      {/* ── AI ALERTS ────────────────────────────────────── */}
+      <div className="mb-8">
+        <AiAlerts />
+      </div>
+
+      {/* ── AI RECOMMENDED ACTIONS ───────────────────────── */}
+      <div className="mb-8">
+        <AiRecommendedActions />
       </div>
 
       {/* ── Welcome Header ─────────────────────────────────── */}
@@ -61,9 +73,6 @@ export default function DashboardPage() {
           New Contract
         </Button>
       </div>
-
-      {/* ── AI COMMAND CENTER ─────────────────────────────── */}
-      <AiCommandCenter />
 
       {/* ── AI Impact Metrics ─────────────────────────────── */}
       <div className="mb-2">
