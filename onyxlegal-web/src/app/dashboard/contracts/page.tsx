@@ -6,6 +6,7 @@ import { Plus, Filter, Search, FileSignature, AlertTriangle, Shield, Clock, Load
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useContracts, useContractStats } from '@/shared/api';
+import { SmartEmptyState } from '@/shared/components/SmartEmptyState';
 
 const statusFilters = ['All', 'Draft', 'In Review', 'Sent', 'Signed', 'Active', 'Expired'] as const;
 
@@ -155,21 +156,11 @@ export default function ContractsPage() {
 
       {/* ── Empty State ──────────────────────────– */}
       {!isLoading && !error && filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16">
-          <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mb-3">
-            <FileSignature className="text-slate-400" size={24} />
-          </div>
-          <p className="text-slate-600 font-medium">No contracts found</p>
-          <p className="text-slate-400 text-sm mt-1">Create your first contract or adjust filters</p>
-          <Button
-            onClick={() => router.push('/dashboard/contracts/create')}
-            className="mt-4 text-white gap-2 h-9 rounded-lg text-sm font-semibold px-4"
-            style={{ background: 'var(--onyx-gradient)' }}
-          >
-            <Plus size={14} />
-            Create Contract
-          </Button>
-        </div>
+        <SmartEmptyState
+          type="contracts"
+          onPrimaryAction={() => router.push('/dashboard/contracts/create')}
+          onSecondaryAction={() => router.push('/dashboard/contracts/create')}
+        />
       )}
 
       {/* ── Contract Cards ───────────────────────── */}

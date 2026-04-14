@@ -280,6 +280,26 @@
   }
 }
 
+@keyframes hover-lift {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-2px); }
+}
+
+@keyframes bounce-in {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 /* Animation utilities */
 .animate-float { animation: float 6s ease-in-out infinite; }
 .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
@@ -289,4 +309,81 @@
 }
 .animate-fade-up {
   animation: fade-up 0.5s var(--onyx-ease) both;
+}
+.animate-hover-lift {
+  animation: hover-lift 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.animate-bounce-in {
+  animation: bounce-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+}
+.animate-slide-in-left {
+  animation: slide-in-left 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+}
+
+/* Micro-interactions */
+.group:hover .group-hover\:scale-110 {
+  transform: scale(1.1);
+}
+
+.transition-all-smooth {
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+}
+
+/* Button Press Effect */
+button:active {
+  transform: scale(0.97);
+}
+
+button {
+  transition: all 0.2s cubic-bezier(0.23, 1, 0.320, 1);
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* Card Hover Effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Input Focus Effect */
+input:focus {
+  animation: bounce-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Skeleton Loader */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Glass morphism enhancement */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Success pulse */
+.success-pulse {
+  animation: pulse-glow 1.5s ease-in-out;
+}
+
+/* Smooth transitions for lists */
+.list-item-enter {
+  animation: slide-in-right 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+}
+
+.list-item-exit {
+  animation: slide-in-left 0.3s cubic-bezier(0.23, 1, 0.320, 1) reverse;
 }

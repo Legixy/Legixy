@@ -13,6 +13,7 @@ import {
   BarChart3,
   Zap,
 } from 'lucide-react';
+import { RiskInsightsPanel } from '@/features/analytics/components/RiskInsightsPanel';
 
 // ── Animated Counter Hook ──────────────────────────────────────────────────
 function useCounter(end: number, duration = 1200) {
@@ -235,9 +236,9 @@ export default function AnalyticsPage() {
           boxShadow: '0 8px 32px rgba(30, 27, 75, 0.25)',
         }}
       >
-        <div className="absolute -top-10 right-1/4 w-80 h-48 bg-indigo-500/15 rounded-full blur-[80px] pointer-events-none" />
-        <div className="absolute -bottom-10 left-1/3 w-60 h-40 bg-purple-500/10 rounded-full blur-[60px] pointer-events-none" />
-        <div className="absolute top-1/2 left-[10%] w-24 h-24 bg-cyan-400/8 rounded-full blur-[40px] pointer-events-none animate-float" />
+        <div className="absolute -top-10 right-1/4 w-80 h-48 bg-indigo-500/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-10 left-1/3 w-60 h-40 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-1/2 left-[10%] w-24 h-24 bg-cyan-400/8 rounded-full blur-2xl pointer-events-none animate-float" />
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-6">
@@ -281,6 +282,11 @@ export default function AnalyticsPage() {
             Export Full Report
           </button>
         </div>
+      </div>
+
+      {/* ── RISK INSIGHTS PANEL ──────────────────── */}
+      <div className="mt-10">
+        <RiskInsightsPanel />
       </div>
     </div>
   );

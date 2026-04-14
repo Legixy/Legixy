@@ -5,6 +5,8 @@ import { useAuth } from '@/lib/auth-provider';
 import { useDashboardMetrics, useContractStats } from '@/shared/api';
 import { Sparkles, FileSignature, AlertTriangle, Shield, TrendingDown, Clock, Zap, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AiCommandCenter } from '@/features/ai/components/AiCommandCenter';
+import { AiActivityFeed } from '@/features/ai/components/AiActivityFeed';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -16,6 +18,11 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full flex flex-col animate-fade-up">
+
+      {/* ── AI COMMAND CENTER (Top Priority) ─────────────── */}
+      <div className="mb-8">
+        <AiCommandCenter />
+      </div>
 
       {/* ── Welcome Header ─────────────────────────────────── */}
       <div className="flex justify-between items-start mb-10">
@@ -54,6 +61,9 @@ export default function DashboardPage() {
           New Contract
         </Button>
       </div>
+
+      {/* ── AI COMMAND CENTER ─────────────────────────────── */}
+      <AiCommandCenter />
 
       {/* ── AI Impact Metrics ─────────────────────────────── */}
       <div className="mb-2">
@@ -190,6 +200,11 @@ export default function DashboardPage() {
         <p className="text-xs text-slate-600">
           You're using OnyxAI effectively. Keep analyzing contracts to maximize risk mitigation.
         </p>
+      </div>
+
+      {/* ── AI ACTIVITY FEED ─────────────────────────────── */}
+      <div className="mt-8">
+        <AiActivityFeed />
       </div>
 
     </div>
