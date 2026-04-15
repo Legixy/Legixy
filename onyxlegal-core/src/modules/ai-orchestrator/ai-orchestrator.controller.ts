@@ -93,4 +93,37 @@ export class AiOrchestratorController {
   ) {
     return this.aiService.getSuggestions(user.tenantId, contractId);
   }
+
+  /**
+   * GET /api/v1/ai/queue/stats
+   * Get queue statistics
+   */
+  @Get('queue/stats')
+  async getQueueStats(@CurrentUser() user: AuthenticatedUser) {
+    return this.aiService.getQueueStats();
+  }
+
+  /**
+   * GET /api/v1/ai/analysis/:analysisId/status
+   * Get analysis status
+   */
+  @Get('analysis/:analysisId/status')
+  async getAnalysisStatus(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('analysisId') analysisId: string,
+  ) {
+    return this.aiService.getAnalysisStatus(analysisId);
+  }
+
+  /**
+   * DELETE /api/v1/ai/analysis/:analysisId
+   * Cancel an analysis job
+   */
+  @Post('analysis/:analysisId/cancel')
+  async cancelAnalysis(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('analysisId') analysisId: string,
+  ) {
+    return this.aiService.cancelAnalysis(analysisId);
+  }
 }

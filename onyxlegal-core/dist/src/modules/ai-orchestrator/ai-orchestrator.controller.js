@@ -42,6 +42,15 @@ let AiOrchestratorController = class AiOrchestratorController {
     getSuggestions(user, contractId) {
         return this.aiService.getSuggestions(user.tenantId, contractId);
     }
+    async getQueueStats(user) {
+        return this.aiService.getQueueStats();
+    }
+    async getAnalysisStatus(user, analysisId) {
+        return this.aiService.getAnalysisStatus(analysisId);
+    }
+    async cancelAnalysis(user, analysisId) {
+        return this.aiService.cancelAnalysis(analysisId);
+    }
 };
 exports.AiOrchestratorController = AiOrchestratorController;
 __decorate([
@@ -99,6 +108,29 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], AiOrchestratorController.prototype, "getSuggestions", null);
+__decorate([
+    (0, common_1.Get)('queue/stats'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AiOrchestratorController.prototype, "getQueueStats", null);
+__decorate([
+    (0, common_1.Get)('analysis/:analysisId/status'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('analysisId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], AiOrchestratorController.prototype, "getAnalysisStatus", null);
+__decorate([
+    (0, common_1.Post)('analysis/:analysisId/cancel'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('analysisId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], AiOrchestratorController.prototype, "cancelAnalysis", null);
 exports.AiOrchestratorController = AiOrchestratorController = __decorate([
     (0, common_1.Controller)('ai'),
     __metadata("design:paramtypes", [ai_orchestrator_service_1.AiOrchestratorService])

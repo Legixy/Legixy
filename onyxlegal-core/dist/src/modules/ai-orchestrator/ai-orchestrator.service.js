@@ -179,6 +179,91 @@ let AiOrchestratorService = AiOrchestratorService_1 = class AiOrchestratorServic
         });
         return { contractId, suggestions };
     }
+    async getQueueStats() {
+        try {
+            const counts = await this.analysisQueue.getJobCounts();
+            const workers = await this.analysisQueue.getWorkers();
+            return {
+                queue: {
+                    waiting: counts.waiting || 0,
+                    active: counts.active || 0,
+                    completed: counts.completed || 0,
+                    failed: counts.failed || 0,
+                    delayed: counts.delayed || 0,
+                },
+                workers: {
+                    count: workers.length,
+                    isPaused: await this.analysisQueue.isPaused(),
+                },
+                timestamp: new Date().toISOString(),
+            };
+        }
+        catch (error) {
+            this.logger.error(`Failed to get queue stats: ${error}`);
+            return {
+                queue: {
+                    waiting: 0,
+                    active: 0,
+                    completed: 0,
+                    failed: 0,
+                    delayed: 0,
+                },
+                workers: {
+                    count: 0,
+                    isPaused: false,
+                },
+                error: 'Failed to fetch queue stats',
+            };
+        }
+    }
+    async getAnalysisStatus(analysisId) {
+        const analysis = await this.prisma.aIAnalysis.findUnique({
+            where: { id: analysisId },
+            include: {
+                riskFindings: {
+                    orderBy: { severity: 'desc' },
+                },
+            },
+        });
+        if (!analysis) {
+            throw new common_1.BadRequestException('Analysis not found');
+        }
+        return {
+            id: analysis.id,
+            status: analysis.status,
+            type: analysis.type,
+            startedAt: analysis.startedAt,
+            completedAt: analysis.completedAt,
+            tokensUsed: analysis.tokensUsed,
+            processingMs: analysis.processingMs,
+            errorMessage: analysis.errorMessage,
+            retryCount: analysis.retryCount,
+            riskFindings: analysis.riskFindings,
+        };
+    }
+    async cancelAnalysis(analysisId) {
+        const analysis = await this.prisma.aIAnalysis.findUnique({
+            where: { id: analysisId },
+        });
+        if (!analysis) {
+            throw new common_1.BadRequestException('Analysis not found');
+        }
+        if (analysis.status === client_1.AnalysisStatus.COMPLETED || analysis.status === client_1.AnalysisStatus.FAILED) {
+            throw new common_1.BadRequestException(`Cannot cancel ${analysis.status.toLowerCase()} analysis`);
+        }
+        const job = await this.analysisQueue.getJob(`analysis-${analysisId}`);
+        if (job) {
+            await job.remove();
+        }
+        await this.prisma.aIAnalysis.update({
+            where: { id: analysisId },
+            data: {
+                status: client_1.AnalysisStatus.FAILED,
+                errorMessage: 'Analysis cancelled by user',
+            },
+        });
+        return { message: 'Analysis cancelled successfully' };
+    }
 };
 exports.AiOrchestratorService = AiOrchestratorService;
 exports.AiOrchestratorService = AiOrchestratorService = AiOrchestratorService_1 = __decorate([

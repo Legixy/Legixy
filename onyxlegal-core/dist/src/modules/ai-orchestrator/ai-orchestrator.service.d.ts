@@ -111,4 +111,59 @@ export declare class AiOrchestratorService {
             isAccepted: boolean;
         }[];
     }>;
+    getQueueStats(): Promise<{
+        queue: {
+            waiting: number;
+            active: number;
+            completed: number;
+            failed: number;
+            delayed: number;
+        };
+        workers: {
+            count: number;
+            isPaused: boolean;
+        };
+        timestamp: string;
+        error?: undefined;
+    } | {
+        queue: {
+            waiting: number;
+            active: number;
+            completed: number;
+            failed: number;
+            delayed: number;
+        };
+        workers: {
+            count: number;
+            isPaused: boolean;
+        };
+        error: string;
+        timestamp?: undefined;
+    }>;
+    getAnalysisStatus(analysisId: string): Promise<{
+        id: string;
+        status: AnalysisStatus;
+        type: AnalysisType;
+        startedAt: Date | null;
+        completedAt: Date | null;
+        tokensUsed: number;
+        processingMs: number | null;
+        errorMessage: string | null;
+        retryCount: number;
+        riskFindings: {
+            id: string;
+            createdAt: Date;
+            title: string;
+            analysisId: string;
+            severity: import("generated/prisma/client").RiskLevel;
+            clause: string;
+            impact: string;
+            suggestion: string;
+            legalRef: string | null;
+            estimatedRisk: import("@prisma/client-runtime-utils").Decimal | null;
+        }[];
+    }>;
+    cancelAnalysis(analysisId: string): Promise<{
+        message: string;
+    }>;
 }

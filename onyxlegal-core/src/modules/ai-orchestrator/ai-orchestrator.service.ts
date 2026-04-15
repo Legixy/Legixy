@@ -242,4 +242,112 @@ export class AiOrchestratorService {
 
     return { contractId, suggestions };
   }
+
+  /**
+   * Get queue statistics for monitoring
+   */
+  async getQueueStats() {
+    try {
+      const counts = await this.analysisQueue.getJobCounts();
+      const workers = await this.analysisQueue.getWorkers();
+
+      return {
+        queue: {
+          waiting: counts.waiting || 0,
+          active: counts.active || 0,
+          completed: counts.completed || 0,
+          failed: counts.failed || 0,
+          delayed: counts.delayed || 0,
+        },
+        workers: {
+          count: workers.length,
+          isPaused: await this.analysisQueue.isPaused(),
+        },
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get queue stats: ${error}`);
+      return {
+        queue: {
+          waiting: 0,
+          active: 0,
+          completed: 0,
+          failed: 0,
+          delayed: 0,
+        },
+        workers: {
+          count: 0,
+          isPaused: false,
+        },
+        error: 'Failed to fetch queue stats',
+      };
+    }
+  }
+
+  /**
+   * Get analysis status
+   */
+  async getAnalysisStatus(analysisId: string) {
+    const analysis = await this.prisma.aIAnalysis.findUnique({
+      where: { id: analysisId },
+      include: {
+        riskFindings: {
+          orderBy: { severity: 'desc' },
+        },
+      },
+    });
+
+    if (!analysis) {
+      throw new BadRequestException('Analysis not found');
+    }
+
+    return {
+      id: analysis.id,
+      status: analysis.status,
+      type: analysis.type,
+      startedAt: analysis.startedAt,
+      completedAt: analysis.completedAt,
+      tokensUsed: analysis.tokensUsed,
+      processingMs: analysis.processingMs,
+      errorMessage: analysis.errorMessage,
+      retryCount: analysis.retryCount,
+      riskFindings: analysis.riskFindings,
+    };
+  }
+
+  /**
+   * Cancel an analysis job
+   */
+  async cancelAnalysis(analysisId: string) {
+    const analysis = await this.prisma.aIAnalysis.findUnique({
+      where: { id: analysisId },
+    });
+
+    if (!analysis) {
+      throw new BadRequestException('Analysis not found');
+    }
+
+    if (analysis.status === AnalysisStatus.COMPLETED || analysis.status === AnalysisStatus.FAILED) {
+      throw new BadRequestException(
+        `Cannot cancel ${analysis.status.toLowerCase()} analysis`,
+      );
+    }
+
+    // Remove from queue
+    const job = await this.analysisQueue.getJob(`analysis-${analysisId}`);
+    if (job) {
+      await job.remove();
+    }
+
+    // Update status
+    await this.prisma.aIAnalysis.update({
+      where: { id: analysisId },
+      data: {
+        status: AnalysisStatus.FAILED,
+        errorMessage: 'Analysis cancelled by user',
+      },
+    });
+
+    return { message: 'Analysis cancelled successfully' };
+  }
 }
