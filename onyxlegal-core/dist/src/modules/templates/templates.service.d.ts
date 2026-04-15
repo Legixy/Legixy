@@ -6,13 +6,13 @@ export declare class TemplatesService {
     constructor(prisma: PrismaService);
     findAll(tenantId: string, category?: string): Promise<{
         id: string;
-        tenantId: string | null;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        riskScore: number;
+        tenantId: string | null;
         category: TemplateCategory;
         description: string | null;
+        riskScore: number;
         clauseBlocks: import("@prisma/client/runtime/client").JsonValue;
         isSystem: boolean;
         usageCount: number;
@@ -20,13 +20,13 @@ export declare class TemplatesService {
     }[]>;
     findOne(tenantId: string, id: string): Promise<{
         id: string;
-        tenantId: string | null;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        riskScore: number;
+        tenantId: string | null;
         category: TemplateCategory;
         description: string | null;
+        riskScore: number;
         clauseBlocks: import("@prisma/client/runtime/client").JsonValue;
         isSystem: boolean;
         usageCount: number;

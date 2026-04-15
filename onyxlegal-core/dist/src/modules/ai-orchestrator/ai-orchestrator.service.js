@@ -19,13 +19,16 @@ const bullmq_1 = require("@nestjs/bullmq");
 const bullmq_2 = require("bullmq");
 const prisma_service_1 = require("../../database/prisma.service");
 const client_1 = require("../../../generated/prisma/client");
+const aiEngine_1 = require("../../features/ai/services/aiEngine");
 let AiOrchestratorService = AiOrchestratorService_1 = class AiOrchestratorService {
     prisma;
     analysisQueue;
     logger = new common_1.Logger(AiOrchestratorService_1.name);
+    aiEngine;
     constructor(prisma, analysisQueue) {
         this.prisma = prisma;
         this.analysisQueue = analysisQueue;
+        this.aiEngine = new aiEngine_1.AIEngine();
     }
     async triggerAnalysis(tenantId, contractId) {
         const contract = await this.prisma.contract.findFirst({
@@ -80,6 +83,64 @@ let AiOrchestratorService = AiOrchestratorService_1 = class AiOrchestratorServic
             analysisId: analysis.id,
             status: 'QUEUED',
         };
+    }
+    async analyzeContractDirect(contractId, contractText) {
+        try {
+            this.logger.log(`🚀 Starting direct contract analysis for ${contractId}`);
+            const result = await this.aiEngine.analyzeContract(contractText, contractId);
+            this.logger.log(`✅ Direct analysis complete: ${result.analysis.risks.length} risks found`);
+            return {
+                success: result.success,
+                analysis: result.analysis,
+                tokensUsed: result.tokensUsed,
+                duration: result.duration,
+                chunksProcessed: result.chunksProcessed,
+            };
+        }
+        catch (error) {
+            const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+            this.logger.error(`❌ Direct analysis failed: ${errorMsg}`);
+            throw new common_1.BadRequestException(`Contract analysis failed: ${errorMsg}`);
+        }
+    }
+    async generateClauseFixDirect(clause, issue) {
+        try {
+            this.logger.log(`🔧 Generating clause fix`);
+            const result = await this.aiEngine.generateClauseFix(clause, issue);
+            this.logger.log(`✅ Clause fix generated with confidence: ${result.fix.confidence}`);
+            return {
+                success: result.success,
+                fix: result.fix,
+                tokensUsed: result.tokensUsed,
+                duration: result.duration,
+            };
+        }
+        catch (error) {
+            const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+            this.logger.error(`❌ Clause fix generation failed: ${errorMsg}`);
+            throw new common_1.BadRequestException(`Clause fix generation failed: ${errorMsg}`);
+        }
+    }
+    async checkComplianceDirect(contractText, contractId) {
+        try {
+            this.logger.log(`✔️ Checking compliance${contractId ? ` for ${contractId}` : ''}`);
+            const result = await this.aiEngine.checkCompliance(contractText, contractId);
+            this.logger.log(`✅ Compliance check complete: ${result.check.compliant ? 'compliant' : 'non-compliant'}`);
+            return {
+                success: result.success,
+                check: result.check,
+                tokensUsed: result.tokensUsed,
+                duration: result.duration,
+            };
+        }
+        catch (error) {
+            const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+            this.logger.error(`❌ Compliance check failed: ${errorMsg}`);
+            throw new common_1.BadRequestException(`Compliance check failed: ${errorMsg}`);
+        }
+    }
+    getTokenStats() {
+        return this.aiEngine.getTokenStats();
     }
     async getAnalysisResults(tenantId, contractId) {
         const contract = await this.prisma.contract.findFirst({

@@ -5,12 +5,64 @@ export declare class AiOrchestratorService {
     private readonly prisma;
     private readonly analysisQueue;
     private readonly logger;
+    private readonly aiEngine;
     constructor(prisma: PrismaService, analysisQueue: Queue);
     triggerAnalysis(tenantId: string, contractId: string): Promise<{
         message: string;
         analysisId: string;
         status: string;
     }>;
+    analyzeContractDirect(contractId: string, contractText: string): Promise<{
+        success: boolean;
+        analysis: {
+            risks: {
+                clause: string;
+                issue: string;
+                severity: "low" | "medium" | "high" | "critical";
+                recommendation: string;
+                confidence: number;
+            }[];
+            overallScore: number;
+            summary?: string | undefined;
+        };
+        tokensUsed: number;
+        duration: number;
+        chunksProcessed: number;
+    }>;
+    generateClauseFixDirect(clause: string, issue: string): Promise<{
+        success: boolean;
+        fix: {
+            original: string;
+            improved: string;
+            explanation: string;
+            confidence: number;
+        };
+        tokensUsed: number;
+        duration: number;
+    }>;
+    checkComplianceDirect(contractText: string, contractId?: string): Promise<{
+        success: boolean;
+        check: {
+            compliant: boolean;
+            issues: {
+                category: "GST" | "Labor" | "DataProtection" | "Unfair" | "Tax" | "Other";
+                severity: "low" | "medium" | "high" | "critical";
+                issue: string;
+                solution: string;
+            }[];
+            overallRisk: "low" | "medium" | "high" | "critical";
+        };
+        tokensUsed: number;
+        duration: number;
+    }>;
+    getTokenStats(): {
+        averageTokensPerRequest: number;
+        successRate: number;
+        totalPromptTokens: number;
+        totalCompletionTokens: number;
+        totalRequests: number;
+        failedRequests: number;
+    };
     getAnalysisResults(tenantId: string, contractId: string): Promise<{
         contractId: string;
         analyses: ({
@@ -18,9 +70,9 @@ export declare class AiOrchestratorService {
                 id: string;
                 createdAt: Date;
                 title: string;
-                clause: string;
-                severity: import("generated/prisma/client").RiskLevel;
                 analysisId: string;
+                severity: import("generated/prisma/client").RiskLevel;
+                clause: string;
                 impact: string;
                 suggestion: string;
                 legalRef: string | null;

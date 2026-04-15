@@ -3,15 +3,19 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '../../database/prisma.service';
 import { AnalysisStatus, AnalysisType } from 'generated/prisma/client';
+import { AIEngine } from '../../features/ai/services/aiEngine';
 
 @Injectable()
 export class AiOrchestratorService {
   private readonly logger = new Logger(AiOrchestratorService.name);
+  private readonly aiEngine: AIEngine;
 
   constructor(
     private readonly prisma: PrismaService,
     @InjectQueue('contract-analysis') private readonly analysisQueue: Queue,
-  ) {}
+  ) {
+    this.aiEngine = new AIEngine();
+  }
 
   /**
    * Trigger AI analysis on a contract.
@@ -91,6 +95,104 @@ export class AiOrchestratorService {
       analysisId: analysis.id,
       status: 'QUEUED',
     };
+  }
+
+  /**
+   * Perform synchronous AI analysis (direct call, no queue)
+   * Used for quick operations that don't need async processing
+   */
+  async analyzeContractDirect(contractId: string, contractText: string) {
+    try {
+      this.logger.log(`🚀 Starting direct contract analysis for ${contractId}`);
+
+      const result = await this.aiEngine.analyzeContract(contractText, contractId);
+
+      this.logger.log(
+        `✅ Direct analysis complete: ${result.analysis.risks.length} risks found`,
+      );
+
+      return {
+        success: result.success,
+        analysis: result.analysis,
+        tokensUsed: result.tokensUsed,
+        duration: result.duration,
+        chunksProcessed: result.chunksProcessed,
+      };
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`❌ Direct analysis failed: ${errorMsg}`);
+
+      throw new BadRequestException(
+        `Contract analysis failed: ${errorMsg}`,
+      );
+    }
+  }
+
+  /**
+   * Generate improved clause (direct call)
+   */
+  async generateClauseFixDirect(clause: string, issue: string) {
+    try {
+      this.logger.log(`🔧 Generating clause fix`);
+
+      const result = await this.aiEngine.generateClauseFix(clause, issue);
+
+      this.logger.log(
+        `✅ Clause fix generated with confidence: ${result.fix.confidence}`,
+      );
+
+      return {
+        success: result.success,
+        fix: result.fix,
+        tokensUsed: result.tokensUsed,
+        duration: result.duration,
+      };
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`❌ Clause fix generation failed: ${errorMsg}`);
+
+      throw new BadRequestException(
+        `Clause fix generation failed: ${errorMsg}`,
+      );
+    }
+  }
+
+  /**
+   * Check compliance (direct call)
+   */
+  async checkComplianceDirect(contractText: string, contractId?: string) {
+    try {
+      this.logger.log(
+        `✔️ Checking compliance${contractId ? ` for ${contractId}` : ''}`,
+      );
+
+      const result = await this.aiEngine.checkCompliance(contractText, contractId);
+
+      this.logger.log(
+        `✅ Compliance check complete: ${result.check.compliant ? 'compliant' : 'non-compliant'}`,
+      );
+
+      return {
+        success: result.success,
+        check: result.check,
+        tokensUsed: result.tokensUsed,
+        duration: result.duration,
+      };
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`❌ Compliance check failed: ${errorMsg}`);
+
+      throw new BadRequestException(
+        `Compliance check failed: ${errorMsg}`,
+      );
+    }
+  }
+
+  /**
+   * Get AI token statistics
+   */
+  getTokenStats() {
+    return this.aiEngine.getTokenStats();
   }
 
   /**

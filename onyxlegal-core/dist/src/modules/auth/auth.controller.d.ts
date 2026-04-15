@@ -29,14 +29,14 @@ export declare class AuthController {
             };
         } & {
             id: string;
+            name: string | null;
+            createdAt: Date;
+            updatedAt: Date;
             supabaseId: string;
             tenantId: string;
             email: string;
-            name: string | null;
             avatarUrl: string | null;
             role: import("../../../generated/prisma/enums").UserRole;
-            createdAt: Date;
-            updatedAt: Date;
         }) | null;
     }>;
 }

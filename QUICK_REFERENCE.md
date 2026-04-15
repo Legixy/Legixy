@@ -1,52 +1,32 @@
-# OnyxLegal System Architecture - Quick Reference
+# 🎯 Quick Reference - Production-Grade AI Engine (Phase 3.2)
 
-## 🎯 30-Second Overview
+## 30-Second Overview
 
-**OnyxLegal** is an AI-powered legal operations platform. Here's what happens when a user uploads a contract:
+**NEW:** Phase 3.2 adds a production-grade AI engine that **never crashes** and **always returns valid data**.
 
 ```
 User Uploads Contract
          ↓
-    [FRONTEND]
-Next.js Dashboard
+[FRONTEND] Next.js Dashboard
          ↓
-   [API REQUEST]
-POST /api/v1/contracts
+[NEW API ENDPOINTS]
+POST /api/v1/ai/analyze-direct       ← Real AI analysis (NEW!)
+POST /api/v1/ai/generate-fix          ← Generate improved clauses (NEW!)
+POST /api/v1/ai/check-compliance      ← Check legal compliance (NEW!)
+GET  /api/v1/ai/tokens                ← Token tracking (NEW!)
          ↓
-  [NESTJS BACKEND]
-Create Contract Record
-Create Version History
+[AI ENGINE PIPELINE]
+1. Timeout Protection (10s hard limit)
+2. Call OpenAI GPT-4o-mini
+3. Validate JSON response (Zod schema)
+4. If invalid: Retry (up to 3 times)
+5. If all fail: Return safe fallback
          ↓
-  [USER INITIATES ANALYSIS]
-Click "Analyze with AI"
-         ↓
-   [API REQUEST]
-POST /api/v1/ai/analyze/:contractId
-         ↓
-  [NESTJS BACKEND]
-Create AIAnalysis record
-Enqueue job to BullMQ
-         ↓
-[ASYNC WORKER]
-Process contract via OpenAI
-Extract clauses (Zod validation)
-Detect risks (Zod validation)
-         ↓
- [DATABASE TRANSACTION]
-Create Clause records
-Create RiskFinding records
-Update Contract with risk score
-         ↓
-  [FRONTEND POLLING]
-Display results to user
-Show AI suggestions
-         ↓
-   [USER ACCEPTS FIX]
-Click "Accept Suggestion"
-         ↓
-  [CONTRACT UPDATED]
-New version created
-Status progresses forward
+[GUARANTEED RESULT]
+✅ Valid JSON matching schema
+✅ Never crashes frontend
+✅ Token usage tracked
+✅ Confidence scores included
 ```
 
 ---

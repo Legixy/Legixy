@@ -24,6 +24,18 @@ let AiOrchestratorController = class AiOrchestratorController {
     triggerAnalysis(user, contractId) {
         return this.aiService.triggerAnalysis(user.tenantId, contractId);
     }
+    async analyzeDirect(user, body) {
+        return this.aiService.analyzeContractDirect(body.contractId || 'unknown', body.contractText);
+    }
+    async generateFix(user, body) {
+        return this.aiService.generateClauseFixDirect(body.clause, body.issue);
+    }
+    async checkCompliance(user, body) {
+        return this.aiService.checkComplianceDirect(body.contractText, body.contractId);
+    }
+    getTokenStats(user) {
+        return this.aiService.getTokenStats();
+    }
     getResults(user, contractId) {
         return this.aiService.getAnalysisResults(user.tenantId, contractId);
     }
@@ -40,6 +52,37 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], AiOrchestratorController.prototype, "triggerAnalysis", null);
+__decorate([
+    (0, common_1.Post)('analyze-direct'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AiOrchestratorController.prototype, "analyzeDirect", null);
+__decorate([
+    (0, common_1.Post)('generate-fix'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AiOrchestratorController.prototype, "generateFix", null);
+__decorate([
+    (0, common_1.Post)('check-compliance'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AiOrchestratorController.prototype, "checkCompliance", null);
+__decorate([
+    (0, common_1.Get)('tokens'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AiOrchestratorController.prototype, "getTokenStats", null);
 __decorate([
     (0, common_1.Get)('analysis/:contractId'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),

@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body } from '@nestjs/common';
 import { AiOrchestratorService } from './ai-orchestrator.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../auth/jwt.strategy';
@@ -17,6 +17,57 @@ export class AiOrchestratorController {
     @Param('contractId') contractId: string,
   ) {
     return this.aiService.triggerAnalysis(user.tenantId, contractId);
+  }
+
+  /**
+   * POST /api/v1/ai/analyze-direct
+   * Direct synchronous analysis (no queue)
+   */
+  @Post('analyze-direct')
+  async analyzeDirect(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: { contractText: string; contractId?: string },
+  ) {
+    return this.aiService.analyzeContractDirect(
+      body.contractId || 'unknown',
+      body.contractText,
+    );
+  }
+
+  /**
+   * POST /api/v1/ai/generate-fix
+   * Generate improved clause
+   */
+  @Post('generate-fix')
+  async generateFix(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: { clause: string; issue: string },
+  ) {
+    return this.aiService.generateClauseFixDirect(body.clause, body.issue);
+  }
+
+  /**
+   * POST /api/v1/ai/check-compliance
+   * Check contract compliance
+   */
+  @Post('check-compliance')
+  async checkCompliance(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: { contractText: string; contractId?: string },
+  ) {
+    return this.aiService.checkComplianceDirect(
+      body.contractText,
+      body.contractId,
+    );
+  }
+
+  /**
+   * GET /api/v1/ai/tokens
+   * Get token usage statistics
+   */
+  @Get('tokens')
+  getTokenStats(@CurrentUser() user: AuthenticatedUser) {
+    return this.aiService.getTokenStats();
   }
 
   /**

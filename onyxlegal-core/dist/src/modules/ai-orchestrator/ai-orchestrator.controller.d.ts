@@ -8,6 +8,66 @@ export declare class AiOrchestratorController {
         analysisId: string;
         status: string;
     }>;
+    analyzeDirect(user: AuthenticatedUser, body: {
+        contractText: string;
+        contractId?: string;
+    }): Promise<{
+        success: boolean;
+        analysis: {
+            risks: {
+                clause: string;
+                issue: string;
+                severity: "low" | "medium" | "high" | "critical";
+                recommendation: string;
+                confidence: number;
+            }[];
+            overallScore: number;
+            summary?: string | undefined;
+        };
+        tokensUsed: number;
+        duration: number;
+        chunksProcessed: number;
+    }>;
+    generateFix(user: AuthenticatedUser, body: {
+        clause: string;
+        issue: string;
+    }): Promise<{
+        success: boolean;
+        fix: {
+            original: string;
+            improved: string;
+            explanation: string;
+            confidence: number;
+        };
+        tokensUsed: number;
+        duration: number;
+    }>;
+    checkCompliance(user: AuthenticatedUser, body: {
+        contractText: string;
+        contractId?: string;
+    }): Promise<{
+        success: boolean;
+        check: {
+            compliant: boolean;
+            issues: {
+                category: "GST" | "Labor" | "DataProtection" | "Unfair" | "Tax" | "Other";
+                severity: "low" | "medium" | "high" | "critical";
+                issue: string;
+                solution: string;
+            }[];
+            overallRisk: "low" | "medium" | "high" | "critical";
+        };
+        tokensUsed: number;
+        duration: number;
+    }>;
+    getTokenStats(user: AuthenticatedUser): {
+        averageTokensPerRequest: number;
+        successRate: number;
+        totalPromptTokens: number;
+        totalCompletionTokens: number;
+        totalRequests: number;
+        failedRequests: number;
+    };
     getResults(user: AuthenticatedUser, contractId: string): Promise<{
         contractId: string;
         analyses: ({
@@ -15,9 +75,9 @@ export declare class AiOrchestratorController {
                 id: string;
                 createdAt: Date;
                 title: string;
-                clause: string;
-                severity: import("../../../generated/prisma/enums").RiskLevel;
                 analysisId: string;
+                severity: import("../../../generated/prisma/enums").RiskLevel;
+                clause: string;
                 impact: string;
                 suggestion: string;
                 legalRef: string | null;

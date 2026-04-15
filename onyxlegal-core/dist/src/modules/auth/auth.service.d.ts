@@ -13,25 +13,25 @@ export declare class AuthService {
     signup(input: SignupInput): Promise<{
         user: {
             id: string;
+            name: string | null;
+            createdAt: Date;
+            updatedAt: Date;
             supabaseId: string;
             tenantId: string;
             email: string;
-            name: string | null;
             avatarUrl: string | null;
             role: UserRole;
-            createdAt: Date;
-            updatedAt: Date;
         };
         tenant: {
             id: string;
             name: string;
-            createdAt: Date;
-            updatedAt: Date;
             plan: Plan;
             domain: string | null;
             aiTokensUsed: number;
             aiTokenLimit: number;
             billingCycleStart: Date;
+            createdAt: Date;
+            updatedAt: Date;
         };
         isNew: boolean;
     }>;
@@ -45,14 +45,14 @@ export declare class AuthService {
         };
     } & {
         id: string;
+        name: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         supabaseId: string;
         tenantId: string;
         email: string;
-        name: string | null;
         avatarUrl: string | null;
         role: UserRole;
-        createdAt: Date;
-        updatedAt: Date;
     }) | null>;
 }
 export {};

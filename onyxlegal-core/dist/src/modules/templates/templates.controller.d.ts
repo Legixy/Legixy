@@ -5,13 +5,13 @@ export declare class TemplatesController {
     constructor(templatesService: TemplatesService);
     findAll(user: AuthenticatedUser, category?: string): Promise<{
         id: string;
-        tenantId: string | null;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        riskScore: number;
+        tenantId: string | null;
         category: import("../../../generated/prisma/enums").TemplateCategory;
         description: string | null;
+        riskScore: number;
         clauseBlocks: import("@prisma/client/runtime/client").JsonValue;
         isSystem: boolean;
         usageCount: number;
@@ -19,13 +19,13 @@ export declare class TemplatesController {
     }[]>;
     findOne(user: AuthenticatedUser, id: string): Promise<{
         id: string;
-        tenantId: string | null;
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        riskScore: number;
+        tenantId: string | null;
         category: import("../../../generated/prisma/enums").TemplateCategory;
         description: string | null;
+        riskScore: number;
         clauseBlocks: import("@prisma/client/runtime/client").JsonValue;
         isSystem: boolean;
         usageCount: number;
