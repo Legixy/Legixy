@@ -4,15 +4,18 @@ exports.ContractAnalysisWorker = void 0;
 const bullmq_1 = require("bullmq");
 const common_1 = require("@nestjs/common");
 const client_1 = require("../../../../generated/prisma/client");
+const deadLetterQueue_1 = require("../queues/deadLetterQueue");
 class ContractAnalysisWorker {
     logger = new common_1.Logger('ContractAnalysisWorker');
     worker;
     aiEngine;
     prisma;
     websocketGateway;
-    constructor(redisConnection, aiEngine, prisma, concurrency = 5) {
+    dlqQueue;
+    constructor(redisConnection, aiEngine, prisma, dlqQueue, concurrency = 5) {
         this.aiEngine = aiEngine;
         this.prisma = prisma;
+        this.dlqQueue = dlqQueue;
         this.worker = new bullmq_1.Worker('contract-analysis', this.processorFn.bind(this), {
             connection: redisConnection,
             concurrency,
@@ -85,6 +88,8 @@ class ContractAnalysisWorker {
         catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             this.logger.error(`[Job ${job.id}] Analysis failed: ${errorMessage}`, error);
+            const currentAttempts = (job.attemptsMade || 0) + 1;
+            const maxAttempts = job.opts?.attempts || 3;
             await this.prisma.aIAnalysis.update({
                 where: { id: analysisId },
                 data: {
@@ -95,12 +100,30 @@ class ContractAnalysisWorker {
                     },
                 },
             });
-            this.emitEvent(tenantId, 'analysis_failed', {
-                contractId,
-                analysisId,
-                status: 'FAILED',
-                error: errorMessage,
-            });
+            if (currentAttempts >= maxAttempts) {
+                this.logger.warn(`[Job ${job.id}] Max retries (${maxAttempts}) exceeded. Adding to DLQ.`);
+                await (0, deadLetterQueue_1.addToDLQ)(this.dlqQueue, job.id || '', contractId, tenantId, data.userId, data, error instanceof Error ? error : new Error(errorMessage), currentAttempts, maxAttempts, {
+                    analysisId,
+                    contentLength: content.length,
+                });
+                this.emitEvent(tenantId, 'analysis_failed_permanent', {
+                    contractId,
+                    analysisId,
+                    status: 'FAILED_PERMANENT',
+                    error: errorMessage,
+                    message: 'Job moved to dead letter queue. Admin intervention required.',
+                });
+            }
+            else {
+                this.emitEvent(tenantId, 'analysis_failed', {
+                    contractId,
+                    analysisId,
+                    status: 'FAILED',
+                    error: errorMessage,
+                    attempt: currentAttempts,
+                    maxAttempts,
+                });
+            }
             throw error;
         }
     }

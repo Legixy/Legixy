@@ -74,10 +74,10 @@ export declare class AiOrchestratorController {
             riskFindings: {
                 id: string;
                 createdAt: Date;
-                title: string;
-                analysisId: string;
-                severity: import("../../../generated/prisma/enums").RiskLevel;
                 clause: string;
+                severity: import("../../../generated/prisma/enums").RiskLevel;
+                analysisId: string;
+                title: string;
                 impact: string;
                 suggestion: string;
                 legalRef: string | null;
@@ -85,10 +85,9 @@ export declare class AiOrchestratorController {
             }[];
         } & {
             id: string;
-            createdAt: Date;
-            status: import("../../../generated/prisma/enums").AnalysisStatus;
             contractId: string;
             type: import("../../../generated/prisma/enums").AnalysisType;
+            status: import("../../../generated/prisma/enums").AnalysisStatus;
             tokensUsed: number;
             modelUsed: string | null;
             processingMs: number | null;
@@ -96,16 +95,16 @@ export declare class AiOrchestratorController {
             retryCount: number;
             startedAt: Date | null;
             completedAt: Date | null;
+            createdAt: Date;
         })[];
     }>;
     getSuggestions(user: AuthenticatedUser, contractId: string): Promise<{
         contractId: string;
         suggestions: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             contractId: string;
             type: import("../../../generated/prisma/enums").ClauseType;
+            createdAt: Date;
             section: string | null;
             originalText: string;
             suggestedText: string | null;
@@ -114,6 +113,7 @@ export declare class AiOrchestratorController {
             estimatedImpact: import("@prisma/client-runtime-utils").Decimal | null;
             impactPeriod: string | null;
             isAccepted: boolean;
+            updatedAt: Date;
         }[];
     }>;
     getQueueStats(user: AuthenticatedUser): Promise<{
@@ -158,10 +158,10 @@ export declare class AiOrchestratorController {
         riskFindings: {
             id: string;
             createdAt: Date;
-            title: string;
-            analysisId: string;
-            severity: import("../../../generated/prisma/enums").RiskLevel;
             clause: string;
+            severity: import("../../../generated/prisma/enums").RiskLevel;
+            analysisId: string;
+            title: string;
             impact: string;
             suggestion: string;
             legalRef: string | null;
@@ -170,5 +170,24 @@ export declare class AiOrchestratorController {
     }>;
     cancelAnalysis(user: AuthenticatedUser, analysisId: string): Promise<{
         message: string;
+    }>;
+    adminRetryJob(user: AuthenticatedUser, jobId: string): Promise<{
+        message: string;
+        originalJobId: string;
+        newJobId: string | undefined;
+        contractId: string;
+        status: string;
+    }>;
+    adminGetDLQJobs(user: AuthenticatedUser): Promise<{
+        count: number;
+        jobs: {
+            jobId: string;
+            contractId: string;
+            userId: string;
+            error: string;
+            attempts: number;
+            maxAttempts: number;
+            failedAt: Date;
+        }[];
     }>;
 }

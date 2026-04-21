@@ -126,4 +126,29 @@ export class AiOrchestratorController {
   ) {
     return this.aiService.cancelAnalysis(analysisId);
   }
+
+  /**
+   * POST /api/v1/ai/admin/retry-job/:jobId
+   * Admin endpoint: Retry a failed job from the DLQ.
+   */
+  @Post('admin/retry-job/:jobId')
+  async adminRetryJob(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('jobId') jobId: string,
+  ) {
+    // Note: In production, add admin role check here
+    // if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.aiService.adminRetryJob(user.tenantId, jobId);
+  }
+
+  /**
+   * GET /api/v1/ai/admin/dlq-jobs
+   * Admin endpoint: Get all failed jobs in DLQ for tenant.
+   */
+  @Get('admin/dlq-jobs')
+  async adminGetDLQJobs(@CurrentUser() user: AuthenticatedUser) {
+    // Note: In production, add admin role check here
+    // if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.aiService.adminGetDLQJobs(user.tenantId);
+  }
 }

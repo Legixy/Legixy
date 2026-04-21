@@ -6,6 +6,8 @@
  * - Clause fix job management
  * - Exponential backoff retry
  * - Concurrency control
+ * - Backpressure enforcement (max active jobs per tenant)
+ * - Priority-based job scheduling
  *
  * Architecture:
  * Client → API → Queue → Redis → Worker
@@ -13,6 +15,7 @@
 
 import { Queue, Worker } from 'bullmq';
 import { Logger } from '@nestjs/common';
+import { Redis } from 'ioredis';
 
 export interface AnalysisJobData {
   analysisId: string;
@@ -31,6 +34,12 @@ export interface ClauseFixJobData {
   riskFindingId: string;
   content: string;
   riskDescription: string;
+}
+
+export enum JobPriority {
+  HIGH = 1,    // Urgent, jumps queue (BUSINESS plan users, admin retries)
+  NORMAL = 2,  // Default, standard queue
+  LOW = 3,     // Background, deferred during high load
 }
 
 /**
@@ -123,11 +132,18 @@ export function createClauseFixQueue(
 export async function addAnalysisJob(
   queue: Queue,
   data: AnalysisJobData,
-  priority?: number,
+  priority: JobPriority = JobPriority.NORMAL,
 ): Promise<string> {
   const job = await queue.add('analyze-contract', data, {
-    priority, // higher = earlier
+    priority: priority as number,
     jobId: `analysis-${data.analysisId}`, // idempotency
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 5000,
+    },
+    removeOnComplete: { age: 100 },
+    removeOnFail: { age: 50 },
   });
   return job.id || '';
 }
@@ -135,11 +151,18 @@ export async function addAnalysisJob(
 export async function addClauseFixJob(
   queue: Queue,
   data: ClauseFixJobData,
-  priority?: number,
+  priority: JobPriority = JobPriority.NORMAL,
 ): Promise<string> {
   const job = await queue.add('generate-clause-fix', data, {
-    priority,
+    priority: priority as number,
     jobId: `fix-${data.analysisId}`,
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 5000,
+    },
+    removeOnComplete: { age: 100 },
+    removeOnFail: { age: 50 },
   });
   return job.id || '';
 }

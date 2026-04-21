@@ -51,6 +51,12 @@ let AiOrchestratorController = class AiOrchestratorController {
     async cancelAnalysis(user, analysisId) {
         return this.aiService.cancelAnalysis(analysisId);
     }
+    async adminRetryJob(user, jobId) {
+        return this.aiService.adminRetryJob(user.tenantId, jobId);
+    }
+    async adminGetDLQJobs(user) {
+        return this.aiService.adminGetDLQJobs(user.tenantId);
+    }
 };
 exports.AiOrchestratorController = AiOrchestratorController;
 __decorate([
@@ -131,6 +137,21 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], AiOrchestratorController.prototype, "cancelAnalysis", null);
+__decorate([
+    (0, common_1.Post)('admin/retry-job/:jobId'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('jobId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], AiOrchestratorController.prototype, "adminRetryJob", null);
+__decorate([
+    (0, common_1.Get)('admin/dlq-jobs'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AiOrchestratorController.prototype, "adminGetDLQJobs", null);
 exports.AiOrchestratorController = AiOrchestratorController = __decorate([
     (0, common_1.Controller)('ai'),
     __metadata("design:paramtypes", [ai_orchestrator_service_1.AiOrchestratorService])

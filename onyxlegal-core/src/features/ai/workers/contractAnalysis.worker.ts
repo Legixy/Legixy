@@ -21,6 +21,8 @@ import { AnalysisJobData } from '../queues/analysisQueue';
 import { AIEngine } from '../services/aiEngine';
 import { PrismaService } from '../../../database/prisma.service';
 import { AnalysisStatus } from 'generated/prisma/client';
+import { addToDLQ } from '../queues/deadLetterQueue';
+import { Queue } from 'bullmq';
 
 export class ContractAnalysisWorker {
   private logger = new Logger('ContractAnalysisWorker');
@@ -28,15 +30,18 @@ export class ContractAnalysisWorker {
   private aiEngine: AIEngine;
   private prisma: PrismaService;
   private websocketGateway: any; // injected later
+  private dlqQueue: Queue; // Dead Letter Queue
 
   constructor(
     redisConnection: any,
     aiEngine: AIEngine,
     prisma: PrismaService,
+    dlqQueue: Queue,
     concurrency: number = 5,
   ) {
     this.aiEngine = aiEngine;
     this.prisma = prisma;
+    this.dlqQueue = dlqQueue;
 
     this.worker = new Worker('contract-analysis', this.processorFn.bind(this), {
       connection: redisConnection,
@@ -149,6 +154,10 @@ export class ContractAnalysisWorker {
         error,
       );
 
+      // Increment retry count
+      const currentAttempts = (job.attemptsMade || 0) + 1;
+      const maxAttempts = job.opts?.attempts || 3;
+
       // Update analysis status to FAILED
       await this.prisma.aIAnalysis.update({
         where: { id: analysisId },
@@ -161,15 +170,49 @@ export class ContractAnalysisWorker {
         },
       });
 
-      // Emit WebSocket event: analysis failed
-      this.emitEvent(tenantId, 'analysis_failed', {
-        contractId,
-        analysisId,
-        status: 'FAILED',
-        error: errorMessage,
-      });
+      // If max retries exceeded, add to DLQ
+      if (currentAttempts >= maxAttempts) {
+        this.logger.warn(
+          `[Job ${job.id}] Max retries (${maxAttempts}) exceeded. Adding to DLQ.`,
+        );
+        
+        await addToDLQ(
+          this.dlqQueue,
+          job.id || '',
+          contractId,
+          tenantId,
+          data.userId,
+          data,
+          error instanceof Error ? error : new Error(errorMessage),
+          currentAttempts,
+          maxAttempts,
+          {
+            analysisId,
+            contentLength: content.length,
+          },
+        );
 
-      // Re-throw to trigger job retry
+        // Emit final failure event
+        this.emitEvent(tenantId, 'analysis_failed_permanent', {
+          contractId,
+          analysisId,
+          status: 'FAILED_PERMANENT',
+          error: errorMessage,
+          message: 'Job moved to dead letter queue. Admin intervention required.',
+        });
+      } else {
+        // Emit retry event (will be retried by BullMQ)
+        this.emitEvent(tenantId, 'analysis_failed', {
+          contractId,
+          analysisId,
+          status: 'FAILED',
+          error: errorMessage,
+          attempt: currentAttempts,
+          maxAttempts,
+        });
+      }
+
+      // Re-throw to trigger job retry (unless max retries exceeded)
       throw error;
     }
   }

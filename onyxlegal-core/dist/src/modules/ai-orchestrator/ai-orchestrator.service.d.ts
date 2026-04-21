@@ -4,9 +4,10 @@ import { AnalysisStatus, AnalysisType } from 'generated/prisma/client';
 export declare class AiOrchestratorService {
     private readonly prisma;
     private readonly analysisQueue;
+    private readonly dlqQueue;
     private readonly logger;
     private readonly aiEngine;
-    constructor(prisma: PrismaService, analysisQueue: Queue);
+    constructor(prisma: PrismaService, analysisQueue: Queue, dlqQueue: Queue);
     triggerAnalysis(tenantId: string, contractId: string): Promise<{
         message: string;
         analysisId: string;
@@ -69,10 +70,10 @@ export declare class AiOrchestratorService {
             riskFindings: {
                 id: string;
                 createdAt: Date;
-                title: string;
-                analysisId: string;
-                severity: import("generated/prisma/client").RiskLevel;
                 clause: string;
+                severity: import("generated/prisma/client").RiskLevel;
+                analysisId: string;
+                title: string;
                 impact: string;
                 suggestion: string;
                 legalRef: string | null;
@@ -80,10 +81,9 @@ export declare class AiOrchestratorService {
             }[];
         } & {
             id: string;
-            createdAt: Date;
-            status: AnalysisStatus;
             contractId: string;
             type: AnalysisType;
+            status: AnalysisStatus;
             tokensUsed: number;
             modelUsed: string | null;
             processingMs: number | null;
@@ -91,16 +91,16 @@ export declare class AiOrchestratorService {
             retryCount: number;
             startedAt: Date | null;
             completedAt: Date | null;
+            createdAt: Date;
         })[];
     }>;
     getSuggestions(tenantId: string, contractId: string): Promise<{
         contractId: string;
         suggestions: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             contractId: string;
             type: import("generated/prisma/client").ClauseType;
+            createdAt: Date;
             section: string | null;
             originalText: string;
             suggestedText: string | null;
@@ -109,6 +109,7 @@ export declare class AiOrchestratorService {
             estimatedImpact: import("@prisma/client-runtime-utils").Decimal | null;
             impactPeriod: string | null;
             isAccepted: boolean;
+            updatedAt: Date;
         }[];
     }>;
     getQueueStats(): Promise<{
@@ -153,10 +154,10 @@ export declare class AiOrchestratorService {
         riskFindings: {
             id: string;
             createdAt: Date;
-            title: string;
-            analysisId: string;
-            severity: import("generated/prisma/client").RiskLevel;
             clause: string;
+            severity: import("generated/prisma/client").RiskLevel;
+            analysisId: string;
+            title: string;
             impact: string;
             suggestion: string;
             legalRef: string | null;
@@ -165,5 +166,24 @@ export declare class AiOrchestratorService {
     }>;
     cancelAnalysis(analysisId: string): Promise<{
         message: string;
+    }>;
+    adminRetryJob(tenantId: string, jobId: string): Promise<{
+        message: string;
+        originalJobId: string;
+        newJobId: string | undefined;
+        contractId: string;
+        status: string;
+    }>;
+    adminGetDLQJobs(tenantId: string): Promise<{
+        count: number;
+        jobs: {
+            jobId: string;
+            contractId: string;
+            userId: string;
+            error: string;
+            attempts: number;
+            maxAttempts: number;
+            failedAt: Date;
+        }[];
     }>;
 }

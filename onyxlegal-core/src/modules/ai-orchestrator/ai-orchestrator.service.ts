@@ -1,9 +1,10 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '../../database/prisma.service';
 import { AnalysisStatus, AnalysisType } from 'generated/prisma/client';
 import { AIEngine } from '../../features/ai/services/aiEngine';
+import { getDLQEntries, removeFromDLQ } from '../../features/ai/queues/deadLetterQueue';
 
 @Injectable()
 export class AiOrchestratorService {
@@ -13,6 +14,7 @@ export class AiOrchestratorService {
   constructor(
     private readonly prisma: PrismaService,
     @InjectQueue('contract-analysis') private readonly analysisQueue: Queue,
+    @InjectQueue('contract-analysis-dlq') private readonly dlqQueue: Queue,
   ) {
     this.aiEngine = new AIEngine();
   }
@@ -350,4 +352,102 @@ export class AiOrchestratorService {
 
     return { message: 'Analysis cancelled successfully' };
   }
+
+  /**
+   * Admin endpoint: Retry a failed job from the DLQ.
+   * Fetches the job from DLQ, re-adds it to the main queue, and removes it from DLQ.
+   */
+  async adminRetryJob(tenantId: string, jobId: string) {
+    this.logger.log(`[Admin] Retrying job ${jobId} from DLQ for tenant ${tenantId}`);
+
+    // Get all DLQ entries for this tenant to verify authorization
+    const dlqEntries = await getDLQEntries(this.dlqQueue, tenantId);
+    const dlqEntry = dlqEntries.find((entry) => entry.jobId === jobId);
+
+    if (!dlqEntry) {
+      throw new BadRequestException(
+        `Job ${jobId} not found in DLQ for this tenant`,
+      );
+    }
+
+    try {
+      // Re-add job to the main queue with fresh attempts
+      const requeuedJob = await this.analysisQueue.add(
+        'analyze-contract',
+        dlqEntry.originalData,
+        {
+          jobId: `${dlqEntry.contractId}-${Date.now()}`, // Fresh job ID
+          attempts: 3, // Reset attempts
+          backoff: {
+            type: 'exponential',
+            delay: 2000,
+          },
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      );
+
+      this.logger.log(
+        `[Admin] Job ${jobId} re-queued with new ID ${requeuedJob.id}`,
+      );
+
+      // Update AIAnalysis record
+      await this.prisma.aIAnalysis.update({
+        where: { id: dlqEntry.originalData.analysisId },
+        data: {
+          status: AnalysisStatus.QUEUED,
+          retryCount: 0, // Reset retry counter
+          errorMessage: null,
+        },
+      });
+
+      // Remove from DLQ
+      await removeFromDLQ(this.dlqQueue, jobId);
+      this.logger.log(`[Admin] Job ${jobId} removed from DLQ`);
+
+      return {
+        message: 'Job successfully re-queued',
+        originalJobId: jobId,
+        newJobId: requeuedJob.id,
+        contractId: dlqEntry.contractId,
+        status: 'REQUEUED',
+      };
+    } catch (error) {
+      this.logger.error(
+        `[Admin] Failed to retry job ${jobId}: ${error instanceof Error ? error.message : String(error)}`,
+        error,
+      );
+      throw new BadRequestException(
+        `Failed to retry job: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  /**
+   * Admin endpoint: Get all failed jobs in DLQ for current tenant.
+   */
+  async adminGetDLQJobs(tenantId: string) {
+    try {
+      const dlqEntries = await getDLQEntries(this.dlqQueue, tenantId);
+      return {
+        count: dlqEntries.length,
+        jobs: dlqEntries.map((entry) => ({
+          jobId: entry.jobId,
+          contractId: entry.contractId,
+          userId: entry.userId,
+          error: entry.error.message,
+          attempts: entry.attempts,
+          maxAttempts: entry.maxAttempts,
+          failedAt: entry.failedAt,
+        })),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to get DLQ jobs: ${error instanceof Error ? error.message : String(error)}`,
+        error,
+      );
+      throw new BadRequestException('Failed to fetch DLQ entries');
+    }
+  }
 }
+

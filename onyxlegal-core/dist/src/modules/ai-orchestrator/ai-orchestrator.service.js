@@ -20,14 +20,17 @@ const bullmq_2 = require("bullmq");
 const prisma_service_1 = require("../../database/prisma.service");
 const client_1 = require("../../../generated/prisma/client");
 const aiEngine_1 = require("../../features/ai/services/aiEngine");
+const deadLetterQueue_1 = require("../../features/ai/queues/deadLetterQueue");
 let AiOrchestratorService = AiOrchestratorService_1 = class AiOrchestratorService {
     prisma;
     analysisQueue;
+    dlqQueue;
     logger = new common_1.Logger(AiOrchestratorService_1.name);
     aiEngine;
-    constructor(prisma, analysisQueue) {
+    constructor(prisma, analysisQueue, dlqQueue) {
         this.prisma = prisma;
         this.analysisQueue = analysisQueue;
+        this.dlqQueue = dlqQueue;
         this.aiEngine = new aiEngine_1.AIEngine();
     }
     async triggerAnalysis(tenantId, contractId) {
@@ -264,12 +267,77 @@ let AiOrchestratorService = AiOrchestratorService_1 = class AiOrchestratorServic
         });
         return { message: 'Analysis cancelled successfully' };
     }
+    async adminRetryJob(tenantId, jobId) {
+        this.logger.log(`[Admin] Retrying job ${jobId} from DLQ for tenant ${tenantId}`);
+        const dlqEntries = await (0, deadLetterQueue_1.getDLQEntries)(this.dlqQueue, tenantId);
+        const dlqEntry = dlqEntries.find((entry) => entry.jobId === jobId);
+        if (!dlqEntry) {
+            throw new common_1.BadRequestException(`Job ${jobId} not found in DLQ for this tenant`);
+        }
+        try {
+            const requeuedJob = await this.analysisQueue.add('analyze-contract', dlqEntry.originalData, {
+                jobId: `${dlqEntry.contractId}-${Date.now()}`,
+                attempts: 3,
+                backoff: {
+                    type: 'exponential',
+                    delay: 2000,
+                },
+                removeOnComplete: true,
+                removeOnFail: false,
+            });
+            this.logger.log(`[Admin] Job ${jobId} re-queued with new ID ${requeuedJob.id}`);
+            await this.prisma.aIAnalysis.update({
+                where: { id: dlqEntry.originalData.analysisId },
+                data: {
+                    status: client_1.AnalysisStatus.QUEUED,
+                    retryCount: 0,
+                    errorMessage: null,
+                },
+            });
+            await (0, deadLetterQueue_1.removeFromDLQ)(this.dlqQueue, jobId);
+            this.logger.log(`[Admin] Job ${jobId} removed from DLQ`);
+            return {
+                message: 'Job successfully re-queued',
+                originalJobId: jobId,
+                newJobId: requeuedJob.id,
+                contractId: dlqEntry.contractId,
+                status: 'REQUEUED',
+            };
+        }
+        catch (error) {
+            this.logger.error(`[Admin] Failed to retry job ${jobId}: ${error instanceof Error ? error.message : String(error)}`, error);
+            throw new common_1.BadRequestException(`Failed to retry job: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
+    async adminGetDLQJobs(tenantId) {
+        try {
+            const dlqEntries = await (0, deadLetterQueue_1.getDLQEntries)(this.dlqQueue, tenantId);
+            return {
+                count: dlqEntries.length,
+                jobs: dlqEntries.map((entry) => ({
+                    jobId: entry.jobId,
+                    contractId: entry.contractId,
+                    userId: entry.userId,
+                    error: entry.error.message,
+                    attempts: entry.attempts,
+                    maxAttempts: entry.maxAttempts,
+                    failedAt: entry.failedAt,
+                })),
+            };
+        }
+        catch (error) {
+            this.logger.error(`Failed to get DLQ jobs: ${error instanceof Error ? error.message : String(error)}`, error);
+            throw new common_1.BadRequestException('Failed to fetch DLQ entries');
+        }
+    }
 };
 exports.AiOrchestratorService = AiOrchestratorService;
 exports.AiOrchestratorService = AiOrchestratorService = AiOrchestratorService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(1, (0, bullmq_1.InjectQueue)('contract-analysis')),
+    __param(2, (0, bullmq_1.InjectQueue)('contract-analysis-dlq')),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        bullmq_2.Queue,
         bullmq_2.Queue])
 ], AiOrchestratorService);
 //# sourceMappingURL=ai-orchestrator.service.js.map
