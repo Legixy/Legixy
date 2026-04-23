@@ -20,6 +20,9 @@ exports.AiOrchestratorModule = AiOrchestratorModule = __decorate([
             bullmq_1.BullModule.registerQueue({
                 name: 'contract-analysis',
             }),
+            bullmq_1.BullModule.registerQueue({
+                name: 'contract-analysis-dlq',
+            }),
         ],
         controllers: [ai_orchestrator_controller_1.AiOrchestratorController],
         providers: [ai_orchestrator_service_1.AiOrchestratorService],

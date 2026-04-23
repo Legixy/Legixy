@@ -24,7 +24,7 @@ export const createContractAnalysisWorker = () => {
       try {
         await prisma.aIAnalysis.update({
           where: { id: analysisId },
-          data: { status: 'IN_PROGRESS' as any }
+          data: { status: 'PROCESSING' as any }
         });
 
         const contract = await prisma.contract.findUnique({

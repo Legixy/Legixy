@@ -133,3 +133,123 @@ export function useAcceptClauseFix() {
     },
   });
 }
+
+// ── Action Panel Hooks ──────────────────────────────────────
+
+export const actionPanelKeys = {
+  all: ['action-panel'] as const,
+  panel: (contractId: string) => [...actionPanelKeys.all, 'panel', contractId] as const,
+  progress: (contractId: string) => [...actionPanelKeys.all, 'progress', contractId] as const,
+};
+
+/**
+ * Fetch the full action panel data for a contract
+ */
+export function useContractActionPanel(contractId: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: actionPanelKeys.panel(contractId),
+    queryFn: () => contracts.getActionPanel(contractId),
+    enabled: options?.enabled !== false && !!contractId,
+    staleTime: 10000,
+  });
+}
+
+/**
+ * Apply a single AI fix to a clause (optimistic UI)
+ */
+export function useApplyFix() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    import('@/lib/api').FixResult & { newRiskScore: number },
+    ApiError,
+    { contractId: string; clauseId: string },
+    { previousPanelData: unknown; previousDetailData: unknown }
+  >({
+    mutationFn: ({ contractId, clauseId }) =>
+      contracts.fixClause(contractId, clauseId),
+    onMutate: async ({ contractId }) => {
+      await queryClient.cancelQueries({ queryKey: actionPanelKeys.panel(contractId) });
+      await queryClient.cancelQueries({ queryKey: contractsKeys.detail(contractId) });
+
+      const previousPanelData = queryClient.getQueryData(actionPanelKeys.panel(contractId));
+      const previousDetailData = queryClient.getQueryData(contractsKeys.detail(contractId));
+
+      return { previousPanelData, previousDetailData };
+    },
+    onError: (error: ApiError, { contractId }, context) => {
+      if (context?.previousPanelData) {
+        queryClient.setQueryData(actionPanelKeys.panel(contractId), context.previousPanelData);
+      }
+      if (context?.previousDetailData) {
+        queryClient.setQueryData(contractsKeys.detail(contractId), context.previousDetailData);
+      }
+      toast.error(error.message || 'Failed to apply fix. Reverting changes.');
+    },
+    onSettled: (data, error, { contractId }) => {
+      queryClient.invalidateQueries({ queryKey: actionPanelKeys.panel(contractId) });
+      queryClient.invalidateQueries({ queryKey: contractsKeys.detail(contractId) });
+    },
+    onSuccess: (result) => {
+      toast.success('Fix applied successfully', {
+        description: `Risk reduced by ${result.estimatedImpactReduction}%`,
+      });
+    },
+  });
+}
+
+/**
+ * Apply all fixes at once (bulk operation)
+ */
+export function useApplyBulkFixes() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    import('@/lib/api').BulkFixResult, 
+    ApiError, 
+    { contractId: string; riskLevels?: string[] },
+    { previousPanelData: unknown; previousDetailData: unknown }
+  >({
+    mutationFn: ({ contractId, riskLevels }) =>
+      contracts.fixAll(contractId, riskLevels),
+    onMutate: async ({ contractId }) => {
+      await queryClient.cancelQueries({ queryKey: actionPanelKeys.panel(contractId) });
+      await queryClient.cancelQueries({ queryKey: contractsKeys.detail(contractId) });
+
+      const previousPanelData = queryClient.getQueryData(actionPanelKeys.panel(contractId));
+      const previousDetailData = queryClient.getQueryData(contractsKeys.detail(contractId));
+
+      return { previousPanelData, previousDetailData };
+    },
+    onError: (error: ApiError, { contractId }, context) => {
+      if (context?.previousPanelData) {
+        queryClient.setQueryData(actionPanelKeys.panel(contractId), context.previousPanelData);
+      }
+      if (context?.previousDetailData) {
+        queryClient.setQueryData(contractsKeys.detail(contractId), context.previousDetailData);
+      }
+      toast.error(error.message || 'Failed to apply bulk fixes. Reverting changes.');
+    },
+    onSettled: (data, error, { contractId }) => {
+      queryClient.invalidateQueries({ queryKey: actionPanelKeys.panel(contractId) });
+      queryClient.invalidateQueries({ queryKey: contractsKeys.detail(contractId) });
+      queryClient.invalidateQueries({ queryKey: contractsKeys.lists() });
+    },
+    onSuccess: () => {
+      toast.success('All issues fixed! 🎉');
+    },
+  });
+}
+
+/**
+ * Fetch fix progress for a contract
+ */
+export function useContractProgress(contractId: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: actionPanelKeys.progress(contractId),
+    queryFn: () => contracts.getProgress(contractId),
+    enabled: options?.enabled !== false && !!contractId,
+    refetchInterval: 5000,
+  });
+}
+

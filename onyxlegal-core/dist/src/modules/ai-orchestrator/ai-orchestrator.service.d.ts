@@ -70,10 +70,10 @@ export declare class AiOrchestratorService {
             riskFindings: {
                 id: string;
                 createdAt: Date;
-                clause: string;
-                severity: import("generated/prisma/client").RiskLevel;
-                analysisId: string;
                 title: string;
+                clause: string;
+                analysisId: string;
+                severity: import("generated/prisma/client").RiskLevel;
                 impact: string;
                 suggestion: string;
                 legalRef: string | null;
@@ -81,9 +81,10 @@ export declare class AiOrchestratorService {
             }[];
         } & {
             id: string;
+            createdAt: Date;
+            status: AnalysisStatus;
             contractId: string;
             type: AnalysisType;
-            status: AnalysisStatus;
             tokensUsed: number;
             modelUsed: string | null;
             processingMs: number | null;
@@ -91,16 +92,16 @@ export declare class AiOrchestratorService {
             retryCount: number;
             startedAt: Date | null;
             completedAt: Date | null;
-            createdAt: Date;
         })[];
     }>;
     getSuggestions(tenantId: string, contractId: string): Promise<{
         contractId: string;
         suggestions: {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             contractId: string;
             type: import("generated/prisma/client").ClauseType;
-            createdAt: Date;
             section: string | null;
             originalText: string;
             suggestedText: string | null;
@@ -109,7 +110,6 @@ export declare class AiOrchestratorService {
             estimatedImpact: import("@prisma/client-runtime-utils").Decimal | null;
             impactPeriod: string | null;
             isAccepted: boolean;
-            updatedAt: Date;
         }[];
     }>;
     getQueueStats(): Promise<{
@@ -154,10 +154,10 @@ export declare class AiOrchestratorService {
         riskFindings: {
             id: string;
             createdAt: Date;
-            clause: string;
-            severity: import("generated/prisma/client").RiskLevel;
-            analysisId: string;
             title: string;
+            clause: string;
+            analysisId: string;
+            severity: import("generated/prisma/client").RiskLevel;
             impact: string;
             suggestion: string;
             legalRef: string | null;

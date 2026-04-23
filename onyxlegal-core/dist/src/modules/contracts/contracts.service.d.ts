@@ -44,9 +44,6 @@ export declare class ContractsService {
                 name: string;
                 category: import("generated/prisma/client").TemplateCategory;
             } | null;
-            _count: {
-                analyses: number;
-            };
             createdBy: {
                 id: string;
                 name: string | null;
@@ -57,6 +54,9 @@ export declare class ContractsService {
                 type: import("generated/prisma/client").ClauseType;
                 riskLevel: import("generated/prisma/client").RiskLevel;
             }[];
+            _count: {
+                analyses: number;
+            };
         } & {
             id: string;
             createdAt: Date;
@@ -98,8 +98,8 @@ export declare class ContractsService {
         versions: {
             id: string;
             createdAt: Date;
-            version: number;
             changeNote: string | null;
+            version: number;
             changedBy: string;
         }[];
         clauses: {
@@ -122,9 +122,9 @@ export declare class ContractsService {
                 id: string;
                 createdAt: Date;
                 title: string;
+                clause: string;
                 analysisId: string;
                 severity: import("generated/prisma/client").RiskLevel;
-                clause: string;
                 impact: string;
                 suggestion: string;
                 legalRef: string | null;

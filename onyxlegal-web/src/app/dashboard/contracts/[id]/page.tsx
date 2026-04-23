@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useContractById } from '@/shared/api';
-import { Loader2, AlertCircle, ArrowLeft, Eye, Download, Share2, Sparkles } from 'lucide-react';
+import { Loader2, AlertCircle, ArrowLeft, Eye, Download, Share2, Sparkles, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function ContractDetailPage() {
@@ -113,20 +113,33 @@ export default function ContractDetailPage() {
             </div>
 
             {/* Parties */}
-            {contract.parties && contract.parties.length > 0 && (
-              <div className="bg-white rounded-xl p-6 border border-slate-200">
-                <h2 className="text-sm font-semibold text-slate-900 mb-4">Parties</h2>
-                <div className="space-y-3">
-                  {(contract.parties as any[]).map((party, idx) => (
-                    <div key={idx} className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                      <p className="text-sm font-semibold text-slate-900">{party.name}</p>
-                      <p className="text-xs text-slate-500 mt-1">Role: {party.role}</p>
-                      {party.email && <p className="text-xs text-slate-500">{party.email}</p>}
-                    </div>
-                  ))}
+            {(() => {
+              let parties = [];
+              try {
+                parties = typeof contract.parties === 'string' 
+                  ? JSON.parse(contract.parties) 
+                  : (contract.parties || []);
+              } catch (e) {
+                parties = [];
+              }
+              
+              if (!parties.length) return null;
+
+              return (
+                <div className="bg-white rounded-xl p-6 border border-slate-200">
+                  <h2 className="text-sm font-semibold text-slate-900 mb-4">Parties</h2>
+                  <div className="space-y-3">
+                    {parties.map((party: any, idx: number) => (
+                      <div key={idx} className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                        <p className="text-sm font-semibold text-slate-900">{party.name}</p>
+                        <p className="text-xs text-slate-500 mt-1">Role: {party.role}</p>
+                        {party.email && <p className="text-xs text-slate-500">{party.email}</p>}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
           </div>
 
@@ -144,6 +157,19 @@ export default function ContractDetailPage() {
             >
               <Sparkles size={16} className="text-indigo-200" />
               Analyze with AI
+            </Button>
+
+            {/* Review & Fix Risks Button */}
+            <Button
+              onClick={() => router.push(`/dashboard/contracts/${contractId}/actions`)}
+              className="w-full text-white gap-2 h-10 rounded-xl text-sm font-semibold"
+              style={{
+                background: 'linear-gradient(135deg, #10B981, #059669)',
+                boxShadow: '0 4px 16px rgba(16, 185, 129, 0.25)',
+              }}
+            >
+              <ShieldCheck size={16} className="text-emerald-200" />
+              Review & Fix Risks
             </Button>
 
             {/* Risk Score Card */}

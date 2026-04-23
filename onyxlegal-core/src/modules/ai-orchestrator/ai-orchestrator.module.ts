@@ -8,6 +8,9 @@ import { AiOrchestratorService } from './ai-orchestrator.service';
     BullModule.registerQueue({
       name: 'contract-analysis',
     }),
+    BullModule.registerQueue({
+      name: 'contract-analysis-dlq',
+    }),
   ],
   controllers: [AiOrchestratorController],
   providers: [AiOrchestratorService],

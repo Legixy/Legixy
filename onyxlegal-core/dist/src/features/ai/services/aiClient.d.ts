@@ -11,12 +11,13 @@ interface AICallResult {
 }
 export declare class AIClient {
     private readonly logger;
-    private readonly openai;
+    private openai;
     private readonly timeout;
     private readonly maxRetries;
     private readonly initialBackoffMs;
     private tokenStats;
     constructor();
+    private getClient;
     callLLM(systemPrompt: string, userPrompt: string, model?: 'gpt-4o-mini' | 'gpt-4o'): Promise<AICallResult>;
     private executeCallWithTimeout;
     private delay;

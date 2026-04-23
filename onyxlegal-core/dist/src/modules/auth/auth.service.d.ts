@@ -24,9 +24,9 @@ export declare class AuthService {
         };
         tenant: {
             id: string;
+            domain: string | null;
             name: string;
             plan: Plan;
-            domain: string | null;
             aiTokensUsed: number;
             aiTokenLimit: number;
             billingCycleStart: Date;

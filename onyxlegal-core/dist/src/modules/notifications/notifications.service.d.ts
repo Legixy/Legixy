@@ -8,20 +8,20 @@ export declare class NotificationsService {
         createdAt: Date;
         title: string;
         type: NotificationType;
-        userId: string;
         body: string;
         read: boolean;
         actionUrl: string | null;
+        userId: string;
     }[]>;
     markRead(userId: string, notifId: string): Promise<{
         id: string;
         createdAt: Date;
         title: string;
         type: NotificationType;
-        userId: string;
         body: string;
         read: boolean;
         actionUrl: string | null;
+        userId: string;
     }>;
     markAllRead(userId: string): Promise<{
         updated: number;
@@ -34,9 +34,9 @@ export declare class NotificationsService {
         createdAt: Date;
         title: string;
         type: NotificationType;
-        userId: string;
         body: string;
         read: boolean;
         actionUrl: string | null;
+        userId: string;
     }>;
 }

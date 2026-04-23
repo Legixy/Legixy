@@ -42,9 +42,6 @@ export declare class ContractsController {
                 name: string;
                 category: import("../../../generated/prisma/enums").TemplateCategory;
             } | null;
-            _count: {
-                analyses: number;
-            };
             createdBy: {
                 id: string;
                 name: string | null;
@@ -55,6 +52,9 @@ export declare class ContractsController {
                 type: import("../../../generated/prisma/enums").ClauseType;
                 riskLevel: import("../../../generated/prisma/enums").RiskLevel;
             }[];
+            _count: {
+                analyses: number;
+            };
         } & {
             id: string;
             createdAt: Date;
@@ -103,8 +103,8 @@ export declare class ContractsController {
         versions: {
             id: string;
             createdAt: Date;
-            version: number;
             changeNote: string | null;
+            version: number;
             changedBy: string;
         }[];
         clauses: {
@@ -127,9 +127,9 @@ export declare class ContractsController {
                 id: string;
                 createdAt: Date;
                 title: string;
+                clause: string;
                 analysisId: string;
                 severity: import("../../../generated/prisma/enums").RiskLevel;
-                clause: string;
                 impact: string;
                 suggestion: string;
                 legalRef: string | null;

@@ -168,7 +168,97 @@ export const contracts = {
 
   acceptFix: (contractId: string, clauseId: string) =>
     request(`/contracts/${contractId}/clauses/${clauseId}/accept-fix`, { method: 'POST' }),
+
+  // ── Action Panel APIs ──────────────────────────────────────
+  getActionPanel: (contractId: string) =>
+    request<ContractActionResponse>(`/contracts/${contractId}/action-panel`),
+
+  fixClause: (contractId: string, clauseId: string) =>
+    request<FixResult & { newRiskScore: number }>(`/contracts/${contractId}/fix-clause/${clauseId}`, { method: 'POST' }),
+
+  fixAll: (contractId: string, riskLevels?: string[]) =>
+    request<BulkFixResult>(`/contracts/${contractId}/fix-all`, {
+      method: 'POST',
+      body: JSON.stringify(riskLevels ? { riskLevels } : {}),
+    }),
+
+  getProgress: (contractId: string) =>
+    request<ContractProgress>(`/contracts/${contractId}/progress`),
 };
+
+// ── Action Panel Types ──────────────────────────────────────
+export interface SimpleRisk {
+  level: string;
+  emoji: string;
+  headline: string;
+  explanation: string;
+  businessImpact: string;
+  recommendedAction: string;
+  severity: 'ignore' | 'fix' | 'fixAsap' | 'dealbreaker';
+}
+
+export interface RiskSummary {
+  totalRisks: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  safe: number;
+  overallSeverity: 'clean' | 'minor' | 'significant' | 'severe' | 'critical';
+  topThreats: SimpleRisk[];
+  fixableSoonCount: number;
+  needsLawyerReviewCount: number;
+}
+
+export interface FixResult {
+  success: boolean;
+  clauseId: string;
+  originalText: string;
+  fixedText: string;
+  changeType: 'improvement' | 'mitigation' | 'removal';
+  estimatedImpactReduction: number;
+}
+
+export interface BulkFixResult {
+  contractId: string;
+  totalClauses: number;
+  appliedFixes: number;
+  skippedClauses: number;
+  riskReductionPercent: number;
+  estimatedSavings: number;
+  results: FixResult[];
+  versionNumber: number;
+}
+
+export interface ContractActionResponse {
+  contractId: string;
+  title: string;
+  status: string;
+  riskScore: number;
+  riskSummary: RiskSummary;
+  progress: {
+    pendingFixes: number;
+    fixedCount: number;
+    progressPercent: number;
+  };
+  actionItems: Array<{
+    id: string;
+    severity: string;
+    action: string;
+    estimatedTime: string;
+  }>;
+}
+
+export interface ContractProgress {
+  contractId: string;
+  totalClauses: number;
+  fixedClauses: number;
+  pendingFixes: number;
+  criticalPending: number;
+  progressPercent: number;
+  fixingComplete: boolean;
+  readyForReview: boolean;
+}
 
 // ── Templates ───────────────────────────────────────────────
 export interface Template {

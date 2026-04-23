@@ -14,7 +14,7 @@ const common_1 = require("@nestjs/common");
 const openai_1 = require("openai");
 let AIClient = class AIClient {
     logger = new common_1.Logger('AIClient');
-    openai;
+    openai = null;
     timeout = 10000;
     maxRetries = 3;
     initialBackoffMs = 1000;
@@ -26,11 +26,24 @@ let AIClient = class AIClient {
     };
     constructor() {
         const apiKey = process.env.OPENAI_API_KEY;
-        if (!apiKey) {
-            this.logger.error('OPENAI_API_KEY not set');
-            throw new Error('OPENAI_API_KEY environment variable is not set');
+        if (!apiKey || apiKey.startsWith('sk-your')) {
+            this.logger.warn('OPENAI_API_KEY not set — AI features will be unavailable until configured');
         }
-        this.openai = new openai_1.default({ apiKey });
+        else {
+            this.openai = new openai_1.default({ apiKey });
+        }
+    }
+    getClient() {
+        if (!this.openai) {
+            const apiKey = process.env.OPENAI_API_KEY;
+            if (apiKey && !apiKey.startsWith('sk-your')) {
+                this.openai = new openai_1.default({ apiKey });
+            }
+            else {
+                throw new Error('OPENAI_API_KEY is not configured. Set it in your .env file to enable AI features.');
+            }
+        }
+        return this.openai;
     }
     async callLLM(systemPrompt, userPrompt, model = 'gpt-4o-mini') {
         const startTime = Date.now();
@@ -80,7 +93,7 @@ let AIClient = class AIClient {
             const timeoutHandle = setTimeout(() => {
                 reject(new Error(`LLM call timeout (${this.timeout}ms exceeded)`));
             }, this.timeout);
-            this.openai.chat.completions
+            this.getClient().chat.completions
                 .create({
                 model,
                 messages: [

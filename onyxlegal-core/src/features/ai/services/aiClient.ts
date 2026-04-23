@@ -17,7 +17,7 @@ interface AICallResult {
 @Injectable()
 export class AIClient {
   private readonly logger = new Logger('AIClient');
-  private readonly openai: OpenAI;
+  private openai: OpenAI | null = null;
   private readonly timeout = 10000; // 10 seconds
   private readonly maxRetries = 3;
   private readonly initialBackoffMs = 1000; // 1 second
@@ -32,12 +32,29 @@ export class AIClient {
 
   constructor() {
     const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      this.logger.error('OPENAI_API_KEY not set');
-      throw new Error('OPENAI_API_KEY environment variable is not set');
+    if (!apiKey || apiKey.startsWith('sk-your')) {
+      this.logger.warn('OPENAI_API_KEY not set — AI features will be unavailable until configured');
+    } else {
+      this.openai = new OpenAI({ apiKey });
     }
+  }
 
-    this.openai = new OpenAI({ apiKey });
+  /**
+   * Get the OpenAI client, throwing if not configured
+   */
+  private getClient(): OpenAI {
+    if (!this.openai) {
+      // Try lazy init in case env was set after startup
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (apiKey && !apiKey.startsWith('sk-your')) {
+        this.openai = new OpenAI({ apiKey });
+      } else {
+        throw new Error(
+          'OPENAI_API_KEY is not configured. Set it in your .env file to enable AI features.',
+        );
+      }
+    }
+    return this.openai;
   }
 
   /**
@@ -126,7 +143,7 @@ export class AIClient {
         reject(new Error(`LLM call timeout (${this.timeout}ms exceeded)`));
       }, this.timeout);
 
-      this.openai.chat.completions
+      this.getClient().chat.completions
         .create({
           model,
           messages: [
