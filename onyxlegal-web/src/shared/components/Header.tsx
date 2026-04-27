@@ -144,7 +144,10 @@ export function Header() {
         <div className="w-px h-6 bg-slate-200/60 mx-1" />
 
         {/* User Avatar */}
-        <button className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-slate-50 transition-all duration-200 group">
+        <button 
+          onClick={() => toast.info('User Profile & Settings', { description: 'Settings menu coming soon.' })}
+          className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-slate-50 transition-all duration-200 group"
+        >
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
             style={{ background: 'var(--onyx-gradient)', boxShadow: '0 2px 8px rgba(79, 70, 229, 0.25)' }}

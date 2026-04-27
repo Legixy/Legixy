@@ -1,122 +1,159 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+function color(score: number) {
+  if (score <= 30) return { bar: '#10B981', glow: 'rgba(16,185,129,0.35)', label: 'Low Risk' };
+  if (score <= 60) return { bar: '#F59E0B', glow: 'rgba(245,158,11,0.35)', label: 'Medium Risk' };
+  return { bar: '#EF4444', glow: 'rgba(239,68,68,0.35)', label: 'High Risk' };
+}
 
 interface Props {
-  /** Risk score before fixes (0–100) */
-  before: number;
-  /** Risk score after fixes (0–100) */
-  after: number;
-  /** Whether fixes have been applied */
+  before: number;   // 0-100
+  after: number;    // 0-100
   showAfter: boolean;
-  /** Label override */
   label?: string;
 }
 
-function getBarColor(score: number): string {
-  if (score <= 30) return '#10B981';
-  if (score <= 60) return '#F59E0B';
-  return '#EF4444';
+function AnimBar({ value, c, delay = 0 }: { value: number; c: ReturnType<typeof color>; delay?: number }) {
+  const [w, setW] = useState(0);
+  const raf = useRef<number>(0);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const start = performance.now();
+      const duration = 900;
+      const animate = (now: number) => {
+        const t = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        setW(Math.round(eased * value));
+        if (t < 1) raf.current = requestAnimationFrame(animate);
+      };
+      raf.current = requestAnimationFrame(animate);
+    }, delay);
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(raf.current);
+    };
+  }, [value, delay]);
+
+  return (
+    <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.04)' }}>
+      <div
+        className="h-full rounded-full"
+        style={{
+          width: `${w}%`,
+          background: `linear-gradient(90deg, ${c.bar}, ${c.bar}CC)`,
+          boxShadow: `0 0 10px ${c.glow}`,
+          transition: 'width 0.06s linear',
+        }}
+      />
+    </div>
+  );
 }
 
 export function ProgressBar({ before, after, showAfter, label }: Props) {
-  const [animatedBefore, setAnimatedBefore] = useState(before);
-  const [animatedAfter, setAnimatedAfter] = useState(after);
-  const hasAnimatedBefore = useRef(false);
-
-  useEffect(() => {
-    const duration = 800;
-    const start = performance.now();
-    const animate = (now: number) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      
-      if (!hasAnimatedBefore.current) {
-        setAnimatedBefore(Math.round(eased * before));
-      } else {
-        setAnimatedBefore(before);
-      }
-
-      if (showAfter) {
-        setAnimatedAfter(Math.round(eased * after));
-      }
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        hasAnimatedBefore.current = true;
-      }
-    };
-    requestAnimationFrame(animate);
-  }, [before, after, showAfter]);
-
-  const beforeColor = getBarColor(before);
-  const afterColor = getBarColor(after);
+  const cb = color(before);
+  const ca = color(after);
+  const improvement = before - after;
 
   return (
     <div
-      className="rounded-2xl px-6 py-5"
+      className="rounded-3xl px-6 py-5 animate-fade-up"
       style={{
+        animationDelay: '120ms',
         background: 'var(--card)',
         border: '1px solid var(--border)',
         boxShadow: 'var(--onyx-shadow-sm)',
       }}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-display text-sm font-bold text-slate-900 uppercase tracking-wider">
-          📊 {label || 'Risk Progress'}
-        </h3>
-        {showAfter && (
-          <span className="text-xs font-semibold text-emerald-600 px-2 py-0.5 rounded-md bg-emerald-50">
-            {before - after}% improved
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2.5">
+          <span className="text-base">📊</span>
+          <h3 className="font-display text-sm font-black text-slate-900 uppercase tracking-[0.1em]">
+            {label ?? 'Risk Progress'}
+          </h3>
+        </div>
+        {showAfter && improvement > 0 && (
+          <span
+            className="text-[11px] font-black px-2.5 py-1 rounded-lg animate-bounce-in"
+            style={{
+              background: 'rgba(16,185,129,0.10)',
+              color: '#059669',
+            }}
+          >
+            ↓ {improvement} pts improved
           </span>
         )}
       </div>
 
-      {/* Before bar */}
-      <div className="mb-3">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            {showAfter ? 'Before' : 'Current Risk'}
+      {/* Before */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
+            {showAfter ? 'Before fixes' : 'Current risk'}
           </span>
-          <span className="text-[13px] font-bold tabular-nums" style={{ color: beforeColor }}>
-            {animatedBefore}
-          </span>
+          <div className="flex items-center gap-2">
+            <span
+              className="text-[11px] font-bold px-2 py-0.5 rounded-md"
+              style={{ background: `${cb.bar}15`, color: cb.bar }}
+            >
+              {cb.label}
+            </span>
+            <span className="text-[13px] font-black tabular-nums" style={{ color: cb.bar }}>
+              {before}
+            </span>
+          </div>
         </div>
-        <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.04)' }}>
-          <div
-            className="h-full rounded-full transition-all duration-700 ease-out"
-            style={{
-              width: `${animatedBefore}%`,
-              background: `linear-gradient(90deg, ${beforeColor}, ${beforeColor}CC)`,
-              boxShadow: showAfter ? 'none' : `0 0 12px ${beforeColor}30`,
-            }}
-          />
+        <AnimBar value={before} c={cb} delay={0} />
+      </div>
+
+      {/* After */}
+      <div
+        style={{
+          maxHeight: showAfter ? '80px' : '0px',
+          opacity: showAfter ? 1 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.5s var(--onyx-ease), opacity 0.4s ease',
+        }}
+      >
+        <div className="mb-2 mt-1">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
+              After fixes
+            </span>
+            <div className="flex items-center gap-2">
+              <span
+                className="text-[11px] font-bold px-2 py-0.5 rounded-md"
+                style={{ background: `${ca.bar}15`, color: ca.bar }}
+              >
+                {ca.label}
+              </span>
+              <span className="text-[13px] font-black tabular-nums" style={{ color: ca.bar }}>
+                {after}
+              </span>
+            </div>
+          </div>
+          <AnimBar value={after} c={ca} delay={300} />
         </div>
       </div>
 
-      {/* After bar */}
+      {/* Before/after comparison labels */}
       {showAfter && (
-        <div className="animate-fade-up">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-              After Fixes
-            </span>
-            <span className="text-[13px] font-bold tabular-nums" style={{ color: afterColor }}>
-              {animatedAfter}
-            </span>
-          </div>
-          <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.04)' }}>
-            <div
-              className="h-full rounded-full transition-all duration-700 ease-out"
-              style={{
-                width: `${animatedAfter}%`,
-                background: `linear-gradient(90deg, ${afterColor}, ${afterColor}CC)`,
-                boxShadow: `0 0 12px ${afterColor}30`,
-              }}
-            />
-          </div>
+        <div
+          className="mt-4 flex items-center justify-center gap-3 rounded-xl px-4 py-2.5 animate-fade-up"
+          style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.10)' }}
+        >
+          <span className="text-sm font-black text-red-400 line-through decoration-red-300/60">
+            {before}%
+          </span>
+          <span className="text-slate-300">→</span>
+          <span className="text-sm font-black text-emerald-600">
+            {after}%
+          </span>
+          <span className="text-[12px] font-semibold text-emerald-700">
+            risk score
+          </span>
         </div>
       )}
     </div>

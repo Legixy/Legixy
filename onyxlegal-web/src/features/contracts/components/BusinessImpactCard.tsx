@@ -1,6 +1,34 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { TrendingDown, AlertTriangle, Zap } from 'lucide-react';
+
+// ── Currency formatter ─────────────────────────────────────────────────────────
+function fmt(n: number, currency = '₹'): string {
+  if (n >= 10000000) return `${currency}${(n / 10000000).toFixed(1)}Cr`;
+  if (n >= 100000) return `${currency}${(n / 100000).toFixed(1)}L`;
+  if (n >= 1000) return `${currency}${(n / 1000).toFixed(0)}K`;
+  return `${currency}${n.toLocaleString('en-IN')}`;
+}
+
+// ── Animated number ────────────────────────────────────────────────────────────
+function AnimatedValue({ value, prefix = '' }: { value: number; prefix?: string }) {
+  const [display, setDisplay] = useState(0);
+  const raf = useRef<number>(0);
+  useEffect(() => {
+    const duration = 1200;
+    const start = performance.now();
+    const animate = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+      setDisplay(Math.round(eased * value));
+      if (t < 1) raf.current = requestAnimationFrame(animate);
+    };
+    raf.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf.current);
+  }, [value]);
+  return <>{prefix}{display.toLocaleString('en-IN')}</>;
+}
 
 interface Props {
   estimatedLoss: number;
@@ -9,89 +37,131 @@ interface Props {
   currency?: string;
 }
 
-function formatCurrency(amount: number, currency = '₹'): string {
-  if (amount >= 10000000) return `${currency}${(amount / 10000000).toFixed(1)}Cr`;
-  if (amount >= 100000) return `${currency}${(amount / 100000).toFixed(1)}L`;
-  if (amount >= 1000) return `${currency}${(amount / 1000).toFixed(0)}K`;
-  return `${currency}${amount.toLocaleString('en-IN')}`;
-}
-
-export function BusinessImpactCard({ estimatedLoss, criticalIssues, riskReductionPercent, currency = '₹' }: Props) {
-  const items = [
-    {
-      icon: TrendingDown,
-      iconBg: 'linear-gradient(135deg, #EF4444, #DC2626)',
-      label: 'Potential financial exposure',
-      value: `You may lose ${formatCurrency(estimatedLoss, currency)} if things go wrong`,
-      highlight: true,
-    },
-    {
-      icon: AlertTriangle,
-      iconBg: 'linear-gradient(135deg, #F59E0B, #D97706)',
-      label: 'Issues found',
-      value: `This contract has ${criticalIssues} critical issue${criticalIssues === 1 ? '' : 's'}`,
-      highlight: false,
-    },
-    {
-      icon: Zap,
-      iconBg: 'linear-gradient(135deg, #10B981, #059669)',
-      label: 'If you fix now',
-      value: `Estimated risk reduction if fixed: ${riskReductionPercent}%`,
-      highlight: false,
-    },
-  ];
-
+export function BusinessImpactCard({
+  estimatedLoss,
+  criticalIssues,
+  riskReductionPercent,
+  currency = '₹',
+}: Props) {
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="relative overflow-hidden rounded-3xl animate-fade-up"
       style={{
-        background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.03), rgba(124, 58, 237, 0.02))',
-        border: '1px solid var(--border)',
-        boxShadow: 'var(--onyx-shadow-sm)',
+        animationDelay: '80ms',
+        background: 'linear-gradient(135deg, rgba(79,70,229,0.05) 0%, rgba(124,58,237,0.04) 50%, rgba(255,255,255,0.8) 100%)',
+        border: '1.5px solid rgba(79,70,229,0.12)',
+        boxShadow: '0 0 0 1px rgba(79,70,229,0.04), 0 8px 40px rgba(79,70,229,0.08), var(--onyx-shadow-sm)',
       }}
     >
-      <div className="px-6 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
-        <h3 className="font-display text-sm font-bold text-slate-900 uppercase tracking-wider">
-          💰 Business Impact
-        </h3>
+      {/* ── Glow accent ─────────────────────────────────────────────────── */}
+      <div
+        className="absolute -top-10 -right-10 w-48 h-48 rounded-full pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle, rgba(124,58,237,0.12), transparent 70%)',
+        }}
+      />
+
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <div
+        className="px-6 py-4 flex items-center gap-3"
+        style={{ borderBottom: '1px solid rgba(79,70,229,0.08)' }}
+      >
+        <div
+          className="w-8 h-8 rounded-xl flex items-center justify-center"
+          style={{ background: 'var(--onyx-gradient)', boxShadow: '0 4px 12px rgba(79,70,229,0.25)' }}
+        >
+          <TrendingDown size={15} className="text-white" />
+        </div>
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+            Business Impact
+          </p>
+          <p className="text-xs font-semibold text-slate-600">What this contract could cost you</p>
+        </div>
       </div>
 
-      <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
-        {items.map((item, idx) => {
-          const Icon = item.icon;
-          return (
-            <div
-              key={idx}
-              className="px-6 py-4 flex items-center gap-4 transition-colors duration-200 hover:bg-white/50"
-              style={{
-                animationDelay: `${idx * 100}ms`,
-              }}
-            >
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{
-                  background: item.iconBg,
-                  boxShadow: `0 4px 12px ${item.iconBg.includes('EF4444') ? 'rgba(239,68,68,0.2)' : item.iconBg.includes('F59E0B') ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)'}`,
-                }}
-              >
-                <Icon size={18} className="text-white" />
-              </div>
+      {/* ── Metrics ─────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-3 divide-x" style={{ borderColor: 'rgba(79,70,229,0.08)' }}>
+        {/* Metric 1 — Loss */}
+        <div className="px-5 py-5 flex flex-col gap-2">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, #FEE2E2, #FECACA)',
+              boxShadow: '0 3px 10px rgba(239,68,68,0.15)',
+            }}
+          >
+            <TrendingDown size={16} style={{ color: '#DC2626' }} />
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400 mt-1">
+            You may lose
+          </p>
+          <p className="font-display text-xl font-black text-red-600 leading-none">
+            {fmt(estimatedLoss, currency)}
+          </p>
+          <p className="text-[11px] font-medium text-slate-500 leading-snug">
+            if things go wrong
+          </p>
+        </div>
 
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.12em] mb-0.5">
-                  {item.label}
-                </p>
-                <p
-                  className={`text-sm font-semibold leading-snug break-words ${
-                    item.highlight ? 'text-red-700' : 'text-slate-800'
-                  }`}
-                >
-                  {item.value}
-                </p>
-              </div>
-            </div>
-          );
-        })}
+        {/* Metric 2 — Critical issues */}
+        <div className="px-5 py-5 flex flex-col gap-2">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)',
+              boxShadow: '0 3px 10px rgba(245,158,11,0.15)',
+            }}
+          >
+            <AlertTriangle size={16} style={{ color: '#D97706' }} />
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400 mt-1">
+            Critical issues
+          </p>
+          <p className="font-display text-xl font-black text-amber-600 leading-none">
+            <AnimatedValue value={criticalIssues} />
+          </p>
+          <p className="text-[11px] font-medium text-slate-500 leading-snug">
+            found in your contract
+          </p>
+        </div>
+
+        {/* Metric 3 — Reduction */}
+        <div className="px-5 py-5 flex flex-col gap-2">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, #D1FAE5, #A7F3D0)',
+              boxShadow: '0 3px 10px rgba(16,185,129,0.15)',
+            }}
+          >
+            <Zap size={16} style={{ color: '#059669' }} />
+          </div>
+          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400 mt-1">
+            Fix now & save
+          </p>
+          <p className="font-display text-xl font-black text-emerald-600 leading-none">
+            <AnimatedValue value={riskReductionPercent} />%
+          </p>
+          <p className="text-[11px] font-medium text-slate-500 leading-snug">
+            risk reduction possible
+          </p>
+        </div>
+      </div>
+
+      {/* ── Call-out banner ──────────────────────────────────────────────── */}
+      <div
+        className="mx-4 mb-4 mt-3 rounded-2xl px-4 py-3 flex items-center gap-3"
+        style={{
+          background: 'linear-gradient(135deg, rgba(79,70,229,0.06), rgba(124,58,237,0.04))',
+          border: '1px solid rgba(79,70,229,0.1)',
+        }}
+      >
+        <div className="text-lg">💡</div>
+        <p className="text-[12px] font-semibold text-indigo-800 leading-snug">
+          Fixing these {criticalIssues} issue{criticalIssues !== 1 ? 's' : ''} could protect you from up to{' '}
+          <span className="font-black text-indigo-900">{fmt(estimatedLoss, currency)}</span> in potential loss.
+        </p>
       </div>
     </div>
   );
