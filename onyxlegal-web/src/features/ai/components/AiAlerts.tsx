@@ -77,8 +77,10 @@ export function AiAlerts() {
           action: {
             label: criticalUnread.actionLabel || 'View',
             onClick: () => {
-              if (criticalUnread.actionUrl) {
-                window.location.href = criticalUnread.actionUrl;
+              const url = criticalUnread.actionUrl;
+              // Only allow relative paths — prevent open redirect to external sites
+              if (url && url.startsWith('/')) {
+                window.location.href = url;
               }
             },
           },

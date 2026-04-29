@@ -1,23 +1,15 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-const COOKIE_NAME = 'auth_token';
-const COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 days
 
-// ── Cookie helpers (browser-only) ───────────────────────────
-export function setTokenCookie(token: string) {
-  if (typeof document === 'undefined') return;
-  document.cookie = `${COOKIE_NAME}=${encodeURIComponent(token)}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Strict`;
-}
-
+// Kept for server-side proxy reads (proxy.ts reads this server-side where HttpOnly is accessible)
 export function getTokenFromCookie(): string | null {
   if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${COOKIE_NAME}=([^;]*)`));
+  const match = document.cookie.match(/(?:^|;\s*)auth_token=([^;]*)/);
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-export function clearTokenCookie() {
-  if (typeof document === 'undefined') return;
-  document.cookie = `${COOKIE_NAME}=; path=/; max-age=0; SameSite=Strict`;
-}
+// No-op — cookie is now set HttpOnly by /api/auth/login server route
+export function setTokenCookie(_token: string) {}
+export function clearTokenCookie() {}
 
 async function request<T>(
   endpoint: string,
@@ -30,12 +22,8 @@ async function request<T>(
     ...(options.headers as Record<string, string>),
   };
 
-  const token = getTokenFromCookie();
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  const res = await fetch(url, { ...options, headers });
+  // credentials: 'include' sends the HttpOnly auth_token cookie automatically
+  const res = await fetch(url, { ...options, headers, credentials: 'include' });
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: res.statusText }));
@@ -64,12 +52,16 @@ interface LoginResponse {
 
 export const auth = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
-    const res = await request<LoginResponse>('/auth/login', {
+    // Goes through Next.js server route so the cookie is set HttpOnly
+    const res = await fetch('/api/auth/login', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
+      credentials: 'include',
     });
-    setTokenCookie(res.access_token);
-    return res;
+    const data = await res.json().catch(() => ({ message: 'Login failed' }));
+    if (!res.ok) throw new ApiError(res.status, data.message || 'Login failed', data);
+    return data as LoginResponse;
   },
 
   register: async (data: {
@@ -82,12 +74,11 @@ export const auth = {
       method: 'POST',
       body: JSON.stringify(data),
     });
-    setTokenCookie(res.access_token);
     return res;
   },
 
-  logout: () => {
-    clearTokenCookie();
+  logout: async () => {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
   },
 
   signup: (data: { supabaseId: string; email: string; name: string; companyName: string }) =>

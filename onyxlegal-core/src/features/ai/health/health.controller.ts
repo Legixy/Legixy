@@ -13,6 +13,7 @@ import {
   LivenessProbeService,
   ReadinessProbeService,
 } from '../health/healthCheck';
+import { Public } from '../../../modules/auth/public.decorator';
 
 @Controller('health')
 export class HealthCheckController {
@@ -26,16 +27,13 @@ export class HealthCheckController {
    * GET /health
    * Full health status including all checks
    */
+  @Public()
   @Get()
   async getHealth() {
     return this.healthCheck.check();
   }
 
-  /**
-   * GET /health/live
-   * Kubernetes liveness probe (is pod alive?)
-   * Returns 200 if alive, 500 otherwise
-   */
+  @Public()
   @Get('live')
   @HttpCode(200)
   async getLiveness() {
@@ -52,6 +50,7 @@ export class HealthCheckController {
    * Kubernetes readiness probe (can pod accept traffic?)
    * Returns 200 if ready, 503 otherwise
    */
+  @Public()
   @Get('ready')
   @HttpCode(200)
   async getReadiness() {

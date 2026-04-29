@@ -13,25 +13,8 @@ import { ContractFixService, FixResult, BulkFixResult } from '../services/contra
 import { ContractHistoryService, VersionTimeline, VersionInfo } from '../services/contractHistory.service';
 import { PrismaService } from '../../../database/prisma.service';
 import { RiskLevel } from '@prisma/client';
-
-/**
- * CONTRACT ACTION PANEL CONTROLLER
- *
- * Main API for user-facing contract workflows:
- * - Get risk summary with actionable items
- * - Apply single or bulk fixes
- * - Manage version history
- * - Track fixing progress
- *
- * Integration Notes:
- * - Add @UseGuards(AuthGuard) and extract @CurrentUser() decorator when wiring
- * - Pass tenantId/userId via body or extract from authenticated user context
- */
-
-export interface UserContext {
-  id: string;
-  tenantId: string;
-}
+import { CurrentUser } from '../../../common/decorators/current-user.decorator';
+import { AuthenticatedUser } from '../../../modules/auth/jwt.strategy';
 
 export interface ContractActionResponse {
   contractId: string;
@@ -63,41 +46,24 @@ export class ContractActionPanelController {
     private contractHistory: ContractHistoryService,
   ) {}
 
-  /**
-   * GET /api/contracts/:contractId/action-panel
-   *
-   * Fetch everything needed for the action panel UI:
-   * - Risk summary (simplified language)
-   * - Status & progress
-   * - Suggested actions
-   * - Quick stats
-   *
-   * TODO: Add @UseGuards(AuthGuard) decorator and @CurrentUser() extraction
-   */
   @Get(':contractId/action-panel')
   async getActionPanel(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('contractId') contractId: string,
-    @Body() body: { tenantId: string; userId: string },
   ): Promise<ContractActionResponse> {
-    const user: UserContext = { id: body.userId, tenantId: body.tenantId };
-
     this.logger.debug(
       `Fetching action panel for contract ${contractId} (tenant: ${user.tenantId})`,
     );
 
-    // Get contract with all data
     const contract = await this.prisma.contract.findUnique({
       where: { id: contractId },
-      include: {
-        clauses: true,
-      },
+      include: { clauses: true },
     });
 
     if (!contract || contract.tenantId !== user.tenantId) {
       throw new BadRequestException('Contract not found or unauthorized');
     }
 
-    // Get risk summary from formatter
     const riskSummary = this.riskFormatter.summarizeRisks(
       contract.clauses.map((c) => ({
         level: c.riskLevel,
@@ -108,10 +74,7 @@ export class ContractActionPanelController {
       })),
     );
 
-    // Get fix stats
     const fixStats = await this.contractFix.getFixStats(contractId, user.tenantId);
-
-    // Build action items
     const actionItems = this.buildActionItems(riskSummary);
 
     return {
@@ -129,23 +92,17 @@ export class ContractActionPanelController {
     };
   }
 
-  /**
-   * GET /api/contracts/:contractId/risk-summary
-   *
-   * Get simplified risk overview
-   * Used to populate the risk badge on contract list
-   */
   @Get(':contractId/risk-summary')
   async getRiskSummary(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('contractId') contractId: string,
-    @Body() body: { tenantId: string },
   ): Promise<RiskSummary> {
     const contract = await this.prisma.contract.findUnique({
       where: { id: contractId },
       include: { clauses: true },
     });
 
-    if (!contract || contract.tenantId !== body.tenantId) {
+    if (!contract || contract.tenantId !== user.tenantId) {
       throw new BadRequestException('Contract not found or unauthorized');
     }
 
@@ -160,144 +117,95 @@ export class ContractActionPanelController {
     );
   }
 
-  /**
-   * POST /api/contracts/:contractId/fix-clause/:clauseId
-   *
-   * Apply a single AI-suggested fix to one clause
-   * Returns: Updated clause, new risk score, change details
-   */
   @Post(':contractId/fix-clause/:clauseId')
   @HttpCode(200)
   async applySingleFix(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('contractId') contractId: string,
     @Param('clauseId') clauseId: string,
-    @Body() body: { tenantId: string; userId: string },
+    @Body() body: { riskLevels?: string[] },
   ): Promise<FixResult & { newRiskScore: number }> {
     this.logger.log(
-      `User ${body.userId} applying fix to clause ${clauseId} in contract ${contractId}`,
+      `User ${user.id} applying fix to clause ${clauseId} in contract ${contractId}`,
     );
 
     const result = await this.contractFix.applySingleFix({
       contractId,
       clauseId,
-      tenantId: body.tenantId,
-      userId: body.userId,
+      tenantId: user.tenantId,
+      userId: user.id,
     });
 
-    // Get updated risk score
     const contract = await this.prisma.contract.findUnique({
       where: { id: contractId },
       select: { riskScore: true },
     });
 
-    return {
-      ...result,
-      newRiskScore: contract?.riskScore || 0,
-    };
+    return { ...result, newRiskScore: contract?.riskScore || 0 };
   }
 
-  /**
-   * POST /api/contracts/:contractId/fix-all
-   *
-   * Apply all suggested fixes at once (bulk operation)
-   * Optional: Filter by risk level (CRITICAL, HIGH, MEDIUM only)
-   *
-   * Returns: Summary of applied fixes, risk reduction percentage, savings estimate
-   */
   @Post(':contractId/fix-all')
   @HttpCode(200)
   async applyBulkFixes(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('contractId') contractId: string,
-    @Body()
-    body: {
-      tenantId: string;
-      userId: string;
-      riskLevels?: string[]; // Optional: only fix these levels
-    },
+    @Body() body: { riskLevels?: string[] },
   ): Promise<BulkFixResult> {
-    this.logger.log(`User ${body.userId} applying bulk fixes to contract ${contractId}`);
+    this.logger.log(`User ${user.id} applying bulk fixes to contract ${contractId}`);
 
     return this.contractFix.applyBulkFixes({
       contractId,
-      tenantId: body.tenantId,
-      userId: body.userId,
+      tenantId: user.tenantId,
+      userId: user.id,
       riskLevels: body.riskLevels as RiskLevel[] | undefined,
     });
   }
 
-  /**
-   * POST /api/contracts/:contractId/undo-fixes
-   *
-   * Restore contract to previous version before fixes were applied
-   * Optional: Restore to specific version number
-   */
   @Post(':contractId/undo-fixes')
   @HttpCode(200)
   async undoFixes(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('contractId') contractId: string,
-    @Body() body: { tenantId: string; userId: string; versionNumber?: number },
+    @Body() body: { versionNumber?: number },
   ): Promise<{ success: boolean; restoredVersion: number }> {
-    this.logger.log(`User ${body.userId} undoing fixes on contract ${contractId}`);
+    this.logger.log(`User ${user.id} undoing fixes on contract ${contractId}`);
 
-    return this.contractFix.undoFixes(
-      contractId,
-      body.tenantId,
-      body.userId,
-      body.versionNumber,
-    );
+    return this.contractFix.undoFixes(contractId, user.tenantId, user.id, body.versionNumber);
   }
 
-  /**
-   * GET /api/contracts/:contractId/version-history
-   *
-   * Get full version timeline
-   * Used for "Track Changes" feature - shows all modifications
-   */
   @Get(':contractId/version-history')
   async getVersionHistory(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('contractId') contractId: string,
-    @Body() body: { tenantId: string },
   ): Promise<VersionTimeline> {
-    return this.contractHistory.getHistory(contractId, body.tenantId);
+    return this.contractHistory.getHistory(contractId, user.tenantId);
   }
 
-  /**
-   * POST /api/contracts/:contractId/restore-version/:versionNumber
-   *
-   * Restore contract to a specific previous version
-   * Creates new version entry for audit trail
-   */
   @Post(':contractId/restore-version/:versionNumber')
   @HttpCode(200)
   async restoreVersion(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('contractId') contractId: string,
     @Param('versionNumber') versionNumber: number,
-    @Body() body: { tenantId: string; userId: string },
   ): Promise<VersionInfo> {
     this.logger.log(
-      `User ${body.userId} restoring contract ${contractId} to version ${versionNumber}`,
+      `User ${user.id} restoring contract ${contractId} to version ${versionNumber}`,
     );
 
     return this.contractHistory.restoreVersion(
       contractId,
       versionNumber,
-      body.tenantId,
-      body.userId,
+      user.tenantId,
+      user.id,
     );
   }
 
-  /**
-   * GET /api/contracts/:contractId/progress
-   *
-   * Get fixing progress (for progress bar in UI)
-   * Shows: total clauses, fixed, pending, critical pending, percentage complete
-   */
   @Get(':contractId/progress')
   async getProgress(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('contractId') contractId: string,
-    @Body() body: { tenantId: string },
   ) {
-    const stats = await this.contractFix.getFixStats(contractId, body.tenantId);
+    const stats = await this.contractFix.getFixStats(contractId, user.tenantId);
 
     return {
       contractId,
@@ -311,19 +219,11 @@ export class ContractActionPanelController {
     };
   }
 
-  // ============ PRIVATE HELPERS ============
-
-  /**
-   * Build actionable items for the UI based on risk summary
-   * Returns prioritized list of actions user should take
-   */
   private buildActionItems(
     riskSummary: RiskSummary,
   ): Array<{ id: string; severity: string; action: string; estimatedTime: string }> {
-    const items: Array<{ id: string; severity: string; action: string; estimatedTime: string }> =
-      [];
+    const items: Array<{ id: string; severity: string; action: string; estimatedTime: string }> = [];
 
-    // CRITICAL - Deal-breaking issues
     if (riskSummary.critical > 0) {
       items.push({
         id: 'critical-action',
@@ -333,7 +233,6 @@ export class ContractActionPanelController {
       });
     }
 
-    // HIGH - Fix immediately
     if (riskSummary.high > 0) {
       items.push({
         id: 'high-action',
@@ -343,7 +242,6 @@ export class ContractActionPanelController {
       });
     }
 
-    // MEDIUM - Consider fixing
     if (riskSummary.medium > 0) {
       items.push({
         id: 'medium-action',
@@ -353,8 +251,7 @@ export class ContractActionPanelController {
       });
     }
 
-    // Bulk fix option
-    if (riskSummary.fixableSoonCount > 0 && riskSummary.fixableSoonCount > 1) {
+    if (riskSummary.fixableSoonCount > 1) {
       items.push({
         id: 'bulk-fix',
         severity: 'fix',
@@ -363,7 +260,6 @@ export class ContractActionPanelController {
       });
     }
 
-    // Lawyer review needed
     if (riskSummary.needsLawyerReviewCount > 0) {
       items.push({
         id: 'lawyer-review',
@@ -373,7 +269,6 @@ export class ContractActionPanelController {
       });
     }
 
-    // Contract ready
     if (items.length === 0) {
       items.push({
         id: 'contract-ready',

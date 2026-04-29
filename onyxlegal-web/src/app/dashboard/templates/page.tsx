@@ -25,8 +25,7 @@ export default function TemplatesPage() {
       try {
         const data = await templatesApi.list();
         setTemplatesList(data);
-      } catch (err) {
-        console.warn('Failed to load templates from API, using fallback:', err);
+      } catch {
         setTemplatesList([]);
       } finally {
         setIsLoading(false);

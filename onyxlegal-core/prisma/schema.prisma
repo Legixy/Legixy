@@ -190,7 +190,7 @@ model Contract {
   id         String         @id @default(cuid())
   tenantId   String
   templateId String?
-  createdById String
+  createdById String?
 
   title      String
   status     ContractStatus @default(DRAFT)
@@ -219,7 +219,7 @@ model Contract {
   // Relations
   tenant     Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   template   Template?          @relation(fields: [templateId], references: [id], onDelete: SetNull)
-  createdBy  User               @relation("CreatedBy", fields: [createdById], references: [id])
+  createdBy  User?              @relation("CreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   versions   ContractVersion[]
   clauses    Clause[]
   analyses   AIAnalysis[]

@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, ForbiddenException } from '@nestjs/common';
 import { AiOrchestratorService } from './ai-orchestrator.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../auth/jwt.strategy';
@@ -136,8 +136,7 @@ export class AiOrchestratorController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('jobId') jobId: string,
   ) {
-    // Note: In production, add admin role check here
-    // if (user.role !== 'ADMIN') throw new ForbiddenException();
+    if (user.role !== 'OWNER') throw new ForbiddenException('Admin access required.');
     return this.aiService.adminRetryJob(user.tenantId, jobId);
   }
 
@@ -147,8 +146,7 @@ export class AiOrchestratorController {
    */
   @Get('admin/dlq-jobs')
   async adminGetDLQJobs(@CurrentUser() user: AuthenticatedUser) {
-    // Note: In production, add admin role check here
-    // if (user.role !== 'ADMIN') throw new ForbiddenException();
+    if (user.role !== 'OWNER') throw new ForbiddenException('Admin access required.');
     return this.aiService.adminGetDLQJobs(user.tenantId);
   }
 }

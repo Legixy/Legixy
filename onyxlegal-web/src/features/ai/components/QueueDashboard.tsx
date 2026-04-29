@@ -67,7 +67,6 @@ export function QueueDashboard({
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       setError(message);
-      console.error('Failed to fetch queue stats:', err);
     } finally {
       setLoading(false);
     }

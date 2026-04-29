@@ -38,7 +38,7 @@ export default function ContractsPage() {
   const filtered = useMemo(() => {
     return contracts.filter((c) => {
       if (searchQuery) {
-        return c.title.toLowerCase().includes(searchQuery.toLowerCase());
+        return (c.title ?? '').toLowerCase().includes(searchQuery.toLowerCase());
       }
       return true;
     });

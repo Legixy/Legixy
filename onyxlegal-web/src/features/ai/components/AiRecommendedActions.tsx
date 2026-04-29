@@ -8,12 +8,10 @@
 
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useRecommendedActions } from '../hooks/useRecommendedActions';
 import { AiAutoFixFlow } from './AiAutoFixFlow';
 import { AlertTriangle, TrendingDown, Clock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
 
 export interface RecommendedAction {
   id: string;
@@ -71,9 +69,7 @@ function getImpactColor(type: string): string {
 }
 
 export function AiRecommendedActions() {
-  const router = useRouter();
   const { data, isLoading, error } = useRecommendedActions();
-  const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [showAutoFixFlow, setShowAutoFixFlow] = useState(false);
   const [fixFlowData, setFixFlowData] = useState<{
     contractId: string;
@@ -103,7 +99,7 @@ export function AiRecommendedActions() {
     );
   }
 
-  const actions = data.actions.slice(0, 4); // Show top 4 actions
+  const actions = (data.actions ?? []).slice(0, 4);
 
   return (
     <div className="space-y-4">
@@ -134,7 +130,7 @@ export function AiRecommendedActions() {
 
       {/* Actions List */}
       <div className="space-y-3">
-        {actions.map((action, index) => (
+        {actions.map((action) => (
           <div
             key={action.id}
             className={`border-l-4 rounded-lg p-4 transition-all duration-200 ${getUrgencyColor(action.urgency)}`}
