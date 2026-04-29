@@ -1,0 +1,10 @@
+{"ts":"2026-04-29T17:16:26.972Z","cmd":"goto","args":"http://localhost:3000/dashboard","origin":"http://localhost:3000/login?next=%2Fdashboard","durationMs":481,"status":"ok","hasCookies":false,"mode":"launched"}
+{"ts":"2026-04-29T17:16:27.252Z","cmd":"js","args":"window.location.href","origin":"http://localhost:3000/login?next=%2Fdashboard","durationMs":5,"status":"ok","hasCookies":false,"mode":"launched"}
+{"ts":"2026-04-29T17:16:30.619Z","cmd":"screenshot","args":"/Users/abdulkadir/LEGAL_OPS/.gstack/qa-reports/screenshots/test1-redirect-to-login.png","origin":"http://localhost:3000/login?next=%2Fdashboard","durationMs":125,"status":"ok","hasCookies":false,"mode":"launched"}
+{"ts":"2026-04-29T17:16:46.581Z","cmd":"snapshot","args":"-i","origin":"http://localhost:3000/login?next=%2Fdashboard","durationMs":713,"status":"ok","hasCookies":false,"mode":"launched"}
+{"ts":"2026-04-29T17:16:50.659Z","cmd":"fill","args":"@e2 admin@onyxlegal.com","origin":"http://localhost:3000/login?next=%2Fdashboard","durationMs":159,"status":"ok","hasCookies":false,"mode":"launched"}
+{"ts":"2026-04-29T17:16:50.717Z","cmd":"fill","args":"@e4 OnyxAdmin2024!","origin":"http://localhost:3000/login?next=%2Fdashboard","durationMs":20,"status":"ok","hasCookies":false,"mode":"launched"}
+{"ts":"2026-04-29T17:16:50.875Z","cmd":"click","args":"@e5","origin":"http://localhost:3000/login?next=%2Fdashboard","durationMs":108,"status":"ok","hasCookies":false,"mode":"launched"}
+{"ts":"2026-04-29T17:16:54.013Z","cmd":"js","args":"window.location.href","origin":"http://localhost:3000/dashboard","durationMs":1,"status":"ok","hasCookies":false,"mode":"launched"}
+{"ts":"2026-04-29T17:16:57.878Z","cmd":"screenshot","args":"/Users/abdulkadir/LEGAL_OPS/.gstack/qa-reports/screenshots/test2-dashboard-after-login.png","origin":"http://localhost:3000/dashboard","durationMs":90,"status":"ok","hasCookies":false,"mode":"launched"}
+{"ts":"2026-04-29T17:16:57.918Z","cmd":"console","args":"--errors","origin":"http://localhost:3000/dashboard","durationMs":4,"status":"ok","hasCookies":false,"mode":"launched"}

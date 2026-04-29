@@ -29,15 +29,15 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         this.prisma = prisma;
     }
     async validate(payload) {
-        const user = await this.prisma.user.findUnique({
-            where: { supabaseId: payload.sub },
-        });
+        const user = payload.type === 'local'
+            ? await this.prisma.user.findUnique({ where: { id: payload.sub } })
+            : await this.prisma.user.findUnique({ where: { supabaseId: payload.sub } });
         if (!user) {
-            throw new common_1.UnauthorizedException('User not found. Please complete registration.');
+            throw new common_1.UnauthorizedException('User not found.');
         }
         return {
             id: user.id,
-            supabaseId: user.supabaseId,
+            supabaseId: user.supabaseId ?? null,
             tenantId: user.tenantId,
             email: user.email,
             name: user.name,

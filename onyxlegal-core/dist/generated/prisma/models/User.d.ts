@@ -15,6 +15,7 @@ export type UserMinAggregateOutputType = {
     name: string | null;
     avatarUrl: string | null;
     role: $Enums.UserRole | null;
+    password: string | null;
     createdAt: Date | null;
     updatedAt: Date | null;
 };
@@ -26,6 +27,7 @@ export type UserMaxAggregateOutputType = {
     name: string | null;
     avatarUrl: string | null;
     role: $Enums.UserRole | null;
+    password: string | null;
     createdAt: Date | null;
     updatedAt: Date | null;
 };
@@ -37,6 +39,7 @@ export type UserCountAggregateOutputType = {
     name: number;
     avatarUrl: number;
     role: number;
+    password: number;
     createdAt: number;
     updatedAt: number;
     _all: number;
@@ -49,6 +52,7 @@ export type UserMinAggregateInputType = {
     name?: true;
     avatarUrl?: true;
     role?: true;
+    password?: true;
     createdAt?: true;
     updatedAt?: true;
 };
@@ -60,6 +64,7 @@ export type UserMaxAggregateInputType = {
     name?: true;
     avatarUrl?: true;
     role?: true;
+    password?: true;
     createdAt?: true;
     updatedAt?: true;
 };
@@ -71,6 +76,7 @@ export type UserCountAggregateInputType = {
     name?: true;
     avatarUrl?: true;
     role?: true;
+    password?: true;
     createdAt?: true;
     updatedAt?: true;
     _all?: true;
@@ -101,12 +107,13 @@ export type UserGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
 };
 export type UserGroupByOutputType = {
     id: string;
-    supabaseId: string;
+    supabaseId: string | null;
     tenantId: string;
     email: string;
     name: string | null;
     avatarUrl: string | null;
     role: $Enums.UserRole;
+    password: string | null;
     createdAt: Date;
     updatedAt: Date;
     _count: UserCountAggregateOutputType | null;
@@ -121,12 +128,13 @@ export type UserWhereInput = {
     OR?: Prisma.UserWhereInput[];
     NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
     id?: Prisma.StringFilter<"User"> | string;
-    supabaseId?: Prisma.StringFilter<"User"> | string;
+    supabaseId?: Prisma.StringNullableFilter<"User"> | string | null;
     tenantId?: Prisma.StringFilter<"User"> | string;
     email?: Prisma.StringFilter<"User"> | string;
     name?: Prisma.StringNullableFilter<"User"> | string | null;
     avatarUrl?: Prisma.StringNullableFilter<"User"> | string | null;
     role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole;
+    password?: Prisma.StringNullableFilter<"User"> | string | null;
     createdAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>;
@@ -135,12 +143,13 @@ export type UserWhereInput = {
 };
 export type UserOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
-    supabaseId?: Prisma.SortOrder;
+    supabaseId?: Prisma.SortOrderInput | Prisma.SortOrder;
     tenantId?: Prisma.SortOrder;
     email?: Prisma.SortOrder;
     name?: Prisma.SortOrderInput | Prisma.SortOrder;
     avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder;
     role?: Prisma.SortOrder;
+    password?: Prisma.SortOrderInput | Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
     tenant?: Prisma.TenantOrderByWithRelationInput;
@@ -159,6 +168,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
     name?: Prisma.StringNullableFilter<"User"> | string | null;
     avatarUrl?: Prisma.StringNullableFilter<"User"> | string | null;
     role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole;
+    password?: Prisma.StringNullableFilter<"User"> | string | null;
     createdAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>;
@@ -167,12 +177,13 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
 }, "id" | "supabaseId" | "tenantId_email">;
 export type UserOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
-    supabaseId?: Prisma.SortOrder;
+    supabaseId?: Prisma.SortOrderInput | Prisma.SortOrder;
     tenantId?: Prisma.SortOrder;
     email?: Prisma.SortOrder;
     name?: Prisma.SortOrderInput | Prisma.SortOrder;
     avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder;
     role?: Prisma.SortOrder;
+    password?: Prisma.SortOrderInput | Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
     _count?: Prisma.UserCountOrderByAggregateInput;
@@ -184,22 +195,24 @@ export type UserScalarWhereWithAggregatesInput = {
     OR?: Prisma.UserScalarWhereWithAggregatesInput[];
     NOT?: Prisma.UserScalarWhereWithAggregatesInput | Prisma.UserScalarWhereWithAggregatesInput[];
     id?: Prisma.StringWithAggregatesFilter<"User"> | string;
-    supabaseId?: Prisma.StringWithAggregatesFilter<"User"> | string;
+    supabaseId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null;
     tenantId?: Prisma.StringWithAggregatesFilter<"User"> | string;
     email?: Prisma.StringWithAggregatesFilter<"User"> | string;
     name?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null;
     avatarUrl?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null;
     role?: Prisma.EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole;
+    password?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null;
     createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string;
     updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string;
 };
 export type UserCreateInput = {
     id?: string;
-    supabaseId: string;
+    supabaseId?: string | null;
     email: string;
     name?: string | null;
     avatarUrl?: string | null;
     role?: $Enums.UserRole;
+    password?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     tenant: Prisma.TenantCreateNestedOneWithoutUsersInput;
@@ -208,12 +221,13 @@ export type UserCreateInput = {
 };
 export type UserUncheckedCreateInput = {
     id?: string;
-    supabaseId: string;
+    supabaseId?: string | null;
     tenantId: string;
     email: string;
     name?: string | null;
     avatarUrl?: string | null;
     role?: $Enums.UserRole;
+    password?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutCreatedByInput;
@@ -221,11 +235,12 @@ export type UserUncheckedCreateInput = {
 };
 export type UserUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
-    supabaseId?: Prisma.StringFieldUpdateOperationsInput | string;
+    supabaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     email?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+    password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     tenant?: Prisma.TenantUpdateOneRequiredWithoutUsersNestedInput;
@@ -234,12 +249,13 @@ export type UserUpdateInput = {
 };
 export type UserUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
-    supabaseId?: Prisma.StringFieldUpdateOperationsInput | string;
+    supabaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     tenantId?: Prisma.StringFieldUpdateOperationsInput | string;
     email?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+    password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     contracts?: Prisma.ContractUncheckedUpdateManyWithoutCreatedByNestedInput;
@@ -247,33 +263,36 @@ export type UserUncheckedUpdateInput = {
 };
 export type UserCreateManyInput = {
     id?: string;
-    supabaseId: string;
+    supabaseId?: string | null;
     tenantId: string;
     email: string;
     name?: string | null;
     avatarUrl?: string | null;
     role?: $Enums.UserRole;
+    password?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
 };
 export type UserUpdateManyMutationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
-    supabaseId?: Prisma.StringFieldUpdateOperationsInput | string;
+    supabaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     email?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+    password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 export type UserUncheckedUpdateManyInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
-    supabaseId?: Prisma.StringFieldUpdateOperationsInput | string;
+    supabaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     tenantId?: Prisma.StringFieldUpdateOperationsInput | string;
     email?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+    password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -297,6 +316,7 @@ export type UserCountOrderByAggregateInput = {
     name?: Prisma.SortOrder;
     avatarUrl?: Prisma.SortOrder;
     role?: Prisma.SortOrder;
+    password?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
 };
@@ -308,6 +328,7 @@ export type UserMaxOrderByAggregateInput = {
     name?: Prisma.SortOrder;
     avatarUrl?: Prisma.SortOrder;
     role?: Prisma.SortOrder;
+    password?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
 };
@@ -319,6 +340,7 @@ export type UserMinOrderByAggregateInput = {
     name?: Prisma.SortOrder;
     avatarUrl?: Prisma.SortOrder;
     role?: Prisma.SortOrder;
+    password?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
 };
@@ -393,11 +415,12 @@ export type UserUpdateOneRequiredWithoutNotificationsNestedInput = {
 };
 export type UserCreateWithoutTenantInput = {
     id?: string;
-    supabaseId: string;
+    supabaseId?: string | null;
     email: string;
     name?: string | null;
     avatarUrl?: string | null;
     role?: $Enums.UserRole;
+    password?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     contracts?: Prisma.ContractCreateNestedManyWithoutCreatedByInput;
@@ -405,11 +428,12 @@ export type UserCreateWithoutTenantInput = {
 };
 export type UserUncheckedCreateWithoutTenantInput = {
     id?: string;
-    supabaseId: string;
+    supabaseId?: string | null;
     email: string;
     name?: string | null;
     avatarUrl?: string | null;
     role?: $Enums.UserRole;
+    password?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutCreatedByInput;
@@ -441,22 +465,24 @@ export type UserScalarWhereInput = {
     OR?: Prisma.UserScalarWhereInput[];
     NOT?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[];
     id?: Prisma.StringFilter<"User"> | string;
-    supabaseId?: Prisma.StringFilter<"User"> | string;
+    supabaseId?: Prisma.StringNullableFilter<"User"> | string | null;
     tenantId?: Prisma.StringFilter<"User"> | string;
     email?: Prisma.StringFilter<"User"> | string;
     name?: Prisma.StringNullableFilter<"User"> | string | null;
     avatarUrl?: Prisma.StringNullableFilter<"User"> | string | null;
     role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole;
+    password?: Prisma.StringNullableFilter<"User"> | string | null;
     createdAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string;
 };
 export type UserCreateWithoutContractsInput = {
     id?: string;
-    supabaseId: string;
+    supabaseId?: string | null;
     email: string;
     name?: string | null;
     avatarUrl?: string | null;
     role?: $Enums.UserRole;
+    password?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     tenant: Prisma.TenantCreateNestedOneWithoutUsersInput;
@@ -464,12 +490,13 @@ export type UserCreateWithoutContractsInput = {
 };
 export type UserUncheckedCreateWithoutContractsInput = {
     id?: string;
-    supabaseId: string;
+    supabaseId?: string | null;
     tenantId: string;
     email: string;
     name?: string | null;
     avatarUrl?: string | null;
     role?: $Enums.UserRole;
+    password?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput;
@@ -489,11 +516,12 @@ export type UserUpdateToOneWithWhereWithoutContractsInput = {
 };
 export type UserUpdateWithoutContractsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
-    supabaseId?: Prisma.StringFieldUpdateOperationsInput | string;
+    supabaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     email?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+    password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     tenant?: Prisma.TenantUpdateOneRequiredWithoutUsersNestedInput;
@@ -501,23 +529,25 @@ export type UserUpdateWithoutContractsInput = {
 };
 export type UserUncheckedUpdateWithoutContractsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
-    supabaseId?: Prisma.StringFieldUpdateOperationsInput | string;
+    supabaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     tenantId?: Prisma.StringFieldUpdateOperationsInput | string;
     email?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+    password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput;
 };
 export type UserCreateWithoutNotificationsInput = {
     id?: string;
-    supabaseId: string;
+    supabaseId?: string | null;
     email: string;
     name?: string | null;
     avatarUrl?: string | null;
     role?: $Enums.UserRole;
+    password?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     tenant: Prisma.TenantCreateNestedOneWithoutUsersInput;
@@ -525,12 +555,13 @@ export type UserCreateWithoutNotificationsInput = {
 };
 export type UserUncheckedCreateWithoutNotificationsInput = {
     id?: string;
-    supabaseId: string;
+    supabaseId?: string | null;
     tenantId: string;
     email: string;
     name?: string | null;
     avatarUrl?: string | null;
     role?: $Enums.UserRole;
+    password?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutCreatedByInput;
@@ -550,11 +581,12 @@ export type UserUpdateToOneWithWhereWithoutNotificationsInput = {
 };
 export type UserUpdateWithoutNotificationsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
-    supabaseId?: Prisma.StringFieldUpdateOperationsInput | string;
+    supabaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     email?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+    password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     tenant?: Prisma.TenantUpdateOneRequiredWithoutUsersNestedInput;
@@ -562,33 +594,36 @@ export type UserUpdateWithoutNotificationsInput = {
 };
 export type UserUncheckedUpdateWithoutNotificationsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
-    supabaseId?: Prisma.StringFieldUpdateOperationsInput | string;
+    supabaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     tenantId?: Prisma.StringFieldUpdateOperationsInput | string;
     email?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+    password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     contracts?: Prisma.ContractUncheckedUpdateManyWithoutCreatedByNestedInput;
 };
 export type UserCreateManyTenantInput = {
     id?: string;
-    supabaseId: string;
+    supabaseId?: string | null;
     email: string;
     name?: string | null;
     avatarUrl?: string | null;
     role?: $Enums.UserRole;
+    password?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
 };
 export type UserUpdateWithoutTenantInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
-    supabaseId?: Prisma.StringFieldUpdateOperationsInput | string;
+    supabaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     email?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+    password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     contracts?: Prisma.ContractUpdateManyWithoutCreatedByNestedInput;
@@ -596,11 +631,12 @@ export type UserUpdateWithoutTenantInput = {
 };
 export type UserUncheckedUpdateWithoutTenantInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
-    supabaseId?: Prisma.StringFieldUpdateOperationsInput | string;
+    supabaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     email?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+    password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     contracts?: Prisma.ContractUncheckedUpdateManyWithoutCreatedByNestedInput;
@@ -608,11 +644,12 @@ export type UserUncheckedUpdateWithoutTenantInput = {
 };
 export type UserUncheckedUpdateManyWithoutTenantInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
-    supabaseId?: Prisma.StringFieldUpdateOperationsInput | string;
+    supabaseId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     email?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole;
+    password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
@@ -641,6 +678,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
     name?: boolean;
     avatarUrl?: boolean;
     role?: boolean;
+    password?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>;
@@ -656,6 +694,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
     name?: boolean;
     avatarUrl?: boolean;
     role?: boolean;
+    password?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>;
@@ -668,6 +707,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
     name?: boolean;
     avatarUrl?: boolean;
     role?: boolean;
+    password?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>;
@@ -680,10 +720,11 @@ export type UserSelectScalar = {
     name?: boolean;
     avatarUrl?: boolean;
     role?: boolean;
+    password?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
 };
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "supabaseId" | "tenantId" | "email" | "name" | "avatarUrl" | "role" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>;
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "supabaseId" | "tenantId" | "email" | "name" | "avatarUrl" | "role" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>;
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>;
     contracts?: boolean | Prisma.User$contractsArgs<ExtArgs>;
@@ -705,12 +746,13 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     };
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id: string;
-        supabaseId: string;
+        supabaseId: string | null;
         tenantId: string;
         email: string;
         name: string | null;
         avatarUrl: string | null;
         role: $Enums.UserRole;
+        password: string | null;
         createdAt: Date;
         updatedAt: Date;
     }, ExtArgs["result"]["user"]>;
@@ -780,6 +822,7 @@ export interface UserFieldRefs {
     readonly name: Prisma.FieldRef<"User", 'String'>;
     readonly avatarUrl: Prisma.FieldRef<"User", 'String'>;
     readonly role: Prisma.FieldRef<"User", 'UserRole'>;
+    readonly password: Prisma.FieldRef<"User", 'String'>;
     readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>;
     readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>;
 }

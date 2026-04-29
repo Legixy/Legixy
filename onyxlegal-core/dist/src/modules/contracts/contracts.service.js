@@ -237,6 +237,45 @@ let ContractsService = ContractsService_1 = class ContractsService {
             },
         });
     }
+    async getVersions(tenantId, contractId) {
+        const contract = await this.prisma.contract.findFirst({ where: { id: contractId, tenantId } });
+        if (!contract)
+            throw new common_1.NotFoundException('Contract not found');
+        return this.prisma.contractVersion.findMany({
+            where: { contractId },
+            orderBy: { version: 'desc' },
+        });
+    }
+    async restoreVersion(tenantId, userId, contractId, versionId, versionNumber) {
+        const contract = await this.prisma.contract.findFirst({ where: { id: contractId, tenantId } });
+        if (!contract)
+            throw new common_1.NotFoundException('Contract not found');
+        const target = versionId
+            ? await this.prisma.contractVersion.findFirst({ where: { id: versionId, contractId } })
+            : versionNumber
+                ? await this.prisma.contractVersion.findFirst({ where: { contractId, version: versionNumber } })
+                : null;
+        if (!target)
+            throw new common_1.NotFoundException('Version not found');
+        const latest = await this.prisma.contractVersion.findFirst({
+            where: { contractId },
+            orderBy: { version: 'desc' },
+        });
+        const newVersion = await this.prisma.contractVersion.create({
+            data: {
+                contractId,
+                version: (latest?.version || 0) + 1,
+                content: target.content,
+                changeNote: `Restored to version ${target.version}`,
+                changedBy: userId,
+            },
+        });
+        await this.prisma.contract.update({
+            where: { id: contractId },
+            data: { content: target.content },
+        });
+        return { success: true, newVersion };
+    }
     async getDashboardStats(tenantId) {
         const [totalContracts, activeContracts, draftContracts, highRiskCount, recentAnalyses,] = await Promise.all([
             this.prisma.contract.count({ where: { tenantId } }),

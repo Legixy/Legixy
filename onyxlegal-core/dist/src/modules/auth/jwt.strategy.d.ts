@@ -6,10 +6,11 @@ export interface JwtPayload {
     email: string;
     role?: string;
     aud?: string;
+    type?: 'local' | 'supabase';
 }
 export interface AuthenticatedUser {
     id: string;
-    supabaseId: string;
+    supabaseId: string | null;
     tenantId: string;
     email: string;
     name: string | null;

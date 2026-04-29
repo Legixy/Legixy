@@ -235,4 +235,28 @@ export declare class ContractsController {
         impactPeriod: string | null;
         isAccepted: boolean;
     }>;
+    getVersions(user: AuthenticatedUser, id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        content: string;
+        contractId: string;
+        changeNote: string | null;
+        version: number;
+        changedBy: string;
+    }[]>;
+    restoreVersion(user: AuthenticatedUser, id: string, body: {
+        versionId?: string;
+        versionNumber?: number;
+    }): Promise<{
+        success: boolean;
+        newVersion: {
+            id: string;
+            createdAt: Date;
+            content: string;
+            contractId: string;
+            changeNote: string | null;
+            version: number;
+            changedBy: string;
+        };
+    }>;
 }

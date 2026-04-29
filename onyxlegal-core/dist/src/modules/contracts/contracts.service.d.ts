@@ -230,6 +230,27 @@ export declare class ContractsService {
         impactPeriod: string | null;
         isAccepted: boolean;
     }>;
+    getVersions(tenantId: string, contractId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        content: string;
+        contractId: string;
+        changeNote: string | null;
+        version: number;
+        changedBy: string;
+    }[]>;
+    restoreVersion(tenantId: string, userId: string, contractId: string, versionId?: string, versionNumber?: number): Promise<{
+        success: boolean;
+        newVersion: {
+            id: string;
+            createdAt: Date;
+            content: string;
+            contractId: string;
+            changeNote: string | null;
+            version: number;
+            changedBy: string;
+        };
+    }>;
     getDashboardStats(tenantId: string): Promise<{
         totalContracts: number;
         activeContracts: number;

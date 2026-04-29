@@ -95,7 +95,7 @@ export function AiAlerts() {
     );
   }
 
-  if (!data || data.alerts.length === 0) {
+  if (!data || !data.alerts || data.alerts.length === 0) {
     return null;
   }
 

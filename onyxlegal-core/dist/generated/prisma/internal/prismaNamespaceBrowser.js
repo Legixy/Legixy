@@ -47,6 +47,7 @@ exports.UserScalarFieldEnum = {
     name: 'name',
     avatarUrl: 'avatarUrl',
     role: 'role',
+    password: 'password',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 };

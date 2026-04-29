@@ -1,3 +1,4 @@
+import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../database/prisma.service';
 import { Plan, UserRole } from 'generated/prisma/client';
 interface SignupInput {
@@ -6,21 +7,49 @@ interface SignupInput {
     name: string;
     companyName: string;
 }
+interface RegisterInput {
+    email: string;
+    password: string;
+    name: string;
+    companyName: string;
+}
 export declare class AuthService {
     private readonly prisma;
+    private readonly jwt;
     private readonly logger;
-    constructor(prisma: PrismaService);
+    constructor(prisma: PrismaService, jwt: JwtService);
+    register(input: RegisterInput): Promise<{
+        access_token: string;
+        user: {
+            id: string;
+            email: string;
+            name: string | null;
+            role: string;
+            tenantId: string;
+        };
+    }>;
+    login(email: string, password: string): Promise<{
+        access_token: string;
+        user: {
+            id: string;
+            email: string;
+            name: string | null;
+            role: string;
+            tenantId: string;
+        };
+    }>;
     signup(input: SignupInput): Promise<{
         user: {
             id: string;
             name: string | null;
             createdAt: Date;
             updatedAt: Date;
-            supabaseId: string;
+            supabaseId: string | null;
             tenantId: string;
             email: string;
             avatarUrl: string | null;
             role: UserRole;
+            password: string | null;
         };
         tenant: {
             id: string;
@@ -35,7 +64,7 @@ export declare class AuthService {
         };
         isNew: boolean;
     }>;
-    getProfile(supabaseId: string): Promise<({
+    getProfile(userId: string): Promise<({
         tenant: {
             id: string;
             name: string;
@@ -48,11 +77,13 @@ export declare class AuthService {
         name: string | null;
         createdAt: Date;
         updatedAt: Date;
-        supabaseId: string;
+        supabaseId: string | null;
         tenantId: string;
         email: string;
         avatarUrl: string | null;
         role: UserRole;
+        password: string | null;
     }) | null>;
+    private issueToken;
 }
 export {};

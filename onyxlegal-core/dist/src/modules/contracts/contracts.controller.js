@@ -43,6 +43,12 @@ let ContractsController = class ContractsController {
     acceptFix(user, contractId, clauseId) {
         return this.contractsService.acceptClauseFix(user.tenantId, contractId, clauseId);
     }
+    getVersions(user, id) {
+        return this.contractsService.getVersions(user.tenantId, id);
+    }
+    restoreVersion(user, id, body) {
+        return this.contractsService.restoreVersion(user.tenantId, user.id, id, body.versionId, body.versionNumber);
+    }
 };
 exports.ContractsController = ContractsController;
 __decorate([
@@ -103,6 +109,23 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", void 0)
 ], ContractsController.prototype, "acceptFix", null);
+__decorate([
+    (0, common_1.Get)(':id/versions'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], ContractsController.prototype, "getVersions", null);
+__decorate([
+    (0, common_1.Post)(':id/restore-version'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", void 0)
+], ContractsController.prototype, "restoreVersion", null);
 exports.ContractsController = ContractsController = __decorate([
     (0, common_1.Controller)('contracts'),
     __metadata("design:paramtypes", [contracts_service_1.ContractsService])
