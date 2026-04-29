@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, ShieldCheck, Sparkles, Bot, MessageSquare } from 'lucide-react';
+import { AlertTriangle, ShieldCheck, Sparkles, Bot, MessageSquare, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/shared/components/Modal';
 import { toast } from 'sonner';
 
-type RiskLevel = 'high_risk' | 'needs_action' | 'verified_safe' | 'ai_suggested_fix';
+type RiskLevel = 'high_risk' | 'needs_action' | 'verified_safe' | 'ai_suggested_fix' | 'not_analyzed';
 
 interface Props {
   title: string;
@@ -75,6 +75,20 @@ const config = {
     actionGradient: false,
     actionVariant: 'outline' as const,
     glowShadow: '0 0 20px rgba(245, 158, 11, 0.06)',
+  },
+  not_analyzed: {
+    icon: Clock,
+    iconBg: 'bg-slate-50',
+    iconColor: 'text-slate-400',
+    badgeText: 'NOT ANALYZED',
+    badgeClass: 'bg-slate-50 text-slate-500',
+    footerBg: 'rgba(248, 250, 252, 0.6)',
+    labelColor: 'text-slate-500',
+    bodyColor: 'text-slate-700',
+    actionText: 'Run AI Analysis',
+    actionGradient: false,
+    actionVariant: 'outline' as const,
+    glowShadow: '0 0 20px rgba(148, 163, 184, 0.06)',
   },
 };
 

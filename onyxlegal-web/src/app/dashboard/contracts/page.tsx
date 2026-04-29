@@ -198,7 +198,7 @@ export default function ContractsPage() {
                 type={contract.template?.category || 'Document'}
                 status={contract.status}
                 date={new Date(contract.createdAt).toLocaleDateString()}
-                riskLevel={contract.riskScore ? (contract.riskScore > 70 ? 'high_risk' : contract.riskScore > 40 ? 'needs_action' : 'verified_safe') : 'verified_safe'}
+                riskLevel={contract.riskScore != null ? (contract.riskScore > 70 ? 'high_risk' : contract.riskScore > 40 ? 'needs_action' : 'verified_safe') : 'not_analyzed'}
                 aiDiagnosis={`Contract value: ${contract.contractValue || 'N/A'} ${contract.currency}`}
                 businessImpact={`Created by ${contract.createdBy?.name || 'Unknown'} on ${new Date(contract.createdAt).toLocaleDateString()}`}
               />

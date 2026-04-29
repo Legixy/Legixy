@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
-import { auth, getTokenFromCookie, clearTokenCookie } from '@/lib/api';
+import { auth } from '@/lib/api';
 
 interface UserProfile {
   id: string;
@@ -43,14 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const loadUser = useCallback(async () => {
-    const token = getTokenFromCookie();
-    if (!token) {
-      setUser(null);
-      setIsLoading(false);
-      return;
-    }
-
     try {
+      // Browser sends the HttpOnly auth_token cookie automatically via credentials: 'include'
       const { user: profile } = await auth.me();
       setUser({
         id: profile.id,
@@ -61,8 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         tenant: profile.tenant,
       });
     } catch {
-      // Token is invalid or backend is down — clear it and require re-login
-      clearTokenCookie();
       setUser(null);
     } finally {
       setIsLoading(false);
