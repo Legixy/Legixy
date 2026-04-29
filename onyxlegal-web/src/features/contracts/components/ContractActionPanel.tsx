@@ -173,7 +173,7 @@ export function ContractActionPanel({ contractId, contractTitle }: Props) {
   const contractStatus  = bulkResult ? 'REVIEWED' : (apiData?.status || 'IN_REVIEW');
 
   const estimatedLoss   = summary.topThreats.reduce((acc, r) => {
-    const m = r.businessImpact.match(/₹([\d,]+)/);
+    const m = r.businessImpact?.match(/₹([\d,]+)/);
     return acc + (m ? parseInt(m[1].replace(/,/g, ''), 10) : 100_000);
   }, 0);
 
@@ -338,7 +338,7 @@ export function ContractActionPanel({ contractId, contractTitle }: Props) {
           <SectionLabel>⚠️ Top Risks — {fixedSet.size}/{summary.topThreats.length} resolved</SectionLabel>
           <div className="space-y-3">
             {summary.topThreats.map((risk, idx) => {
-              const cId = (risk as any).clauseId || MOCK_CLAUSE_IDS[idx] || `c-${idx}`;
+              const cId = risk.clauseId || MOCK_CLAUSE_IDS[idx] || `c-${idx}`;
               return (
                 <RiskItemCard
                   key={cId}

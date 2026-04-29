@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-provider';
 import { useDashboardMetrics, useContractStats } from '@/shared/api';
@@ -12,11 +13,23 @@ import { AiAlerts } from '@/features/ai/components/AiAlerts';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user } = useAuth();
-  const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics();
+  const { user, isLoading, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) router.replace('/login');
+  }, [isLoading, isAuthenticated, router]);
+  const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics();
   const { data: stats } = useContractStats();
 
   const firstName = user?.name?.split(' ')[0] || 'there';
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex flex-col animate-fade-up">
@@ -86,6 +99,11 @@ export default function DashboardPage() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
           <p className="text-slate-500 ml-2 text-sm">Loading metrics...</p>
+        </div>
+      ) : metricsError ? (
+        <div className="flex items-center gap-2 py-8 text-sm text-slate-500">
+          <AlertTriangle size={15} className="text-amber-500" />
+          Could not load metrics — backend may be starting up.
         </div>
       ) : (
         <div className="grid grid-cols-4 gap-4 mb-8">

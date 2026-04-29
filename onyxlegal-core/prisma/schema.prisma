@@ -131,12 +131,13 @@ model Tenant {
 /// User — authenticated individual
 model User {
   id          String   @id @default(cuid())
-  supabaseId  String   @unique  // links to Supabase Auth user
+  supabaseId  String?  @unique  // links to Supabase Auth user (null for local auth)
   tenantId    String
   email       String
   name        String?
   avatarUrl   String?
   role        UserRole @default(MEMBER)
+  password    String?  // bcrypt hash — set only for local-auth users
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

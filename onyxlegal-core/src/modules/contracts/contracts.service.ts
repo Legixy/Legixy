@@ -289,6 +289,63 @@ export class ContractsService {
   }
 
   /**
+   * List all versions for a contract.
+   */
+  async getVersions(tenantId: string, contractId: string) {
+    const contract = await this.prisma.contract.findFirst({ where: { id: contractId, tenantId } });
+    if (!contract) throw new NotFoundException('Contract not found');
+
+    return this.prisma.contractVersion.findMany({
+      where: { contractId },
+      orderBy: { version: 'desc' },
+    });
+  }
+
+  /**
+   * Restore a contract to a previous version — creates a new version for audit trail.
+   */
+  async restoreVersion(
+    tenantId: string,
+    userId: string,
+    contractId: string,
+    versionId?: string,
+    versionNumber?: number,
+  ) {
+    const contract = await this.prisma.contract.findFirst({ where: { id: contractId, tenantId } });
+    if (!contract) throw new NotFoundException('Contract not found');
+
+    const target = versionId
+      ? await this.prisma.contractVersion.findFirst({ where: { id: versionId, contractId } })
+      : versionNumber
+        ? await this.prisma.contractVersion.findFirst({ where: { contractId, version: versionNumber } })
+        : null;
+
+    if (!target) throw new NotFoundException('Version not found');
+
+    const latest = await this.prisma.contractVersion.findFirst({
+      where: { contractId },
+      orderBy: { version: 'desc' },
+    });
+
+    const newVersion = await this.prisma.contractVersion.create({
+      data: {
+        contractId,
+        version: (latest?.version || 0) + 1,
+        content: target.content,
+        changeNote: `Restored to version ${target.version}`,
+        changedBy: userId,
+      },
+    });
+
+    await this.prisma.contract.update({
+      where: { id: contractId },
+      data: { content: target.content },
+    });
+
+    return { success: true, newVersion };
+  }
+
+  /**
    * Dashboard stats for a tenant.
    */
   async getDashboardStats(tenantId: string) {

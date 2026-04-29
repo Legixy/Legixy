@@ -9,37 +9,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useAIStore } from '@/shared/store/ai.store';
+import { useAIInsights } from '@/shared/api/ai';
 import { AlertTriangle, Clock, TrendingDown, Loader2, RefreshCw } from 'lucide-react';
-
-interface AIInsight {
-  risksDetected: number;
-  expiringContracts: number;
-  financialExposure: number;
-  complianceScore: number;
-}
-
-/**
- * Fetch AI insights
- * In production, this would fetch from /api/ai/insights
- */
-function useAIInsights() {
-  return useQuery({
-    queryKey: ['ai', 'insights'],
-    queryFn: async () => {
-      // Mock API response
-      return {
-        risksDetected: 2,
-        expiringContracts: 1,
-        financialExposure: 12000, // ₹
-        complianceScore: 78,
-      } as AIInsight;
-    },
-    refetchInterval: 30000, // Poll every 30 seconds
-    staleTime: 10000,
-  });
-}
 
 export function AiCommandCenter() {
   const { data, isLoading, refetch } = useAIInsights();

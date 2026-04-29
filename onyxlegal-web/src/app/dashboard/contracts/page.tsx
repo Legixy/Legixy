@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ContractRiskCard } from '@/features/contracts/components/ContractRiskCard';
 import { Plus, Filter, Search, FileSignature, AlertTriangle, Shield, Clock, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth-provider';
 import { useContracts, useContractStats } from '@/shared/api';
 import { SmartEmptyState } from '@/shared/components/SmartEmptyState';
 
@@ -14,6 +15,11 @@ export default function ContractsPage() {
   const [activeFilter, setActiveFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
+  const { isLoading: authLoading, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) router.replace('/login');
+  }, [authLoading, isAuthenticated, router]);
 
   // Fetch contracts data
   const { data: contractsResponse, isLoading, error } = useContracts({
@@ -38,8 +44,23 @@ export default function ContractsPage() {
     });
   }, [contracts, searchQuery]);
 
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex flex-col pt-2 pb-12 animate-fade-up">
+
+      {error && (
+        <div className="flex items-center gap-2 mb-6 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
+          <AlertCircle size={14} className="shrink-0" />
+          Failed to load contracts — {(error as Error).message || 'backend unavailable'}. Please refresh.
+        </div>
+      )}
 
       {/* ── Page Header ──────────────────────────── */}
       <div className="flex items-start justify-between mb-8">

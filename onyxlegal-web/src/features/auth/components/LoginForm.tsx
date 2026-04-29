@@ -8,8 +8,7 @@ import * as z from 'zod';
 import { Loader2, Mail, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { auth, ApiError } from '@/lib/api';
 import { SocialLoginButton } from './SocialLoginButton';
 
 const loginSchema = z.object({
@@ -33,25 +32,19 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
-
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      
-      // Artificial error for demo if password is 'wrongpassword'
-      if (data.password === 'wrongpassword') {
-        throw new Error('Email or password is incorrect');
-      }
-
-      toast.success('Login successful', {
-        description: 'Welcome back to OnyxLegal',
-      });
-      
-      router.push('/dashboard');
+      await auth.login(data.email, data.password);
+      toast.success('Login successful', { description: 'Welcome back to OnyxLegal' });
+      const params = new URLSearchParams(window.location.search);
+      router.push(params.get('next') || '/dashboard');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Email or password is incorrect', {
-        description: 'Please check your credentials and try again.',
-      });
+      const message =
+        error instanceof ApiError && error.status === 401
+          ? 'Invalid email or password.'
+          : error instanceof ApiError
+            ? error.message
+            : 'Something went wrong. Please try again.';
+      toast.error(message, { description: 'Please check your credentials.' });
     } finally {
       setIsLoading(false);
     }
@@ -68,13 +61,13 @@ export function LoginForm() {
         </p>
       </div>
 
-      <SocialLoginButton 
-        provider="Google" 
-        disabled={isLoading} 
+      <SocialLoginButton
+        provider="Google"
+        disabled={isLoading}
         onClick={() => {
           toast.success('Redirecting to Google...', { description: 'Opening secure login window' });
           setTimeout(() => router.push('/dashboard'), 1500);
-        }} 
+        }}
       />
 
       <div className="relative my-6 pointer-events-none">
@@ -98,9 +91,8 @@ export function LoginForm() {
             <input
               {...form.register('email')}
               placeholder="name@company.com"
-              className={`w-full pl-10 h-11 bg-slate-50 border border-slate-200 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all ${
-                form.formState.errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''
-              }`}
+              className={`w-full pl-10 h-11 bg-slate-50 border border-slate-200 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all ${form.formState.errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''
+                }`}
               disabled={isLoading}
             />
           </div>
@@ -116,8 +108,8 @@ export function LoginForm() {
             <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
               Password
             </label>
-            <a 
-              href="#" 
+            <a
+              href="#"
               onClick={(e) => { e.preventDefault(); toast('Password reset link sent'); }}
               className="text-xs font-semibold text-indigo-600 hover:text-indigo-500 hover:underline transition-all"
             >
@@ -130,9 +122,8 @@ export function LoginForm() {
               {...form.register('password')}
               type="password"
               placeholder="••••••••"
-              className={`w-full pl-10 h-11 bg-slate-50 border border-slate-200 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all ${
-                form.formState.errors.password ? 'border-red-500 focus-visible:ring-red-500' : ''
-              }`}
+              className={`w-full pl-10 h-11 bg-slate-50 border border-slate-200 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all ${form.formState.errors.password ? 'border-red-500 focus-visible:ring-red-500' : ''
+                }`}
               disabled={isLoading}
             />
           </div>
@@ -145,7 +136,7 @@ export function LoginForm() {
 
         <button
           type="submit"
-          className="w-full h-11 mt-6 rounded-xl text-[15px] font-bold text-white shadow-[0_4px_14px_rgba(79,70,229,0.30)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.40)] hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full h-11 mt-6 rounded-xl text-[15px] font-bold text-white shadow-[0_4px_14px_rgba(79,70,229,0.30)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.40)] hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
           style={{ background: 'var(--onyx-gradient)' }}
           disabled={isLoading}
         >
@@ -159,9 +150,9 @@ export function LoginForm() {
 
       <p className="text-center text-sm text-slate-500 mt-8">
         Don't have an account?{' '}
-        <a 
-          href="#" 
-          onClick={(e) => { e.preventDefault(); router.push('/dashboard'); }}
+        <a
+          href="#"
+          onClick={(e) => { e.preventDefault(); toast('Sign up coming soon — contact us to get early access.'); }}
           className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors hover:underline"
         >
           Sign up

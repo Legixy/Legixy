@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth-provider';
+import { useDashboardMetrics } from '@/shared/api/analytics';
 import {
   TrendingUp,
   TrendingDown,
@@ -123,6 +126,24 @@ function ActivityItem({ title, time, type }: { title: string; time: string; type
 
 // ── Main Analytics Page ────────────────────────────────────────────────────
 export default function AnalyticsPage() {
+  const router = useRouter();
+  const { isLoading, isAuthenticated } = useAuth();
+  const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics();
+
+  const monthLabel = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) router.replace('/login');
+  }, [isLoading, isAuthenticated, router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Zap className="w-6 h-6 animate-pulse text-indigo-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex flex-col pt-4 pb-12 animate-fade-up">
 
@@ -140,10 +161,16 @@ export default function AnalyticsPage() {
       </div>
 
       {/* ── Stat Cards Grid ──────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+      {metricsError && (
+        <div className="flex items-center gap-2 mb-6 text-sm text-slate-500">
+          <AlertTriangle size={14} className="text-amber-500 shrink-0" />
+          Metrics unavailable — backend may be starting up. Showing last known values.
+        </div>
+      )}
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10 ${metricsLoading ? 'opacity-50 pointer-events-none' : ''}`}>
         <StatCard
           label="Cost Saved"
-          value={120}
+          value={metrics?.costSaved ?? 0}
           suffix="K"
           trend="up"
           trendLabel="+₹18K this week"
@@ -153,7 +180,7 @@ export default function AnalyticsPage() {
         />
         <StatCard
           label="Risk Reduced"
-          value={42}
+          value={metrics?.riskReduced ?? 0}
           suffix="%"
           trend="up"
           trendLabel="+8% vs last month"
@@ -163,7 +190,7 @@ export default function AnalyticsPage() {
         />
         <StatCard
           label="Hours Saved"
-          value={18}
+          value={metrics?.timeSavedHours ?? 0}
           suffix="hrs"
           trend="up"
           trendLabel="3.2 hrs this week"
@@ -173,7 +200,7 @@ export default function AnalyticsPage() {
         />
         <StatCard
           label="Contracts Active"
-          value={24}
+          value={metrics?.activeContracts ?? 0}
           trend="up"
           trendLabel="6 new this month"
           icon={FileText}
@@ -250,7 +277,7 @@ export default function AnalyticsPage() {
             </div>
             <div>
               <h3 className="font-display font-bold text-lg">Onyx AI Monthly Summary</h3>
-              <p className="text-indigo-200/50 text-xs">Performance metrics for April 2026</p>
+              <p className="text-indigo-200/50 text-xs">Performance metrics for {monthLabel}</p>
             </div>
           </div>
 

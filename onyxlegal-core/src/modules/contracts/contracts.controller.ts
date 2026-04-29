@@ -80,4 +80,21 @@ export class ContractsController {
       clauseId,
     );
   }
+
+  @Get(':id/versions')
+  getVersions(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+  ) {
+    return this.contractsService.getVersions(user.tenantId, id);
+  }
+
+  @Post(':id/restore-version')
+  restoreVersion(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() body: { versionId?: string; versionNumber?: number },
+  ) {
+    return this.contractsService.restoreVersion(user.tenantId, user.id, id, body.versionId, body.versionNumber);
+  }
 }

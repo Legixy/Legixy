@@ -1,22 +1,22 @@
-/**
- * OnyxLegal API Client
- *
- * Centralized HTTP client for communicating with onyxlegal-core.
- * In development, uses a dev JWT token. In production, integrates with Supabase Auth.
- */
-
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const COOKIE_NAME = 'auth_token';
+const COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7 days
 
-// Dev JWT — auto-generated for test-user-001 (Abdul Kadir / OnyxLegal HQ)
-// Replace with Supabase Auth token in production
-let authToken: string | null = null;
-
-export function setAuthToken(token: string) {
-  authToken = token;
+// ── Cookie helpers (browser-only) ───────────────────────────
+export function setTokenCookie(token: string) {
+  if (typeof document === 'undefined') return;
+  document.cookie = `${COOKIE_NAME}=${encodeURIComponent(token)}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Strict`;
 }
 
-export function getAuthToken(): string | null {
-  return authToken;
+export function getTokenFromCookie(): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${COOKIE_NAME}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+export function clearTokenCookie() {
+  if (typeof document === 'undefined') return;
+  document.cookie = `${COOKIE_NAME}=; path=/; max-age=0; SameSite=Strict`;
 }
 
 async function request<T>(
@@ -30,18 +30,16 @@ async function request<T>(
     ...(options.headers as Record<string, string>),
   };
 
-  if (authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`;
+  const token = getTokenFromCookie();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const res = await fetch(url, {
-    ...options,
-    headers,
-  });
+  const res = await fetch(url, { ...options, headers });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new ApiError(res.status, error.detail || 'Request failed', error);
+    const error = await res.json().catch(() => ({ message: res.statusText }));
+    throw new ApiError(res.status, error.message || error.detail || 'Request failed', error);
   }
 
   return res.json();
@@ -59,10 +57,42 @@ export class ApiError extends Error {
 }
 
 // ── Auth ────────────────────────────────────────────────────
+interface LoginResponse {
+  access_token: string;
+  user: { id: string; email: string; name: string | null; role: string; tenantId: string };
+}
+
 export const auth = {
+  login: async (email: string, password: string): Promise<LoginResponse> => {
+    const res = await request<LoginResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    setTokenCookie(res.access_token);
+    return res;
+  },
+
+  register: async (data: {
+    email: string;
+    password: string;
+    name: string;
+    companyName: string;
+  }): Promise<LoginResponse> => {
+    const res = await request<LoginResponse>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    setTokenCookie(res.access_token);
+    return res;
+  },
+
+  logout: () => {
+    clearTokenCookie();
+  },
+
   signup: (data: { supabaseId: string; email: string; name: string; companyName: string }) =>
     request<{
-      user: { id: string; email: string; name: string; role: string };
+      user: { id: string; email: string; name: string | null; role: string };
       tenant: { id: string; name: string; plan: string };
       isNew: boolean;
     }>('/auth/signup', { method: 'POST', body: JSON.stringify(data) }),
@@ -71,7 +101,7 @@ export const auth = {
     request<{
       user: {
         id: string;
-        supabaseId: string;
+        supabaseId: string | null;
         tenantId: string;
         email: string;
         name: string | null;
@@ -195,6 +225,7 @@ export interface SimpleRisk {
   businessImpact: string;
   recommendedAction: string;
   severity: 'ignore' | 'fix' | 'fixAsap' | 'dealbreaker';
+  clauseId?: string;
 }
 
 export interface RiskSummary {

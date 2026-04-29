@@ -1,8 +1,10 @@
 'use client';
 
-import { Search, Bell, X, ChevronDown, Sparkles } from 'lucide-react';
+import { Search, Bell, X, ChevronDown, Sparkles, LogOut } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useAuth } from '@/lib/auth-provider';
 
 const quickLinks = [
   { label: 'Globex MSA — High Risk clause', badge: 'Contract', color: 'bg-red-50 text-red-600' },
@@ -14,6 +16,12 @@ const quickLinks = [
 export function Header() {
   const [query, setQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
+  const { user, logout } = useAuth();
+  const initials = user?.name
+    ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+    : '??';
 
   // Keyboard shortcut: ⌘K
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -143,19 +151,49 @@ export function Header() {
         {/* Divider */}
         <div className="w-px h-6 bg-slate-200/60 mx-1" />
 
-        {/* User Avatar */}
-        <button 
-          onClick={() => toast.info('User Profile & Settings', { description: 'Settings menu coming soon.' })}
-          className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-slate-50 transition-all duration-200 group"
-        >
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-            style={{ background: 'var(--onyx-gradient)', boxShadow: '0 2px 8px rgba(79, 70, 229, 0.25)' }}
+        {/* User Avatar + dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-slate-50 transition-all duration-200 group"
           >
-            AK
-          </div>
-          <ChevronDown size={13} className="text-slate-400 group-hover:text-slate-600 transition-colors duration-200" />
-        </button>
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+              style={{ background: 'var(--onyx-gradient)', boxShadow: '0 2px 8px rgba(79, 70, 229, 0.25)' }}
+            >
+              {initials}
+            </div>
+            <ChevronDown size={13} className={`text-slate-400 group-hover:text-slate-600 transition-all duration-200 ${menuOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {menuOpen && (
+            <>
+              {/* Backdrop */}
+              <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+              {/* Menu */}
+              <div
+                className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-lg border border-slate-200/80 z-20 overflow-hidden"
+                style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
+              >
+                <div className="px-4 py-3 border-b border-slate-100">
+                  <p className="text-xs font-semibold text-slate-900 truncate">{user?.name || 'Account'}</p>
+                  <p className="text-xs text-slate-500 truncate mt-0.5">{user?.email}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    logout();
+                    router.push('/login');
+                  }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
+                >
+                  <LogOut size={14} />
+                  Sign out
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );

@@ -8,8 +8,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useAIStore, type AIActivityItem } from '@/shared/store/ai.store';
+import { useAIActivity } from '@/shared/api/ai';
 import { AlertTriangle, CheckCircle, Zap, Loader2, Clock } from 'lucide-react';
 
 const activityIcons: Record<string, React.ReactNode> = {
@@ -30,52 +30,6 @@ function formatRelativeTime(date: Date): string {
   return `${diffSecs}s ago`;
 }
 
-/**
- * Fetch mock activity data
- * In production, this would fetch from /api/ai/activity
- */
-function useAIActivity() {
-  return useQuery({
-    queryKey: ['ai', 'activity'],
-    queryFn: async () => {
-      // Mock API response - in production, fetch from real endpoint
-      return {
-        activities: [
-          {
-            id: '1',
-            type: 'analysis' as const,
-            message: 'Analyzing contract for risks...',
-            timestamp: new Date(Date.now() - 30000),
-            status: 'processing' as const,
-          },
-          {
-            id: '2',
-            type: 'risk' as const,
-            message: 'Payment clause deviates from MSME norms',
-            timestamp: new Date(Date.now() - 60000),
-            status: 'completed' as const,
-          },
-          {
-            id: '3',
-            type: 'fix' as const,
-            message: 'Liability clause has been suggested for fix',
-            timestamp: new Date(Date.now() - 120000),
-            status: 'completed' as const,
-          },
-          {
-            id: '4',
-            type: 'insight' as const,
-            message: 'High risk termination clause detected',
-            timestamp: new Date(Date.now() - 180000),
-            status: 'completed' as const,
-          },
-        ],
-      };
-    },
-    refetchInterval: 5000, // Poll every 5 seconds
-    staleTime: 2000,
-  });
-}
 
 export function AiActivityFeed() {
   const { data } = useAIActivity();

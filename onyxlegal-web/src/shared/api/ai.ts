@@ -60,62 +60,52 @@ export function useSuggestions(contractId: string, options?: { enabled?: boolean
 }
 
 /**
- * Fetch AI insights dashboard
- * Returns: risks detected, expiring contracts, financial exposure, compliance score
+ * Fetch AI insights — derived from analytics dashboard + contract stats.
  */
 export function useAIInsights() {
   return useQuery({
     queryKey: aiKeys.insights(),
     queryFn: async () => {
-      // Mock data - in production, this would fetch from /api/ai/insights
+      const metrics = await import('@/lib/api').then((m) => m.analytics.dashboard());
       return {
-        risksDetected: 2,
-        expiringContracts: 1,
-        financialExposure: 12000,
-        complianceScore: 78,
+        risksDetected: metrics.highRiskClauses,
+        expiringContracts: 0, // No expiry endpoint yet — placeholder
+        financialExposure: metrics.costSaved * 1000,
+        complianceScore: metrics.riskReduced,
       };
     },
-    refetchInterval: 30000, // Poll every 30 seconds
+    refetchInterval: 30000,
     staleTime: 10000,
   });
 }
 
 /**
- * Fetch AI activity feed
- * Returns: recent AI actions (risks detected, clauses fixed, analysis completed)
+ * Fetch AI activity feed from notifications.
  */
 export function useAIActivity() {
   return useQuery({
     queryKey: aiKeys.activity(),
     queryFn: async () => {
-      // Mock data - in production, this would fetch from /api/ai/activity
+      const notifs = await import('@/lib/api').then((m) => m.notifications.list());
+      const typeMap: Record<string, 'analysis' | 'risk' | 'fix' | 'insight'> = {
+        RISK_ALERT: 'risk',
+        AI_FIX_READY: 'fix',
+        ANALYSIS_COMPLETE: 'analysis',
+        SYSTEM: 'insight',
+        SIGNATURE_PENDING: 'insight',
+        CONTRACT_EXPIRING: 'insight',
+      };
       return {
-        activities: [
-          {
-            id: '1',
-            type: 'analysis' as const,
-            message: 'Analyzing contract for risks...',
-            timestamp: new Date(Date.now() - 30000),
-            status: 'processing' as const,
-          },
-          {
-            id: '2',
-            type: 'risk' as const,
-            message: 'Payment clause deviates from MSME norms',
-            timestamp: new Date(Date.now() - 60000),
-            status: 'completed' as const,
-          },
-          {
-            id: '3',
-            type: 'fix' as const,
-            message: 'Liability clause has been suggested for fix',
-            timestamp: new Date(Date.now() - 120000),
-            status: 'completed' as const,
-          },
-        ],
+        activities: notifs.slice(0, 10).map((n) => ({
+          id: n.id,
+          type: typeMap[n.type] ?? 'insight',
+          message: n.body,
+          timestamp: new Date(n.createdAt),
+          status: 'completed' as const,
+        })),
       };
     },
-    refetchInterval: 5000, // Poll every 5 seconds
-    staleTime: 2000,
+    refetchInterval: 10000,
+    staleTime: 5000,
   });
 }

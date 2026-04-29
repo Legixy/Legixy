@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useContractStats } from '@/shared/api';
 import {
   LayoutDashboard,
   FileText,
@@ -22,6 +23,8 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { data: stats } = useContractStats();
+  const activeCount = stats?.activeContracts ?? 0;
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === '/dashboard';
@@ -39,7 +42,7 @@ export function Sidebar() {
         >
           <Hexagon fill="white" stroke="none" size={18} />
         </div>
-        <span className="font-display font-bold text-[17px] text-[#0F172A]">Legixy</span>
+        <span className="font-display font-bold text-[17px] text-[#0F172A]">OnyxLegal</span>
       </div>
 
       {/* Platform Nav */}
@@ -118,7 +121,7 @@ export function Sidebar() {
             </div>
           </div>
           <p className="text-[11px] text-slate-500 leading-snug relative z-10">
-            Continuously scanning 24 active contracts for liabilities.
+            Continuously scanning {activeCount} active contract{activeCount !== 1 ? 's' : ''} for liabilities.
           </p>
         </div>
 

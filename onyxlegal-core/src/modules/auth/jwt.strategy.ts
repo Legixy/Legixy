@@ -5,15 +5,16 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma.service';
 
 export interface JwtPayload {
-  sub: string;   // Supabase user ID
+  sub: string;
   email: string;
   role?: string;
   aud?: string;
+  type?: 'local' | 'supabase';
 }
 
 export interface AuthenticatedUser {
-  id: string;        // our User.id
-  supabaseId: string;
+  id: string;
+  supabaseId: string | null;
   tenantId: string;
   email: string;
   name: string | null;
@@ -34,22 +35,21 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  /**
-   * Called after JWT is verified. Looks up the user in our database
-   * and attaches full user context (including tenantId) to the request.
-   */
   async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
-    const user = await this.prisma.user.findUnique({
-      where: { supabaseId: payload.sub },
-    });
+    // Local auth: sub is our internal User.id
+    // Supabase auth: sub is supabaseId
+    const user =
+      payload.type === 'local'
+        ? await this.prisma.user.findUnique({ where: { id: payload.sub } })
+        : await this.prisma.user.findUnique({ where: { supabaseId: payload.sub } });
 
     if (!user) {
-      throw new UnauthorizedException('User not found. Please complete registration.');
+      throw new UnauthorizedException('User not found.');
     }
 
     return {
       id: user.id,
-      supabaseId: user.supabaseId,
+      supabaseId: user.supabaseId ?? null,
       tenantId: user.tenantId,
       email: user.email,
       name: user.name,
