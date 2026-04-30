@@ -73,11 +73,11 @@ export declare class AiOrchestratorController {
         analyses: ({
             riskFindings: {
                 id: string;
-                createdAt: Date;
                 title: string;
+                createdAt: Date;
                 clause: string;
-                analysisId: string;
                 severity: import("../../../generated/prisma/enums").RiskLevel;
+                analysisId: string;
                 impact: string;
                 suggestion: string;
                 legalRef: string | null;
@@ -85,8 +85,8 @@ export declare class AiOrchestratorController {
             }[];
         } & {
             id: string;
-            createdAt: Date;
             status: import("../../../generated/prisma/enums").AnalysisStatus;
+            createdAt: Date;
             contractId: string;
             type: import("../../../generated/prisma/enums").AnalysisType;
             tokensUsed: number;
@@ -157,11 +157,11 @@ export declare class AiOrchestratorController {
         retryCount: number;
         riskFindings: {
             id: string;
-            createdAt: Date;
             title: string;
+            createdAt: Date;
             clause: string;
-            analysisId: string;
             severity: import("../../../generated/prisma/enums").RiskLevel;
+            analysisId: string;
             impact: string;
             suggestion: string;
             legalRef: string | null;

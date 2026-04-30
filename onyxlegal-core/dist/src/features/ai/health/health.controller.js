@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.HealthCheckController = void 0;
 const common_1 = require("@nestjs/common");
 const healthCheck_1 = require("../health/healthCheck");
+const public_decorator_1 = require("../../../modules/auth/public.decorator");
 let HealthCheckController = class HealthCheckController {
     healthCheck;
     livenessProbe;
@@ -41,12 +42,14 @@ let HealthCheckController = class HealthCheckController {
 };
 exports.HealthCheckController = HealthCheckController;
 __decorate([
+    (0, public_decorator_1.Public)(),
     (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], HealthCheckController.prototype, "getHealth", null);
 __decorate([
+    (0, public_decorator_1.Public)(),
     (0, common_1.Get)('live'),
     (0, common_1.HttpCode)(200),
     __metadata("design:type", Function),
@@ -54,6 +57,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], HealthCheckController.prototype, "getLiveness", null);
 __decorate([
+    (0, public_decorator_1.Public)(),
     (0, common_1.Get)('ready'),
     (0, common_1.HttpCode)(200),
     __metadata("design:type", Function),

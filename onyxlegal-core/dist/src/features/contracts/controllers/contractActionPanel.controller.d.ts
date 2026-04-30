@@ -2,10 +2,7 @@ import { RiskFormatterService, RiskSummary } from '../services/riskFormatter.ser
 import { ContractFixService, FixResult, BulkFixResult } from '../services/contractFix.service';
 import { ContractHistoryService, VersionTimeline, VersionInfo } from '../services/contractHistory.service';
 import { PrismaService } from '../../../database/prisma.service';
-export interface UserContext {
-    id: string;
-    tenantId: string;
-}
+import { AuthenticatedUser } from '../../../modules/auth/jwt.strategy';
 export interface ContractActionResponse {
     contractId: string;
     title: string;
@@ -31,42 +28,25 @@ export declare class ContractActionPanelController {
     private contractHistory;
     private logger;
     constructor(prisma: PrismaService, riskFormatter: RiskFormatterService, contractFix: ContractFixService, contractHistory: ContractHistoryService);
-    getActionPanel(contractId: string, body: {
-        tenantId: string;
-        userId: string;
-    }): Promise<ContractActionResponse>;
-    getRiskSummary(contractId: string, body: {
-        tenantId: string;
-    }): Promise<RiskSummary>;
-    applySingleFix(contractId: string, clauseId: string, body: {
-        tenantId: string;
-        userId: string;
+    getActionPanel(user: AuthenticatedUser, contractId: string): Promise<ContractActionResponse>;
+    getRiskSummary(user: AuthenticatedUser, contractId: string): Promise<RiskSummary>;
+    applySingleFix(user: AuthenticatedUser, contractId: string, clauseId: string, body: {
+        riskLevels?: string[];
     }): Promise<FixResult & {
         newRiskScore: number;
     }>;
-    applyBulkFixes(contractId: string, body: {
-        tenantId: string;
-        userId: string;
+    applyBulkFixes(user: AuthenticatedUser, contractId: string, body: {
         riskLevels?: string[];
     }): Promise<BulkFixResult>;
-    undoFixes(contractId: string, body: {
-        tenantId: string;
-        userId: string;
+    undoFixes(user: AuthenticatedUser, contractId: string, body: {
         versionNumber?: number;
     }): Promise<{
         success: boolean;
         restoredVersion: number;
     }>;
-    getVersionHistory(contractId: string, body: {
-        tenantId: string;
-    }): Promise<VersionTimeline>;
-    restoreVersion(contractId: string, versionNumber: number, body: {
-        tenantId: string;
-        userId: string;
-    }): Promise<VersionInfo>;
-    getProgress(contractId: string, body: {
-        tenantId: string;
-    }): Promise<{
+    getVersionHistory(user: AuthenticatedUser, contractId: string): Promise<VersionTimeline>;
+    restoreVersion(user: AuthenticatedUser, contractId: string, versionNumber: number): Promise<VersionInfo>;
+    getProgress(user: AuthenticatedUser, contractId: string): Promise<{
         contractId: string;
         totalClauses: number;
         fixedClauses: number;

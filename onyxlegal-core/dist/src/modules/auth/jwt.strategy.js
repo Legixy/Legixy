@@ -19,11 +19,18 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
     config;
     prisma;
     constructor(config, prisma) {
-        const secret = config.get('JWT_SECRET') || 'default_dev_secret';
+        const secret = config.get('JWT_SECRET');
+        if (!secret) {
+            throw new common_1.InternalServerErrorException('JWT_SECRET environment variable is not set.');
+        }
         super({
-            jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
+            jwtFromRequest: passport_jwt_1.ExtractJwt.fromExtractors([
+                (req) => req?.cookies?.auth_token ?? null,
+                passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
+            ]),
             ignoreExpiration: false,
             secretOrKey: secret,
+            passReqToCallback: false,
         });
         this.config = config;
         this.prisma = prisma;

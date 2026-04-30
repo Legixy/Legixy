@@ -52,9 +52,13 @@ let AiOrchestratorController = class AiOrchestratorController {
         return this.aiService.cancelAnalysis(analysisId);
     }
     async adminRetryJob(user, jobId) {
+        if (user.role !== 'OWNER')
+            throw new common_1.ForbiddenException('Admin access required.');
         return this.aiService.adminRetryJob(user.tenantId, jobId);
     }
     async adminGetDLQJobs(user) {
+        if (user.role !== 'OWNER')
+            throw new common_1.ForbiddenException('Admin access required.');
         return this.aiService.adminGetDLQJobs(user.tenantId);
     }
 };

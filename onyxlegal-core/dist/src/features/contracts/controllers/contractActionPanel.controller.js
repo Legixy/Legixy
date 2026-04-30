@@ -19,6 +19,7 @@ const riskFormatter_service_1 = require("../services/riskFormatter.service");
 const contractFix_service_1 = require("../services/contractFix.service");
 const contractHistory_service_1 = require("../services/contractHistory.service");
 const prisma_service_1 = require("../../../database/prisma.service");
+const current_user_decorator_1 = require("../../../common/decorators/current-user.decorator");
 let ContractActionPanelController = ContractActionPanelController_1 = class ContractActionPanelController {
     prisma;
     riskFormatter;
@@ -31,14 +32,11 @@ let ContractActionPanelController = ContractActionPanelController_1 = class Cont
         this.contractFix = contractFix;
         this.contractHistory = contractHistory;
     }
-    async getActionPanel(contractId, body) {
-        const user = { id: body.userId, tenantId: body.tenantId };
+    async getActionPanel(user, contractId) {
         this.logger.debug(`Fetching action panel for contract ${contractId} (tenant: ${user.tenantId})`);
         const contract = await this.prisma.contract.findUnique({
             where: { id: contractId },
-            include: {
-                clauses: true,
-            },
+            include: { clauses: true },
         });
         if (!contract || contract.tenantId !== user.tenantId) {
             throw new common_1.BadRequestException('Contract not found or unauthorized');
@@ -66,12 +64,12 @@ let ContractActionPanelController = ContractActionPanelController_1 = class Cont
             actionItems,
         };
     }
-    async getRiskSummary(contractId, body) {
+    async getRiskSummary(user, contractId) {
         const contract = await this.prisma.contract.findUnique({
             where: { id: contractId },
             include: { clauses: true },
         });
-        if (!contract || contract.tenantId !== body.tenantId) {
+        if (!contract || contract.tenantId !== user.tenantId) {
             throw new common_1.BadRequestException('Contract not found or unauthorized');
         }
         return this.riskFormatter.summarizeRisks(contract.clauses.map((c) => ({
@@ -82,45 +80,42 @@ let ContractActionPanelController = ContractActionPanelController_1 = class Cont
             impact: c.estimatedImpact ? Number(c.estimatedImpact) : undefined,
         })));
     }
-    async applySingleFix(contractId, clauseId, body) {
-        this.logger.log(`User ${body.userId} applying fix to clause ${clauseId} in contract ${contractId}`);
+    async applySingleFix(user, contractId, clauseId, body) {
+        this.logger.log(`User ${user.id} applying fix to clause ${clauseId} in contract ${contractId}`);
         const result = await this.contractFix.applySingleFix({
             contractId,
             clauseId,
-            tenantId: body.tenantId,
-            userId: body.userId,
+            tenantId: user.tenantId,
+            userId: user.id,
         });
         const contract = await this.prisma.contract.findUnique({
             where: { id: contractId },
             select: { riskScore: true },
         });
-        return {
-            ...result,
-            newRiskScore: contract?.riskScore || 0,
-        };
+        return { ...result, newRiskScore: contract?.riskScore || 0 };
     }
-    async applyBulkFixes(contractId, body) {
-        this.logger.log(`User ${body.userId} applying bulk fixes to contract ${contractId}`);
+    async applyBulkFixes(user, contractId, body) {
+        this.logger.log(`User ${user.id} applying bulk fixes to contract ${contractId}`);
         return this.contractFix.applyBulkFixes({
             contractId,
-            tenantId: body.tenantId,
-            userId: body.userId,
+            tenantId: user.tenantId,
+            userId: user.id,
             riskLevels: body.riskLevels,
         });
     }
-    async undoFixes(contractId, body) {
-        this.logger.log(`User ${body.userId} undoing fixes on contract ${contractId}`);
-        return this.contractFix.undoFixes(contractId, body.tenantId, body.userId, body.versionNumber);
+    async undoFixes(user, contractId, body) {
+        this.logger.log(`User ${user.id} undoing fixes on contract ${contractId}`);
+        return this.contractFix.undoFixes(contractId, user.tenantId, user.id, body.versionNumber);
     }
-    async getVersionHistory(contractId, body) {
-        return this.contractHistory.getHistory(contractId, body.tenantId);
+    async getVersionHistory(user, contractId) {
+        return this.contractHistory.getHistory(contractId, user.tenantId);
     }
-    async restoreVersion(contractId, versionNumber, body) {
-        this.logger.log(`User ${body.userId} restoring contract ${contractId} to version ${versionNumber}`);
-        return this.contractHistory.restoreVersion(contractId, versionNumber, body.tenantId, body.userId);
+    async restoreVersion(user, contractId, versionNumber) {
+        this.logger.log(`User ${user.id} restoring contract ${contractId} to version ${versionNumber}`);
+        return this.contractHistory.restoreVersion(contractId, versionNumber, user.tenantId, user.id);
     }
-    async getProgress(contractId, body) {
-        const stats = await this.contractFix.getFixStats(contractId, body.tenantId);
+    async getProgress(user, contractId) {
+        const stats = await this.contractFix.getFixStats(contractId, user.tenantId);
         return {
             contractId,
             totalClauses: stats.totalClauses,
@@ -158,7 +153,7 @@ let ContractActionPanelController = ContractActionPanelController_1 = class Cont
                 estimatedTime: '5 min',
             });
         }
-        if (riskSummary.fixableSoonCount > 0 && riskSummary.fixableSoonCount > 1) {
+        if (riskSummary.fixableSoonCount > 1) {
             items.push({
                 id: 'bulk-fix',
                 severity: 'fix',
@@ -188,72 +183,75 @@ let ContractActionPanelController = ContractActionPanelController_1 = class Cont
 exports.ContractActionPanelController = ContractActionPanelController;
 __decorate([
     (0, common_1.Get)(':contractId/action-panel'),
-    __param(0, (0, common_1.Param)('contractId')),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('contractId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ContractActionPanelController.prototype, "getActionPanel", null);
 __decorate([
     (0, common_1.Get)(':contractId/risk-summary'),
-    __param(0, (0, common_1.Param)('contractId')),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('contractId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ContractActionPanelController.prototype, "getRiskSummary", null);
 __decorate([
     (0, common_1.Post)(':contractId/fix-clause/:clauseId'),
     (0, common_1.HttpCode)(200),
-    __param(0, (0, common_1.Param)('contractId')),
-    __param(1, (0, common_1.Param)('clauseId')),
-    __param(2, (0, common_1.Body)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('contractId')),
+    __param(2, (0, common_1.Param)('clauseId')),
+    __param(3, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:paramtypes", [Object, String, String, Object]),
     __metadata("design:returntype", Promise)
 ], ContractActionPanelController.prototype, "applySingleFix", null);
 __decorate([
     (0, common_1.Post)(':contractId/fix-all'),
     (0, common_1.HttpCode)(200),
-    __param(0, (0, common_1.Param)('contractId')),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('contractId')),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object, String, Object]),
     __metadata("design:returntype", Promise)
 ], ContractActionPanelController.prototype, "applyBulkFixes", null);
 __decorate([
     (0, common_1.Post)(':contractId/undo-fixes'),
     (0, common_1.HttpCode)(200),
-    __param(0, (0, common_1.Param)('contractId')),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('contractId')),
+    __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object, String, Object]),
     __metadata("design:returntype", Promise)
 ], ContractActionPanelController.prototype, "undoFixes", null);
 __decorate([
     (0, common_1.Get)(':contractId/version-history'),
-    __param(0, (0, common_1.Param)('contractId')),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('contractId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ContractActionPanelController.prototype, "getVersionHistory", null);
 __decorate([
     (0, common_1.Post)(':contractId/restore-version/:versionNumber'),
     (0, common_1.HttpCode)(200),
-    __param(0, (0, common_1.Param)('contractId')),
-    __param(1, (0, common_1.Param)('versionNumber')),
-    __param(2, (0, common_1.Body)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('contractId')),
+    __param(2, (0, common_1.Param)('versionNumber')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Number, Object]),
+    __metadata("design:paramtypes", [Object, String, Number]),
     __metadata("design:returntype", Promise)
 ], ContractActionPanelController.prototype, "restoreVersion", null);
 __decorate([
     (0, common_1.Get)(':contractId/progress'),
-    __param(0, (0, common_1.Param)('contractId')),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('contractId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ContractActionPanelController.prototype, "getProgress", null);
 exports.ContractActionPanelController = ContractActionPanelController = ContractActionPanelController_1 = __decorate([
