@@ -1,3 +1,4 @@
+import { Response } from 'express';
 import { RiskFormatterService, RiskSummary } from '../services/riskFormatter.service';
 import { ContractFixService, FixResult, BulkFixResult } from '../services/contractFix.service';
 import { ContractHistoryService, VersionTimeline, VersionInfo } from '../services/contractHistory.service';
@@ -56,5 +57,6 @@ export declare class ContractActionPanelController {
         fixingComplete: boolean;
         readyForReview: boolean;
     }>;
+    downloadContract(user: AuthenticatedUser, contractId: string, res: Response): Promise<void>;
     private buildActionItems;
 }

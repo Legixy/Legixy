@@ -17,12 +17,14 @@ export declare class ContractsController {
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         tenantId: string;
+        riskScore: number | null;
         templateId: string | null;
         createdById: string;
         title: string;
         status: import("../../../generated/prisma/enums").ContractStatus;
-        riskScore: number | null;
         parties: import("@prisma/client/runtime/client").JsonValue;
         content: string | null;
         contractValue: import("@prisma/client-runtime-utils").Decimal | null;
@@ -32,8 +34,37 @@ export declare class ContractsController {
         expirationDate: Date | null;
         signedAt: Date | null;
         lastReviewedAt: Date | null;
+    }>;
+    uploadFile(user: AuthenticatedUser, file: Express.Multer.File, title?: string): Promise<{
+        template: {
+            id: string;
+            name: string;
+            category: import("../../../generated/prisma/enums").TemplateCategory;
+        } | null;
+        createdBy: {
+            id: string;
+            name: string | null;
+            email: string;
+        };
+    } & {
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        tenantId: string;
+        riskScore: number | null;
+        templateId: string | null;
+        createdById: string;
+        title: string;
+        status: import("../../../generated/prisma/enums").ContractStatus;
+        parties: import("@prisma/client/runtime/client").JsonValue;
+        content: string | null;
+        contractValue: import("@prisma/client-runtime-utils").Decimal | null;
+        currency: string;
+        monthlyImpact: import("@prisma/client-runtime-utils").Decimal | null;
+        effectiveDate: Date | null;
+        expirationDate: Date | null;
+        signedAt: Date | null;
+        lastReviewedAt: Date | null;
     }>;
     findAll(user: AuthenticatedUser, query: ListContractsQueryDto): Promise<{
         data: ({
@@ -57,12 +88,14 @@ export declare class ContractsController {
             };
         } & {
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             tenantId: string;
+            riskScore: number | null;
             templateId: string | null;
             createdById: string;
             title: string;
             status: import("../../../generated/prisma/enums").ContractStatus;
-            riskScore: number | null;
             parties: import("@prisma/client/runtime/client").JsonValue;
             content: string | null;
             contractValue: import("@prisma/client-runtime-utils").Decimal | null;
@@ -72,8 +105,6 @@ export declare class ContractsController {
             expirationDate: Date | null;
             signedAt: Date | null;
             lastReviewedAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
         })[];
         meta: {
             total: number;
@@ -125,11 +156,11 @@ export declare class ContractsController {
         analyses: ({
             riskFindings: {
                 id: string;
-                title: string;
                 createdAt: Date;
-                clause: string;
-                severity: import("../../../generated/prisma/enums").RiskLevel;
+                title: string;
                 analysisId: string;
+                severity: import("../../../generated/prisma/enums").RiskLevel;
+                clause: string;
                 impact: string;
                 suggestion: string;
                 legalRef: string | null;
@@ -137,8 +168,8 @@ export declare class ContractsController {
             }[];
         } & {
             id: string;
-            status: import("../../../generated/prisma/enums").AnalysisStatus;
             createdAt: Date;
+            status: import("../../../generated/prisma/enums").AnalysisStatus;
             contractId: string;
             type: import("../../../generated/prisma/enums").AnalysisType;
             tokensUsed: number;
@@ -151,12 +182,14 @@ export declare class ContractsController {
         })[];
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         tenantId: string;
+        riskScore: number | null;
         templateId: string | null;
         createdById: string;
         title: string;
         status: import("../../../generated/prisma/enums").ContractStatus;
-        riskScore: number | null;
         parties: import("@prisma/client/runtime/client").JsonValue;
         content: string | null;
         contractValue: import("@prisma/client-runtime-utils").Decimal | null;
@@ -166,8 +199,6 @@ export declare class ContractsController {
         expirationDate: Date | null;
         signedAt: Date | null;
         lastReviewedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     update(user: AuthenticatedUser, id: string, dto: UpdateContractDto): Promise<{
         template: {
@@ -182,12 +213,14 @@ export declare class ContractsController {
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         tenantId: string;
+        riskScore: number | null;
         templateId: string | null;
         createdById: string;
         title: string;
         status: import("../../../generated/prisma/enums").ContractStatus;
-        riskScore: number | null;
         parties: import("@prisma/client/runtime/client").JsonValue;
         content: string | null;
         contractValue: import("@prisma/client-runtime-utils").Decimal | null;
@@ -197,17 +230,17 @@ export declare class ContractsController {
         expirationDate: Date | null;
         signedAt: Date | null;
         lastReviewedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     updateStatus(user: AuthenticatedUser, id: string, dto: UpdateStatusDto): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         tenantId: string;
+        riskScore: number | null;
         templateId: string | null;
         createdById: string;
         title: string;
         status: import("../../../generated/prisma/enums").ContractStatus;
-        riskScore: number | null;
         parties: import("@prisma/client/runtime/client").JsonValue;
         content: string | null;
         contractValue: import("@prisma/client-runtime-utils").Decimal | null;
@@ -217,8 +250,6 @@ export declare class ContractsController {
         expirationDate: Date | null;
         signedAt: Date | null;
         lastReviewedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     acceptFix(user: AuthenticatedUser, contractId: string, clauseId: string): Promise<{
         id: string;
@@ -237,10 +268,10 @@ export declare class ContractsController {
     }>;
     getVersions(user: AuthenticatedUser, id: string): Promise<{
         id: string;
-        content: string;
         createdAt: Date;
-        version: number;
+        content: string;
         contractId: string;
+        version: number;
         changeNote: string | null;
         changedBy: string;
     }[]>;
@@ -251,10 +282,10 @@ export declare class ContractsController {
         success: boolean;
         newVersion: {
             id: string;
-            content: string;
             createdAt: Date;
-            version: number;
+            content: string;
             contractId: string;
+            version: number;
             changeNote: string | null;
             changedBy: string;
         };

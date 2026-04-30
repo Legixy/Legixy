@@ -98,8 +98,8 @@ export declare class ContractsService {
         versions: {
             id: string;
             createdAt: Date;
-            changeNote: string | null;
             version: number;
+            changeNote: string | null;
             changedBy: string;
         }[];
         clauses: {
@@ -122,9 +122,9 @@ export declare class ContractsService {
                 id: string;
                 createdAt: Date;
                 title: string;
-                clause: string;
                 analysisId: string;
                 severity: import("generated/prisma/client").RiskLevel;
+                clause: string;
                 impact: string;
                 suggestion: string;
                 legalRef: string | null;
@@ -235,8 +235,8 @@ export declare class ContractsService {
         createdAt: Date;
         content: string;
         contractId: string;
-        changeNote: string | null;
         version: number;
+        changeNote: string | null;
         changedBy: string;
     }[]>;
     restoreVersion(tenantId: string, userId: string, contractId: string, versionId?: string, versionNumber?: number): Promise<{
@@ -246,8 +246,8 @@ export declare class ContractsService {
             createdAt: Date;
             content: string;
             contractId: string;
-            changeNote: string | null;
             version: number;
+            changeNote: string | null;
             changedBy: string;
         };
     }>;
@@ -257,5 +257,36 @@ export declare class ContractsService {
         draftContracts: number;
         highRiskClauses: number;
         analysesThisMonth: number;
+    }>;
+    createFromFile(tenantId: string, userId: string, file: Express.Multer.File, title?: string): Promise<{
+        template: {
+            id: string;
+            name: string;
+            category: import("generated/prisma/client").TemplateCategory;
+        } | null;
+        createdBy: {
+            id: string;
+            name: string | null;
+            email: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        tenantId: string;
+        riskScore: number | null;
+        templateId: string | null;
+        createdById: string;
+        title: string;
+        status: ContractStatus;
+        parties: import("@prisma/client/runtime/client").JsonValue;
+        content: string | null;
+        contractValue: import("@prisma/client-runtime-utils").Decimal | null;
+        currency: string;
+        monthlyImpact: import("@prisma/client-runtime-utils").Decimal | null;
+        effectiveDate: Date | null;
+        expirationDate: Date | null;
+        signedAt: Date | null;
+        lastReviewedAt: Date | null;
     }>;
 }

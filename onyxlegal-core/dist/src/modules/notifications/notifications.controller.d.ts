@@ -5,8 +5,8 @@ export declare class NotificationsController {
     constructor(notifService: NotificationsService);
     findAll(user: AuthenticatedUser, unread?: string): Promise<{
         id: string;
-        title: string;
         createdAt: Date;
+        title: string;
         type: import("../../../generated/prisma/enums").NotificationType;
         userId: string;
         body: string;
@@ -18,8 +18,8 @@ export declare class NotificationsController {
     }>;
     markRead(user: AuthenticatedUser, id: string): Promise<{
         id: string;
-        title: string;
         createdAt: Date;
+        title: string;
         type: import("../../../generated/prisma/enums").NotificationType;
         userId: string;
         body: string;

@@ -12,6 +12,8 @@ var ContractsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContractsService = void 0;
 const common_1 = require("@nestjs/common");
+const pdfParse = require('pdf-parse');
+const mammoth = require("mammoth");
 const prisma_service_1 = require("../../database/prisma.service");
 const client_1 = require("../../../generated/prisma/client");
 let ContractsService = ContractsService_1 = class ContractsService {
@@ -308,6 +310,34 @@ let ContractsService = ContractsService_1 = class ContractsService {
             highRiskClauses: highRiskCount,
             analysesThisMonth: recentAnalyses,
         };
+    }
+    async createFromFile(tenantId, userId, file, title) {
+        const isPdf = file.mimetype === 'application/pdf';
+        let extractedText;
+        let pageCount = 1;
+        if (isPdf) {
+            const parsed = await pdfParse(file.buffer);
+            extractedText = parsed.text;
+            pageCount = parsed.numpages || 1;
+            const charsPerPage = extractedText.length / pageCount;
+            if (charsPerPage < 100 && pageCount > 1) {
+                throw new common_1.BadRequestException('This document appears to be a scanned image. Upload a text-based PDF or DOCX for best results.');
+            }
+        }
+        else {
+            const result = await mammoth.extractRawText({ buffer: file.buffer });
+            extractedText = result.value;
+        }
+        if (!extractedText || extractedText.trim().length < 50) {
+            throw new common_1.BadRequestException("We couldn't read this file. Try a different PDF or DOCX.");
+        }
+        const contractTitle = title?.trim() ||
+            file.originalname.replace(/\.(pdf|docx)$/i, '').replace(/[-_]/g, ' ');
+        this.logger.log(`File upload: "${contractTitle}" (${file.size} bytes, ${extractedText.length} chars extracted)`);
+        return this.create(tenantId, userId, {
+            title: contractTitle,
+            content: extractedText,
+        });
     }
 };
 exports.ContractsService = ContractsService;

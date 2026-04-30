@@ -42,6 +42,7 @@ let ContractActionPanelController = ContractActionPanelController_1 = class Cont
             throw new common_1.BadRequestException('Contract not found or unauthorized');
         }
         const riskSummary = this.riskFormatter.summarizeRisks(contract.clauses.map((c) => ({
+            clauseId: c.id,
             level: c.riskLevel,
             title: c.type,
             reason: c.riskReason || '',
@@ -73,6 +74,7 @@ let ContractActionPanelController = ContractActionPanelController_1 = class Cont
             throw new common_1.BadRequestException('Contract not found or unauthorized');
         }
         return this.riskFormatter.summarizeRisks(contract.clauses.map((c) => ({
+            clauseId: c.id,
             level: c.riskLevel,
             title: c.type,
             reason: c.riskReason || '',
@@ -126,6 +128,21 @@ let ContractActionPanelController = ContractActionPanelController_1 = class Cont
             fixingComplete: stats.pendingFixes === 0,
             readyForReview: stats.criticalPending === 0,
         };
+    }
+    async downloadContract(user, contractId, res) {
+        const contract = await this.prisma.contract.findUnique({
+            where: { id: contractId },
+        });
+        if (!contract || contract.tenantId !== user.tenantId) {
+            throw new common_1.BadRequestException('Contract not found or unauthorized');
+        }
+        const content = contract.content || `${contract.title}\n\nNo content available.`;
+        const safeTitle = contract.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const filename = `${safeTitle}_safe.txt`;
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Length', Buffer.byteLength(content, 'utf8'));
+        res.send(content);
     }
     buildActionItems(riskSummary) {
         const items = [];
@@ -254,8 +271,17 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ContractActionPanelController.prototype, "getProgress", null);
+__decorate([
+    (0, common_1.Get)(':contractId/download'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('contractId')),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], ContractActionPanelController.prototype, "downloadContract", null);
 exports.ContractActionPanelController = ContractActionPanelController = ContractActionPanelController_1 = __decorate([
-    (0, common_1.Controller)('api/contracts'),
+    (0, common_1.Controller)('contracts'),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         riskFormatter_service_1.RiskFormatterService,
         contractFix_service_1.ContractFixService,

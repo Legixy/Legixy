@@ -3,10 +3,10 @@ export declare const RiskItemSchema: z.ZodObject<{
     clause: z.ZodString;
     issue: z.ZodString;
     severity: z.ZodEnum<{
+        critical: "critical";
         low: "low";
         medium: "medium";
         high: "high";
-        critical: "critical";
     }>;
     recommendation: z.ZodString;
     confidence: z.ZodPipe<z.ZodNumber, z.ZodTransform<number, number>>;
@@ -17,10 +17,10 @@ export declare const ContractAnalysisSchema: z.ZodObject<{
         clause: z.ZodString;
         issue: z.ZodString;
         severity: z.ZodEnum<{
+            critical: "critical";
             low: "low";
             medium: "medium";
             high: "high";
-            critical: "critical";
         }>;
         recommendation: z.ZodString;
         confidence: z.ZodPipe<z.ZodNumber, z.ZodTransform<number, number>>;
@@ -46,10 +46,10 @@ export declare const ComplianceIssueSchema: z.ZodObject<{
         Other: "Other";
     }>;
     severity: z.ZodEnum<{
+        critical: "critical";
         low: "low";
         medium: "medium";
         high: "high";
-        critical: "critical";
     }>;
     issue: z.ZodString;
     solution: z.ZodString;
@@ -66,19 +66,19 @@ export declare const ComplianceCheckSchema: z.ZodObject<{
             Other: "Other";
         }>;
         severity: z.ZodEnum<{
+            critical: "critical";
             low: "low";
             medium: "medium";
             high: "high";
-            critical: "critical";
         }>;
         issue: z.ZodString;
         solution: z.ZodString;
     }, z.core.$strip>>>;
     overallRisk: z.ZodEnum<{
+        critical: "critical";
         low: "low";
         medium: "medium";
         high: "high";
-        critical: "critical";
     }>;
 }, z.core.$strip>;
 export type ComplianceCheck = z.infer<typeof ComplianceCheckSchema>;

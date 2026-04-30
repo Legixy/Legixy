@@ -16,6 +16,7 @@ exports.AiOrchestratorController = void 0;
 const common_1 = require("@nestjs/common");
 const ai_orchestrator_service_1 = require("./ai-orchestrator.service");
 const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
+const rateLimit_guard_1 = require("../../common/guards/rateLimit.guard");
 let AiOrchestratorController = class AiOrchestratorController {
     aiService;
     constructor(aiService) {
@@ -64,6 +65,7 @@ let AiOrchestratorController = class AiOrchestratorController {
 };
 exports.AiOrchestratorController = AiOrchestratorController;
 __decorate([
+    (0, common_1.UseGuards)(rateLimit_guard_1.RateLimitGuard),
     (0, common_1.Post)('analyze/:contractId'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Param)('contractId')),
@@ -72,6 +74,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AiOrchestratorController.prototype, "triggerAnalysis", null);
 __decorate([
+    (0, common_1.UseGuards)(rateLimit_guard_1.RateLimitGuard),
     (0, common_1.Post)('analyze-direct'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),

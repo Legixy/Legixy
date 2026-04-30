@@ -11,6 +11,7 @@ const common_1 = require("@nestjs/common");
 const bullmq_1 = require("@nestjs/bullmq");
 const ai_orchestrator_controller_1 = require("./ai-orchestrator.controller");
 const ai_orchestrator_service_1 = require("./ai-orchestrator.service");
+const rateLimit_guard_1 = require("../../common/guards/rateLimit.guard");
 let AiOrchestratorModule = class AiOrchestratorModule {
 };
 exports.AiOrchestratorModule = AiOrchestratorModule;
@@ -25,7 +26,7 @@ exports.AiOrchestratorModule = AiOrchestratorModule = __decorate([
             }),
         ],
         controllers: [ai_orchestrator_controller_1.AiOrchestratorController],
-        providers: [ai_orchestrator_service_1.AiOrchestratorService],
+        providers: [ai_orchestrator_service_1.AiOrchestratorService, rateLimit_guard_1.RateLimitGuard],
         exports: [ai_orchestrator_service_1.AiOrchestratorService],
     })
 ], AiOrchestratorModule);

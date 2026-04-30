@@ -19,6 +19,7 @@ const auth_module_1 = require("./modules/auth/auth.module");
 const contracts_module_1 = require("./modules/contracts/contracts.module");
 const templates_module_1 = require("./modules/templates/templates.module");
 const ai_orchestrator_module_1 = require("./modules/ai-orchestrator/ai-orchestrator.module");
+const ai_module_1 = require("./features/ai/ai.module");
 const analytics_module_1 = require("./modules/analytics/analytics.module");
 const notifications_module_1 = require("./modules/notifications/notifications.module");
 const bullModuleImport = bullmq_1.BullModule.forRootAsync({
@@ -60,6 +61,7 @@ exports.AppModule = AppModule = __decorate([
             contracts_module_1.ContractsModule,
             templates_module_1.TemplatesModule,
             ai_orchestrator_module_1.AiOrchestratorModule,
+            ai_module_1.AIModule,
             analytics_module_1.AnalyticsModule,
             notifications_module_1.NotificationsModule,
         ],

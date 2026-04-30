@@ -14,9 +14,14 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContractsController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const contracts_service_1 = require("./contracts.service");
 const contract_dto_1 = require("./dto/contract.dto");
 const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
+const ALLOWED_MIMETYPES = [
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
 let ContractsController = class ContractsController {
     contractsService;
     constructor(contractsService) {
@@ -24,6 +29,14 @@ let ContractsController = class ContractsController {
     }
     create(user, dto) {
         return this.contractsService.create(user.tenantId, user.id, dto);
+    }
+    uploadFile(user, file, title) {
+        if (!file)
+            throw new common_1.BadRequestException('No file provided.');
+        if (!ALLOWED_MIMETYPES.includes(file.mimetype)) {
+            throw new common_1.BadRequestException('Unsupported file type. Upload a PDF or DOCX.');
+        }
+        return this.contractsService.createFromFile(user.tenantId, user.id, file, title);
     }
     findAll(user, query) {
         return this.contractsService.findAll(user.tenantId, query);
@@ -59,6 +72,16 @@ __decorate([
     __metadata("design:paramtypes", [Object, contract_dto_1.CreateContractDto]),
     __metadata("design:returntype", void 0)
 ], ContractsController.prototype, "create", null);
+__decorate([
+    (0, common_1.Post)('upload'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', { limits: { fileSize: 10 * 1024 * 1024 } })),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.UploadedFile)()),
+    __param(2, (0, common_1.Body)('title')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, String]),
+    __metadata("design:returntype", void 0)
+], ContractsController.prototype, "uploadFile", null);
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),

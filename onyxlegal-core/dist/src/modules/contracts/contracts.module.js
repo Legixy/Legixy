@@ -8,15 +8,30 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContractsModule = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const contracts_controller_1 = require("./contracts.controller");
 const contracts_service_1 = require("./contracts.service");
+const contractActionPanel_controller_1 = require("../../features/contracts/controllers/contractActionPanel.controller");
+const riskFormatter_service_1 = require("../../features/contracts/services/riskFormatter.service");
+const contractFix_service_1 = require("../../features/contracts/services/contractFix.service");
+const contractHistory_service_1 = require("../../features/contracts/services/contractHistory.service");
 let ContractsModule = class ContractsModule {
 };
 exports.ContractsModule = ContractsModule;
 exports.ContractsModule = ContractsModule = __decorate([
     (0, common_1.Module)({
-        controllers: [contracts_controller_1.ContractsController],
-        providers: [contracts_service_1.ContractsService],
+        imports: [
+            platform_express_1.MulterModule.register({
+                limits: { fileSize: 10 * 1024 * 1024 },
+            }),
+        ],
+        controllers: [contracts_controller_1.ContractsController, contractActionPanel_controller_1.ContractActionPanelController],
+        providers: [
+            contracts_service_1.ContractsService,
+            riskFormatter_service_1.RiskFormatterService,
+            contractFix_service_1.ContractFixService,
+            contractHistory_service_1.ContractHistoryService,
+        ],
         exports: [contracts_service_1.ContractsService],
     })
 ], ContractsModule);

@@ -51,11 +51,11 @@ export declare class AuthController {
             };
         } & {
             id: string;
-            tenantId: string;
+            name: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string | null;
             supabaseId: string | null;
+            tenantId: string;
             email: string;
             avatarUrl: string | null;
             role: import("../../../generated/prisma/enums").UserRole;

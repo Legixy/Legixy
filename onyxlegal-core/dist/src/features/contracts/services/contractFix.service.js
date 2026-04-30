@@ -57,21 +57,23 @@ let ContractFixService = ContractFixService_1 = class ContractFixService {
             },
         });
         const updatedContractContent = this.replaceClauseInContent(contract.content || '', originalText, fixedText);
-        const latestVersion = await this.prisma.contractVersion.findMany({
-            where: { contractId: req.contractId },
-            orderBy: { version: 'desc' },
-            take: 1,
-        });
-        const nextVersion = (latestVersion[0]?.version || 0) + 1;
-        await this.prisma.contractVersion.create({
-            data: {
-                contractId: req.contractId,
-                version: nextVersion,
-                content: updatedContractContent,
-                changeNote: `Applied AI fix to ${clause.type} clause`,
-                changedBy: req.userId,
-            },
-        });
+        if (!req.skipVersionCreate) {
+            const latestVersion = await this.prisma.contractVersion.findMany({
+                where: { contractId: req.contractId },
+                orderBy: { version: 'desc' },
+                take: 1,
+            });
+            const nextVersion = (latestVersion[0]?.version || 0) + 1;
+            await this.prisma.contractVersion.create({
+                data: {
+                    contractId: req.contractId,
+                    version: nextVersion,
+                    content: updatedContractContent,
+                    changeNote: `Applied AI fix to ${clause.type} clause`,
+                    changedBy: req.userId,
+                },
+            });
+        }
         await this.prisma.contract.update({
             where: { id: req.contractId },
             data: {
@@ -119,6 +121,7 @@ let ContractFixService = ContractFixService_1 = class ContractFixService {
                     clauseId: clause.id,
                     tenantId: req.tenantId,
                     userId: req.userId,
+                    skipVersionCreate: true,
                 });
                 results.push(result);
                 totalRiskReduction += result.estimatedImpactReduction;
@@ -128,7 +131,7 @@ let ContractFixService = ContractFixService_1 = class ContractFixService {
             }
         }
         const newRiskScore = Math.max(0, (contract.riskScore || 100) - totalRiskReduction);
-        const updatedContract = await this.prisma.contract.update({
+        await this.prisma.contract.update({
             where: { id: req.contractId },
             data: {
                 status: 'IN_REVIEW',
@@ -142,6 +145,19 @@ let ContractFixService = ContractFixService_1 = class ContractFixService {
             take: 1,
         });
         const versionNumber = (versionData[0]?.version || 0) + 1;
+        const currentContract = await this.prisma.contract.findUnique({
+            where: { id: req.contractId },
+            select: { content: true },
+        });
+        await this.prisma.contractVersion.create({
+            data: {
+                contractId: req.contractId,
+                version: versionNumber,
+                content: currentContract?.content || '',
+                changeNote: `Bulk AI fix: applied ${results.length} of ${clausesToFix.length} suggested fixes`,
+                changedBy: req.userId,
+            },
+        });
         return {
             contractId: req.contractId,
             totalClauses: contract.clauses.length,
@@ -209,7 +225,7 @@ let ContractFixService = ContractFixService_1 = class ContractFixService {
             fixedClauses,
             pendingFixes,
             criticalPending,
-            fixingProgress: Math.round((fixedClauses / totalClauses) * 100),
+            fixingProgress: totalClauses > 0 ? Math.round((fixedClauses / totalClauses) * 100) : 0,
             currentVersion: contract.versions[0]?.version || 0,
             lastModified: contract.updatedAt,
         };

@@ -5,6 +5,7 @@ export interface ClauseFixRequest {
     clauseId: string;
     tenantId: string;
     userId: string;
+    skipVersionCreate?: boolean;
 }
 export interface BulkFixRequest {
     contractId: string;

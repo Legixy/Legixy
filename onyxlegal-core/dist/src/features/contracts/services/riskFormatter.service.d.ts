@@ -1,5 +1,6 @@
 import { RiskLevel } from '@prisma/client';
 export interface SimpleRisk {
+    clauseId?: string;
     level: RiskLevel;
     emoji: string;
     headline: string;
@@ -24,6 +25,7 @@ export declare class RiskFormatterService {
     private logger;
     formatRisk(riskLevel: RiskLevel, title: string, legalReason: string, suggestedFix: string, estimatedImpact?: number): SimpleRisk;
     summarizeRisks(risks: Array<{
+        clauseId?: string;
         level: RiskLevel;
         title: string;
         reason: string;

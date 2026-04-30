@@ -19,7 +19,7 @@ export declare class AiOrchestratorService {
             risks: {
                 clause: string;
                 issue: string;
-                severity: "low" | "medium" | "high" | "critical";
+                severity: "critical" | "low" | "medium" | "high";
                 recommendation: string;
                 confidence: number;
             }[];
@@ -47,11 +47,11 @@ export declare class AiOrchestratorService {
             compliant: boolean;
             issues: {
                 category: "GST" | "Labor" | "DataProtection" | "Unfair" | "Tax" | "Other";
-                severity: "low" | "medium" | "high" | "critical";
+                severity: "critical" | "low" | "medium" | "high";
                 issue: string;
                 solution: string;
             }[];
-            overallRisk: "low" | "medium" | "high" | "critical";
+            overallRisk: "critical" | "low" | "medium" | "high";
         };
         tokensUsed: number;
         duration: number;
@@ -71,9 +71,9 @@ export declare class AiOrchestratorService {
                 id: string;
                 createdAt: Date;
                 title: string;
-                clause: string;
                 analysisId: string;
                 severity: import("generated/prisma/client").RiskLevel;
+                clause: string;
                 impact: string;
                 suggestion: string;
                 legalRef: string | null;
@@ -155,9 +155,9 @@ export declare class AiOrchestratorService {
             id: string;
             createdAt: Date;
             title: string;
-            clause: string;
             analysisId: string;
             severity: import("generated/prisma/client").RiskLevel;
+            clause: string;
             impact: string;
             suggestion: string;
             legalRef: string | null;
