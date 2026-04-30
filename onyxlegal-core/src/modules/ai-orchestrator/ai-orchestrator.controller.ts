@@ -1,7 +1,8 @@
-import { Controller, Post, Get, Param, Body, ForbiddenException } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, ForbiddenException, UseGuards } from '@nestjs/common';
 import { AiOrchestratorService } from './ai-orchestrator.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../auth/jwt.strategy';
+import { RateLimitGuard } from '../../common/guards/rateLimit.guard';
 
 @Controller('ai')
 export class AiOrchestratorController {
@@ -11,6 +12,7 @@ export class AiOrchestratorController {
    * POST /api/v1/ai/analyze/:contractId
    * Trigger AI analysis on a contract.
    */
+  @UseGuards(RateLimitGuard)
   @Post('analyze/:contractId')
   triggerAnalysis(
     @CurrentUser() user: AuthenticatedUser,
@@ -23,6 +25,7 @@ export class AiOrchestratorController {
    * POST /api/v1/ai/analyze-direct
    * Direct synchronous analysis (no queue)
    */
+  @UseGuards(RateLimitGuard)
   @Post('analyze-direct')
   async analyzeDirect(
     @CurrentUser() user: AuthenticatedUser,

@@ -78,6 +78,26 @@ export function useCreateContract() {
 }
 
 /**
+ * Upload a PDF or DOCX file and create a contract from extracted text
+ */
+export function useUploadContract() {
+  const queryClient = useQueryClient();
+
+  return useMutation<Contract, ApiError, { file: File; title?: string }>({
+    mutationFn: ({ file, title }) => contracts.upload(file, title),
+    onSuccess: (newContract) => {
+      queryClient.invalidateQueries({ queryKey: contractsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: contractsKeys.all });
+      queryClient.setQueryData(contractsKeys.detail(newContract.id), newContract);
+      toast.success('Contract uploaded and text extracted successfully');
+    },
+    onError: (error: ApiError) => {
+      toast.error(error.message || 'Failed to upload contract');
+    },
+  });
+}
+
+/**
  * Update an existing contract
  */
 export function useUpdateContract() {

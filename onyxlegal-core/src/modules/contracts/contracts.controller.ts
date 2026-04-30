@@ -6,7 +6,11 @@ import {
   Param,
   Body,
   Query,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ContractsService } from './contracts.service';
 import {
   CreateContractDto,
@@ -16,6 +20,11 @@ import {
 } from './dto/contract.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../auth/jwt.strategy';
+
+const ALLOWED_MIMETYPES = [
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
 
 @Controller('contracts')
 export class ContractsController {
@@ -27,6 +36,26 @@ export class ContractsController {
     @Body() dto: CreateContractDto,
   ) {
     return this.contractsService.create(user.tenantId, user.id, dto);
+  }
+
+  /**
+   * POST /contracts/upload
+   * Upload a PDF or DOCX file — extracts text and creates a contract.
+   */
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }))
+  uploadFile(
+    @CurrentUser() user: AuthenticatedUser,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('title') title?: string,
+  ) {
+    if (!file) throw new BadRequestException('No file provided.');
+    if (!ALLOWED_MIMETYPES.includes(file.mimetype)) {
+      throw new BadRequestException(
+        'Unsupported file type. Upload a PDF or DOCX.',
+      );
+    }
+    return this.contractsService.createFromFile(user.tenantId, user.id, file, title);
   }
 
   @Get()

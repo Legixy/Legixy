@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { AiOrchestratorController } from './ai-orchestrator.controller';
 import { AiOrchestratorService } from './ai-orchestrator.service';
+import { RateLimitGuard } from '../../common/guards/rateLimit.guard';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { AiOrchestratorService } from './ai-orchestrator.service';
     }),
   ],
   controllers: [AiOrchestratorController],
-  providers: [AiOrchestratorService],
+  providers: [AiOrchestratorService, RateLimitGuard],
   exports: [AiOrchestratorService],
 })
 export class AiOrchestratorModule {}

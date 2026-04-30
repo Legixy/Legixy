@@ -4,6 +4,9 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfParse = require('pdf-parse') as (buffer: Buffer) => Promise<{ text: string; numpages: number }>;
+import * as mammoth from 'mammoth';
 import { PrismaService } from '../../database/prisma.service';
 import {
   CreateContractDto,
@@ -387,5 +390,57 @@ export class ContractsService {
       highRiskClauses: highRiskCount,
       analysesThisMonth: recentAnalyses,
     };
+  }
+
+  /**
+   * Create a contract from an uploaded PDF or DOCX file.
+   * Extracts plain text, validates it is not a scanned image, then creates.
+   */
+  async createFromFile(
+    tenantId: string,
+    userId: string,
+    file: Express.Multer.File,
+    title?: string,
+  ) {
+    const isPdf = file.mimetype === 'application/pdf';
+    let extractedText: string;
+    let pageCount = 1;
+
+    if (isPdf) {
+      const parsed = await pdfParse(file.buffer);
+      extractedText = parsed.text;
+      pageCount = parsed.numpages || 1;
+
+      // Scanned PDF check: reject if ≥50% of pages have <100 chars
+      const charsPerPage = extractedText.length / pageCount;
+      if (charsPerPage < 100 && pageCount > 1) {
+        throw new BadRequestException(
+          'This document appears to be a scanned image. Upload a text-based PDF or DOCX for best results.',
+        );
+      }
+    } else {
+      // DOCX
+      const result = await mammoth.extractRawText({ buffer: file.buffer });
+      extractedText = result.value;
+    }
+
+    if (!extractedText || extractedText.trim().length < 50) {
+      throw new BadRequestException(
+        "We couldn't read this file. Try a different PDF or DOCX.",
+      );
+    }
+
+    const contractTitle =
+      title?.trim() ||
+      file.originalname.replace(/\.(pdf|docx)$/i, '').replace(/[-_]/g, ' ');
+
+    this.logger.log(
+      `File upload: "${contractTitle}" (${file.size} bytes, ${extractedText.length} chars extracted)`,
+    );
+
+    return this.create(tenantId, userId, {
+      title: contractTitle,
+      content: extractedText,
+    } as any);
   }
 }

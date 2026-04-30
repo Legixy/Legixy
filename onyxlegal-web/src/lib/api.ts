@@ -219,6 +219,24 @@ export const contracts = {
     const blob = await res.blob();
     return { blob, filename };
   },
+
+  upload: async (file: File, title?: string): Promise<Contract> => {
+    const form = new FormData();
+    form.append('file', file);
+    if (title) form.append('title', title);
+    const url = `${API_BASE}/contracts/upload`;
+    const res = await fetch(url, {
+      method: 'POST',
+      body: form,
+      credentials: 'include',
+      // Do NOT set Content-Type — browser sets multipart boundary automatically
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: res.statusText }));
+      throw new ApiError(res.status, error.message || 'Upload failed', error);
+    }
+    return res.json() as Promise<Contract>;
+  },
 };
 
 // ── Action Panel Types ──────────────────────────────────────
