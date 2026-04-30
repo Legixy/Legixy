@@ -151,8 +151,7 @@ export function LoginForm() {
       <p className="text-center text-sm text-slate-500 mt-8">
         Don't have an account?{' '}
         <a
-          href="#"
-          onClick={(e) => { e.preventDefault(); toast('Sign up coming soon — contact us to get early access.'); }}
+          href="/register"
           className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors hover:underline"
         >
           Sign up

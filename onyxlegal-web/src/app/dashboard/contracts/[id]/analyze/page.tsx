@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useContractById, useTriggerAnalysis, useAnalysisResults } from '@/shared/api';
 import { ArrowLeft, Sparkles, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
@@ -17,8 +17,8 @@ export default function AnalyzePage() {
   // Mutation to trigger analysis
   const triggerMutation = useTriggerAnalysis();
 
-  // State for analysis
   const [analysisId, setAnalysisId] = useState<string | null>(null);
+  const analysisFired = useRef(false);
 
   // Query to poll for results
   const { data: results, isLoading: resultsLoading } = useAnalysisResults(contractId, {
@@ -38,12 +38,14 @@ export default function AnalyzePage() {
     });
   };
 
-  // Auto-trigger analysis on mount or when user clicks
+  // Trigger analysis once when contract data first arrives
   useEffect(() => {
-    if (contract && !analysisId) {
+    if (contract && !analysisFired.current) {
+      analysisFired.current = true;
       handleTriggerAnalysis();
     }
-  }, [contract, analysisId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contract]);
 
   // Auto-redirect to results when complete
   useEffect(() => {

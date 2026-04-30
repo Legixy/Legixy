@@ -23,7 +23,7 @@ export default function ContractsPage() {
 
   // Fetch contracts data
   const { data: contractsResponse, isLoading, error } = useContracts({
-    status: activeFilter === 'All' ? undefined : activeFilter.toUpperCase(),
+    status: activeFilter === 'All' ? undefined : activeFilter.toUpperCase().replace(/\s+/g, '_'),
     search: searchQuery || undefined,
     page: 1,
     limit: 50,

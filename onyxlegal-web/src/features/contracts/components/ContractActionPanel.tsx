@@ -18,6 +18,7 @@ import { FixAllButton }       from './FixAllButton';
 import { ProgressBar }        from './ProgressBar';
 
 import type { SimpleRisk, RiskSummary, BulkFixResult } from '@/lib/api';
+import { contracts as contractsApi } from '@/lib/api';
 import {
   useContractActionPanel,
   useContractProgress,
@@ -234,12 +235,23 @@ export function ContractActionPanel({ contractId, contractTitle }: Props) {
     };
   }, [contractId, applyBulkFixes, isMock, summary.topThreats, initialScore]);
 
-  const handleDownload = useCallback(() => {
-    toast.success('Download starting…', {
-      description: 'Your safe contract PDF is being prepared.',
-      icon: '📄',
-    });
-  }, []);
+  const handleDownload = useCallback(async () => {
+    const toastId = toast.loading('Preparing download…');
+    try {
+      const { blob, filename } = await contractsApi.download(contractId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('Download ready', { id: toastId, description: filename });
+    } catch {
+      toast.error('Download failed', { id: toastId, description: 'Please try again.' });
+    }
+  }, [contractId]);
 
   // ── Loading ───────────────────────────────────────────────────────────────
   if (isPanelLoading) {

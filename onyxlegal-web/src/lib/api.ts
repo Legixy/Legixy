@@ -205,6 +205,20 @@ export const contracts = {
 
   getProgress: (contractId: string) =>
     request<ContractProgress>(`/contracts/${contractId}/progress`),
+
+  download: async (contractId: string): Promise<{ blob: Blob; filename: string }> => {
+    const url = `${API_BASE}/contracts/${contractId}/download`;
+    const res = await fetch(url, { credentials: 'include' });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: res.statusText }));
+      throw new ApiError(res.status, error.message || 'Download failed', error);
+    }
+    const disposition = res.headers.get('Content-Disposition') || '';
+    const match = disposition.match(/filename="([^"]+)"/);
+    const filename = match?.[1] || 'contract.txt';
+    const blob = await res.blob();
+    return { blob, filename };
+  },
 };
 
 // ── Action Panel Types ──────────────────────────────────────

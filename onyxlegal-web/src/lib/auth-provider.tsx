@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/api';
 
 interface UserProfile {
@@ -39,6 +40,7 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -68,7 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     auth.logout().catch(() => {});
     setUser(null);
-  }, []);
+    router.push('/login');
+  }, [router]);
 
   return (
     <AuthContext.Provider

@@ -14,6 +14,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ContractsModule } from './modules/contracts/contracts.module';
 import { TemplatesModule } from './modules/templates/templates.module';
 import { AiOrchestratorModule } from './modules/ai-orchestrator/ai-orchestrator.module';
+import { AIModule } from './features/ai/ai.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 
@@ -62,6 +63,7 @@ const bullModuleImport = BullModule.forRootAsync({
     ContractsModule,
     TemplatesModule,
     AiOrchestratorModule,
+    AIModule,
     AnalyticsModule,
     NotificationsModule,
   ],

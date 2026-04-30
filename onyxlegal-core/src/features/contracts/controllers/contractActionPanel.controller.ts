@@ -4,10 +4,12 @@ import {
   Post,
   Body,
   Param,
+  Res,
   HttpCode,
   BadRequestException,
   Logger,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { RiskFormatterService, RiskSummary } from '../services/riskFormatter.service';
 import { ContractFixService, FixResult, BulkFixResult } from '../services/contractFix.service';
 import { ContractHistoryService, VersionTimeline, VersionInfo } from '../services/contractHistory.service';
@@ -35,7 +37,7 @@ export interface ContractActionResponse {
   }>;
 }
 
-@Controller('api/contracts')
+@Controller('contracts')
 export class ContractActionPanelController {
   private logger = new Logger(ContractActionPanelController.name);
 
@@ -66,6 +68,7 @@ export class ContractActionPanelController {
 
     const riskSummary = this.riskFormatter.summarizeRisks(
       contract.clauses.map((c) => ({
+        clauseId: c.id,
         level: c.riskLevel,
         title: c.type,
         reason: c.riskReason || '',
@@ -108,6 +111,7 @@ export class ContractActionPanelController {
 
     return this.riskFormatter.summarizeRisks(
       contract.clauses.map((c) => ({
+        clauseId: c.id,
         level: c.riskLevel,
         title: c.type,
         reason: c.riskReason || '',
@@ -217,6 +221,30 @@ export class ContractActionPanelController {
       fixingComplete: stats.pendingFixes === 0,
       readyForReview: stats.criticalPending === 0,
     };
+  }
+
+  @Get(':contractId/download')
+  async downloadContract(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('contractId') contractId: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    const contract = await this.prisma.contract.findUnique({
+      where: { id: contractId },
+    });
+
+    if (!contract || contract.tenantId !== user.tenantId) {
+      throw new BadRequestException('Contract not found or unauthorized');
+    }
+
+    const content = contract.content || `${contract.title}\n\nNo content available.`;
+    const safeTitle = contract.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const filename = `${safeTitle}_safe.txt`;
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', Buffer.byteLength(content, 'utf8'));
+    res.send(content);
   }
 
   private buildActionItems(

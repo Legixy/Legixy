@@ -15,6 +15,7 @@ import { RiskLevel } from '@prisma/client';
  */
 
 export interface SimpleRisk {
+  clauseId?: string;
   level: RiskLevel;
   emoji: string;
   headline: string;
@@ -79,6 +80,7 @@ export class RiskFormatterService {
    */
   summarizeRisks(
     risks: Array<{
+      clauseId?: string;
       level: RiskLevel;
       title: string;
       reason: string;
@@ -106,9 +108,10 @@ export class RiskFormatterService {
     const topThreats = risks
       .sort((a, b) => this.riskLevelToNumber(b.level) - this.riskLevelToNumber(a.level))
       .slice(0, 3)
-      .map((risk) =>
-        this.formatRisk(risk.level, risk.title, risk.reason, risk.suggestion, risk.impact),
-      );
+      .map((risk) => ({
+        ...this.formatRisk(risk.level, risk.title, risk.reason, risk.suggestion, risk.impact),
+        clauseId: risk.clauseId,
+      }));
 
     const fixableSoonCount = risks.filter((r) => r.level === 'MEDIUM' || r.level === 'HIGH').length;
     const needsLawyerReviewCount = risks.filter((r) => r.level === 'CRITICAL').length;

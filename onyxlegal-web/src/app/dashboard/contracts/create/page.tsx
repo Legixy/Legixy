@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCreateContract } from '@/shared/api';
 import { useFormState } from '@/shared/hooks';
-import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, Upload, FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function CreateContractPage() {
@@ -21,6 +21,30 @@ export default function CreateContractPage() {
 
   const [partyName, setPartyName] = useState('');
   const [parties, setParties] = useState<Array<{ name: string; email?: string; role: string }>>([]);
+  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const text = evt.target?.result as string;
+      formState.setValue('content', text);
+      setUploadedFile(file.name);
+      if (!formState.values.title) {
+        formState.setValue('title', file.name.replace(/\.[^.]+$/, ''));
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const clearUploadedFile = () => {
+    setUploadedFile(null);
+    formState.setValue('content', '');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleAddParty = () => {
     if (!partyName.trim()) return;
@@ -121,15 +145,55 @@ export default function CreateContractPage() {
           {formState.errors.title && <p className="text-xs text-red-600 mt-1">{formState.errors.title}</p>}
         </div>
 
-        {/* Content */}
+        {/* Contract Content — upload or paste */}
         <div>
           <label className="block text-sm font-semibold text-slate-900 mb-2">
             Contract Content
           </label>
+
+          {/* Upload zone */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".txt,.md,.csv,.doc,.docx,.rtf,text/plain"
+            className="hidden"
+            onChange={handleFileUpload}
+          />
+
+          {!uploadedFile ? (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full mb-3 px-4 py-4 rounded-lg border-2 border-dashed border-slate-300 text-slate-500 hover:border-indigo-400 hover:text-indigo-600 transition-colors flex flex-col items-center gap-2"
+            >
+              <Upload size={20} />
+              <span className="text-sm font-medium">Upload contract file</span>
+              <span className="text-xs text-slate-400">TXT, RTF, DOC or paste text below</span>
+            </button>
+          ) : (
+            <div className="w-full mb-3 px-4 py-3 rounded-lg border border-emerald-200 bg-emerald-50 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText size={16} className="text-emerald-600" />
+                <span className="text-sm font-medium text-emerald-800">{uploadedFile}</span>
+              </div>
+              <button
+                type="button"
+                onClick={clearUploadedFile}
+                className="text-emerald-600 hover:text-red-600 transition-colors"
+                aria-label="Remove file"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
           <textarea
             value={formState.values.content}
-            onChange={(e) => formState.setValue('content', e.target.value)}
-            placeholder="Paste contract text here (optional)"
+            onChange={(e) => {
+              formState.setValue('content', e.target.value);
+              if (!e.target.value) setUploadedFile(null);
+            }}
+            placeholder="Or paste contract text here"
             className="w-full px-4 py-2.5 rounded-lg border border-slate-300 outline-none text-sm transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 font-mono"
             rows={6}
           />

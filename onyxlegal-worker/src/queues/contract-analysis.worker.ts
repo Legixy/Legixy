@@ -29,19 +29,19 @@ export const createContractAnalysisWorker = () => {
 
         const contract = await prisma.contract.findUnique({
           where: { id: contractId, tenantId },
-          include: { 
-            template: true,
-            versions: { orderBy: { version: 'desc' }, take: 1 }
+          include: {
+            template: { select: { category: true } },
+            versions: { orderBy: { version: 'desc' }, take: 1, select: { content: true } }
           }
-        });
+        }) as any;
 
         if (!contract) throw new Error(`Contract ${contractId} not found`);
 
         const latestVersion = contract.versions[0];
-        if (!latestVersion) throw new Error('No content versions found');
+        const docText = latestVersion?.content || (contract as any).content;
+        if (!docText) throw new Error('Contract has no content to analyze');
 
         const standardParameters = contract.template?.category || 'General';
-        const docText = latestVersion.content;
 
         let extractionData: any;
         let riskData: any;
@@ -93,24 +93,52 @@ export const createContractAnalysisWorker = () => {
         }
 
         console.log(`[Job ${job.id}] Phase 3: DB Commit. Overall risk score: ${riskData.score}`);
-        
+
+        // Map AI risk levels to Prisma RiskLevel enum
+        const mapRiskLevel = (level: string): string => {
+          switch (level) {
+            case 'HIGH_RISK': return 'HIGH';
+            case 'NEEDS_REVIEW': return 'MEDIUM';
+            case 'SAFE': return 'SAFE';
+            default: return 'MEDIUM';
+          }
+        };
+
+        // Map clause type from extraction schema to Prisma ClauseType enum
+        const mapClauseType = (type: string): string => {
+          const map: Record<string, string> = {
+            PAYMENT: 'PAYMENT_TERMS',
+            IP_OWNERSHIP: 'IP_OWNERSHIP',
+            LIABILITY: 'LIABILITY',
+            TERMINATION: 'TERMINATION',
+            CONFIDENTIALITY: 'CONFIDENTIALITY',
+            NON_COMPETE: 'NON_COMPETE',
+            GOVERNING_LAW: 'GOVERNING_LAW',
+            OTHER: 'OTHER',
+          };
+          return map[type] || 'OTHER';
+        };
+
         await prisma.$transaction(async (tx: any) => {
           await tx.clause.deleteMany({ where: { contractId } });
 
           const dbClauses = await Promise.all(extractionData.clauses.map(async (extractorInfo: any) => {
-            const riskInfo = riskData.clauses.find((r: any) => 
-               r.originalText === extractorInfo.originalText || 
-               r.originalText.includes(extractorInfo.originalText.substring(0, 50))
+            const riskInfo = riskData.clauses.find((r: any) =>
+               r.originalText === extractorInfo.originalText ||
+               extractorInfo.originalText.includes(r.originalText.substring(0, 40)) ||
+               r.originalText.includes(extractorInfo.originalText.substring(0, 40))
             );
+
+            const mappedRiskLevel = mapRiskLevel(riskInfo?.riskLevel || 'SAFE');
 
             return tx.clause.create({
               data: {
                 contractId,
-                type: extractorInfo.type as any,
+                type: mapClauseType(extractorInfo.type) as any,
                 originalText: extractorInfo.originalText,
-                riskLevel: (riskInfo?.riskLevel as any) || 'SAFE',
+                riskLevel: mappedRiskLevel as any,
+                riskReason: riskInfo?.businessImpact || null,
                 suggestedText: riskInfo?.suggestedText || null,
-                businessImpact: riskInfo?.businessImpact || null,
               }
             });
           }));
@@ -120,10 +148,11 @@ export const createContractAnalysisWorker = () => {
               await tx.riskFinding.create({
                 data: {
                   analysisId,
-                  severity: c.riskLevel === 'HIGH_RISK' ? 'HIGH' : 'MEDIUM',
-                  clause: c.id,
-                  impact: c.businessImpact || 'Requires review',
-                  suggestion: c.suggestedText || 'Revise for compliance',
+                  severity: c.riskLevel as any,
+                  title: c.type.replace(/_/g, ' '),
+                  clause: c.originalText.substring(0, 500),
+                  impact: c.riskReason || 'Requires review',
+                  suggestion: c.suggestedText || 'Revise clause for better protection',
                 }
               });
             }
