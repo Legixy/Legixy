@@ -49,7 +49,7 @@ export function AutoFixPanel() {
           </h2>
           <span
             className="w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold text-white"
-            style={{ background: 'var(--onyx-gradient)' }}
+            style={{ background: 'var(--primary)' }}
           >
             1
           </span>
@@ -105,8 +105,8 @@ export function AutoFixPanel() {
                 onClick={handleAccept}
                 className="w-full text-white h-10 text-sm rounded-xl font-semibold"
                 style={{
-                  background: 'var(--onyx-gradient)',
-                  boxShadow: '0 3px 12px rgba(79, 70, 229, 0.2)',
+                  background: 'var(--primary)',
+                  boxShadow: 'var(--shadow-sm)',
                   transition: 'all 0.3s var(--onyx-ease)',
                 }}
               >
@@ -151,7 +151,7 @@ export function AutoFixPanel() {
           <Button
             onClick={handleEditSave}
             className="flex-1 text-white h-9 text-sm rounded-xl"
-            style={{ background: 'var(--onyx-gradient)', boxShadow: '0 2px 8px rgba(79, 70, 229, 0.2)' }}
+            style={{ background: 'var(--primary)', boxShadow: 'var(--shadow-sm)' }}
           >
             Save &amp; Apply
           </Button>
@@ -178,7 +178,7 @@ export function AutoFixPanel() {
         <Button
           onClick={handleAskAI}
           className="w-full mt-3 text-white h-9 text-sm rounded-xl"
-          style={{ background: 'var(--onyx-gradient)', boxShadow: '0 2px 8px rgba(79, 70, 229, 0.2)' }}
+          style={{ background: 'var(--primary)', boxShadow: 'var(--shadow-sm)' }}
         >
           <Sparkles size={14} className="mr-1.5" />
           Ask AI

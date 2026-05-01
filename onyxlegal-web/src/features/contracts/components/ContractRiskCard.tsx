@@ -128,7 +128,7 @@ function FixWithAIModal({ title, onClose }: { title: string; onClose: () => void
         onClick={handleApply}
         disabled={applied}
         className="w-full text-white h-10 rounded-xl"
-        style={{ background: 'var(--onyx-gradient)', boxShadow: '0 3px 12px rgba(79, 70, 229, 0.2)' }}
+        style={{ background: 'var(--primary)', boxShadow: 'var(--shadow-sm)' }}
       >
         {applied ? '✓ Applied' : '✨ Apply Fix to Contract'}
       </Button>
@@ -158,7 +158,7 @@ function RenegotiateModal({ title, onClose }: { title: string; onClose: () => vo
         onClick={handleSend}
         disabled={sent}
         className="w-full text-white h-10 rounded-xl"
-        style={{ background: 'var(--onyx-gradient)', boxShadow: '0 3px 12px rgba(79, 70, 229, 0.2)' }}
+        style={{ background: 'var(--primary)', boxShadow: 'var(--shadow-sm)' }}
       >
         {sent ? '✓ Request Sent' : 'Send Renegotiation Request'}
       </Button>
@@ -215,7 +215,7 @@ function CompareVersionsModal() {
       <Button
         onClick={() => toast.success('AI version accepted', { description: 'Indemnification cap applied to contract.' })}
         className="w-full text-white h-10 rounded-xl"
-        style={{ background: 'var(--onyx-gradient)', boxShadow: '0 3px 12px rgba(79, 70, 229, 0.2)' }}
+        style={{ background: 'var(--primary)', boxShadow: 'var(--shadow-sm)' }}
       >
         <Sparkles size={14} className="mr-1.5" />
         Accept AI Version
@@ -282,9 +282,9 @@ export function ContractRiskCard({ title, type, status, date, riskLevel, aiDiagn
             onClick={handleAction}
             className="h-9 text-sm shrink-0 rounded-xl font-semibold"
             style={c.actionGradient ? {
-              background: 'var(--onyx-gradient)',
+              background: 'var(--primary)',
               color: 'white',
-              boxShadow: '0 2px 8px rgba(79, 70, 229, 0.2)',
+              boxShadow: 'var(--shadow-sm)',
               border: 'none',
             } : {
               border: '1px solid var(--border)',

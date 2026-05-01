@@ -81,7 +81,7 @@ export function SmartEmptyState({
             disabled={isLoading}
             className="w-full h-10 rounded-lg font-semibold text-sm"
             style={{
-              background: 'var(--onyx-gradient)',
+              background: 'var(--primary)',
               color: 'white',
               border: 'none',
             }}

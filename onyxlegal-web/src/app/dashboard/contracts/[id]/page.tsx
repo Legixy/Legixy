@@ -52,7 +52,7 @@ export default function ContractDetailPage() {
       {/* ── Loading State ────────────────────────── */}
       {isLoading && (
         <div className="flex items-center justify-center py-32">
-          <div className="onyx-shimmer w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--onyx-gradient)' }}>
+          <div className="onyx-shimmer w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--accent)' }}>
             <Loader2 className="w-5 h-5 text-white animate-spin" />
           </div>
           <p className="text-slate-400 ml-3 text-sm font-medium">Loading contract details...</p>
@@ -151,8 +151,8 @@ export default function ContractDetailPage() {
               onClick={() => router.push(`/dashboard/contracts/${contractId}/analyze`)}
               className="w-full text-white gap-2 h-10 rounded-xl text-sm font-semibold"
               style={{
-                background: 'var(--onyx-gradient)',
-                boxShadow: '0 4px 16px rgba(79, 70, 229, 0.25)',
+                background: 'var(--primary)',
+                boxShadow: 'var(--shadow-sm)',
               }}
             >
               <Sparkles size={16} className="text-indigo-200" />
@@ -164,8 +164,8 @@ export default function ContractDetailPage() {
               onClick={() => router.push(`/dashboard/contracts/${contractId}/actions`)}
               className="w-full text-white gap-2 h-10 rounded-xl text-sm font-semibold"
               style={{
-                background: 'linear-gradient(135deg, #10B981, #059669)',
-                boxShadow: '0 4px 16px rgba(16, 185, 129, 0.25)',
+                background: '#059669',
+                boxShadow: 'var(--shadow-sm)',
               }}
             >
               <ShieldCheck size={16} className="text-emerald-200" />

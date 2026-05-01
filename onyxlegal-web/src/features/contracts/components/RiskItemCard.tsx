@@ -210,10 +210,8 @@ export function RiskItemCard({ risk, clauseId, isFixed, isFixing = false, onFix,
                 disabled={busy}
                 className="h-9 px-4 rounded-xl text-[13px] font-bold text-white flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500"
                 style={{
-                  background: busy
-                    ? 'linear-gradient(135deg, #818CF8, #A78BFA)'
-                    : 'var(--onyx-gradient)',
-                  boxShadow: busy ? 'none' : '0 4px 14px rgba(79,70,229,0.30)',
+                  background: busy ? 'rgba(79,70,229,0.5)' : 'var(--primary)',
+                  boxShadow: busy ? 'none' : 'var(--shadow-sm)',
                   transition: 'all 0.25s var(--onyx-ease)',
                 }}
               >

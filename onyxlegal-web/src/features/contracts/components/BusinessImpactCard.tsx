@@ -68,9 +68,9 @@ export function BusinessImpactCard({
       >
         <div
           className="w-8 h-8 rounded-xl flex items-center justify-center"
-          style={{ background: 'var(--onyx-gradient)', boxShadow: '0 4px 12px rgba(79,70,229,0.25)' }}
+          style={{ background: 'var(--accent)', boxShadow: 'none' }}
         >
-          <TrendingDown size={15} className="text-white" />
+          <TrendingDown size={15} style={{ color: 'var(--primary)' }} />
         </div>
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">

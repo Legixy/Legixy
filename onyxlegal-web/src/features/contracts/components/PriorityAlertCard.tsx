@@ -121,8 +121,8 @@ export function PriorityAlertCard({ severity, title, subtitle, riskMessage, prim
             onClick={handlePrimary}
             className="flex-1 text-white h-9 text-sm rounded-xl font-semibold"
             style={{
-              background: 'var(--onyx-gradient)',
-              boxShadow: '0 2px 8px rgba(79, 70, 229, 0.2)',
+              background: 'var(--primary)',
+              boxShadow: 'var(--shadow-sm)',
               transition: 'all 0.3s var(--onyx-ease)',
             }}
           >
