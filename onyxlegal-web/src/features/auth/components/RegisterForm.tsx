@@ -19,6 +19,15 @@ const registerSchema = z.object({
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
+const inputClass = 'w-full pl-10 pr-4 h-11 text-[15px] transition-all duration-150';
+const inputStyle = (hasError: boolean) => ({
+  background: 'var(--card)',
+  border: `1.5px solid ${hasError ? 'var(--danger)' : 'var(--border)'}`,
+  borderRadius: '6px',
+  color: 'var(--foreground)',
+  outline: 'none',
+});
+
 export function RegisterForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
@@ -28,11 +37,24 @@ export function RegisterForm() {
     defaultValues: { name: '', companyName: '', email: '', password: '' },
   });
 
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>, hasError: boolean) => {
+    if (!hasError) {
+      e.currentTarget.style.borderColor = 'var(--primary)';
+      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(61,53,211,0.10)';
+    }
+  };
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>, hasError: boolean) => {
+    if (!hasError) {
+      e.currentTarget.style.borderColor = 'var(--border)';
+      e.currentTarget.style.boxShadow = 'none';
+    }
+  };
+
   async function onSubmit(data: RegisterFormValues) {
     setIsLoading(true);
     try {
       await auth.register(data);
-      toast.success('Account created!', { description: 'Welcome to OnyxLegal.' });
+      toast.success('Account created!', { description: 'Welcome to Legixy.' });
       router.push('/dashboard');
     } catch (error) {
       const message =
@@ -47,114 +69,91 @@ export function RegisterForm() {
     }
   }
 
+  const fields = [
+    { name: 'name'        as const, label: 'Full Name',     icon: User,      placeholder: 'Jane Smith',        type: 'text'     },
+    { name: 'companyName' as const, label: 'Company Name',  icon: Building2, placeholder: 'Acme Corp',         type: 'text'     },
+    { name: 'email'       as const, label: 'Email',         icon: Mail,      placeholder: 'name@company.com',  type: 'email'    },
+    { name: 'password'    as const, label: 'Password',      icon: Lock,      placeholder: '••••••••',          type: 'password' },
+  ];
+
   return (
     <div className="w-full">
-      <div className="text-center mb-8">
-        <h2 className="font-display text-2xl font-bold text-slate-900 tracking-tight">
+
+      <div className="mb-8">
+        <h2
+          className="font-display mb-1.5"
+          style={{ fontSize: '26px', letterSpacing: '-0.02em', color: 'var(--foreground)' }}
+        >
           Create your account
         </h2>
-        <p className="text-sm text-slate-500 mt-2">
+        <p className="text-[14px]" style={{ color: 'var(--muted-foreground)' }}>
           Start protecting your contracts with AI
         </p>
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-1.5 relative">
-          <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-            Full Name
-          </label>
-          <div className="relative group">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={16} />
-            <input
-              {...form.register('name')}
-              placeholder="Jane Smith"
-              className={`w-full pl-10 h-11 bg-slate-50 border border-slate-200 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all ${form.formState.errors.name ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
-              disabled={isLoading}
-            />
-          </div>
-          {form.formState.errors.name && (
-            <p className="text-xs font-medium text-red-500 mt-1">{form.formState.errors.name.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-1.5 relative">
-          <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-            Company Name
-          </label>
-          <div className="relative group">
-            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={16} />
-            <input
-              {...form.register('companyName')}
-              placeholder="Acme Corp"
-              className={`w-full pl-10 h-11 bg-slate-50 border border-slate-200 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all ${form.formState.errors.companyName ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
-              disabled={isLoading}
-            />
-          </div>
-          {form.formState.errors.companyName && (
-            <p className="text-xs font-medium text-red-500 mt-1">{form.formState.errors.companyName.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-1.5 relative">
-          <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-            Email
-          </label>
-          <div className="relative group">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={16} />
-            <input
-              {...form.register('email')}
-              placeholder="name@company.com"
-              className={`w-full pl-10 h-11 bg-slate-50 border border-slate-200 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all ${form.formState.errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
-              disabled={isLoading}
-            />
-          </div>
-          {form.formState.errors.email && (
-            <p className="text-xs font-medium text-red-500 mt-1">{form.formState.errors.email.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-1.5 relative pt-2">
-          <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-            Password
-          </label>
-          <div className="relative group">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={16} />
-            <input
-              {...form.register('password')}
-              type="password"
-              placeholder="••••••••"
-              className={`w-full pl-10 h-11 bg-slate-50 border border-slate-200 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all ${form.formState.errors.password ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
-              disabled={isLoading}
-            />
-          </div>
-          {form.formState.errors.password && (
-            <p className="text-xs font-medium text-red-500 mt-1">{form.formState.errors.password.message}</p>
-          )}
-        </div>
+        {fields.map(({ name, label, icon: Icon, placeholder, type }) => {
+          const error = form.formState.errors[name];
+          return (
+            <div key={name}>
+              <label
+                className="block text-[12px] font-semibold mb-1.5 uppercase tracking-[0.08em]"
+                style={{ color: 'var(--foreground)' }}
+              >
+                {label}
+              </label>
+              <div className="relative">
+                <Icon
+                  className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                  size={15}
+                  style={{ color: 'var(--muted-foreground)' }}
+                />
+                <input
+                  {...form.register(name)}
+                  type={type}
+                  placeholder={placeholder}
+                  disabled={isLoading}
+                  className={inputClass}
+                  style={inputStyle(!!error)}
+                  onFocus={(e) => handleFocus(e, !!error)}
+                  onBlur={(e) => handleBlur(e, !!error)}
+                />
+              </div>
+              {error && (
+                <p className="text-[12px] mt-1 animate-fade-up" style={{ color: 'var(--danger)' }}>
+                  {error.message}
+                </p>
+              )}
+            </div>
+          );
+        })}
 
         <button
           type="submit"
-          className="w-full h-11 mt-6 rounded-xl text-[15px] font-bold text-white shadow-[0_4px_14px_rgba(79,70,229,0.30)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.40)] hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
-          style={{ background: 'var(--onyx-gradient)' }}
           disabled={isLoading}
+          className="w-full h-11 mt-2 text-[15px] font-medium text-white flex items-center justify-center transition-all duration-150"
+          style={{
+            background: isLoading ? 'rgba(61,53,211,0.7)' : 'var(--primary)',
+            borderRadius: '8px',
+            boxShadow: 'var(--shadow-sm)',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+          }}
         >
-          {isLoading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin pointer-events-none" />
-          ) : (
-            'Create Account'
-          )}
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Account'}
         </button>
       </form>
 
-      <p className="text-center text-sm text-slate-500 mt-8">
+      <p className="text-center text-[14px] mt-8" style={{ color: 'var(--muted-foreground)' }}>
         Already have an account?{' '}
         <a
           href="/login"
-          className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors hover:underline"
+          className="font-semibold transition-colors duration-150"
+          style={{ color: 'var(--primary)' }}
         >
           Log in
         </a>
       </p>
+
     </div>
   );
 }

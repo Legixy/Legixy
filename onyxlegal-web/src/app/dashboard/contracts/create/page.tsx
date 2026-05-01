@@ -106,7 +106,7 @@ export default function CreateContractPage() {
           <ArrowLeft size={18} className="text-slate-600" />
         </button>
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900 tracking-tight">
+          <h1 className="font-display text-2xl text-slate-900 tracking-tight">
             Create New Contract
           </h1>
           <p className="text-slate-500 mt-0.5 text-sm">Start by entering basic information</p>
@@ -148,18 +148,33 @@ export default function CreateContractPage() {
             <label className="block text-sm font-semibold text-slate-900">
               Contract Content
             </label>
-            <div className="flex rounded-lg border border-slate-200 overflow-hidden text-xs font-medium">
+            <div
+              className="flex overflow-hidden text-[12px] font-medium p-0.5"
+              style={{ borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--secondary)' }}
+            >
               <button
                 type="button"
                 onClick={() => setInputMode('paste')}
-                className={`px-3 py-1.5 transition-colors ${inputMode === 'paste' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                className="px-3 py-1.5 transition-all duration-150"
+                style={{
+                  borderRadius: '6px',
+                  background: inputMode === 'paste' ? 'var(--card)' : 'transparent',
+                  color: inputMode === 'paste' ? 'var(--primary)' : 'var(--muted-foreground)',
+                  boxShadow: inputMode === 'paste' ? 'var(--shadow-xs)' : 'none',
+                }}
               >
                 Paste Text
               </button>
               <button
                 type="button"
                 onClick={() => setInputMode('upload')}
-                className={`px-3 py-1.5 transition-colors ${inputMode === 'upload' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                className="px-3 py-1.5 transition-all duration-150"
+                style={{
+                  borderRadius: '6px',
+                  background: inputMode === 'upload' ? 'var(--card)' : 'transparent',
+                  color: inputMode === 'upload' ? 'var(--primary)' : 'var(--muted-foreground)',
+                  boxShadow: inputMode === 'upload' ? 'var(--shadow-xs)' : 'none',
+                }}
               >
                 Upload PDF / DOCX
               </button>
@@ -330,8 +345,9 @@ export default function CreateContractPage() {
             disabled={isPending}
             className="flex-1 text-white gap-2"
             style={{
-              background: 'var(--onyx-gradient)',
+              background: 'var(--primary)',
               opacity: isPending ? 0.7 : 1,
+              borderRadius: '8px',
             }}
           >
             {isPending && <Loader2 size={16} className="animate-spin" />}

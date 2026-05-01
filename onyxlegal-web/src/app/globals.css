@@ -154,6 +154,23 @@
   --ease-in:       cubic-bezier(0.4, 0, 1, 1);
   --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Brand Gradient — decorative use only (logo bg, avatar, icons) ── */
+  /* NEVER use for primary CTA buttons — see DESIGN.md */
+  --onyx-gradient:        linear-gradient(135deg, #3D35D3 0%, #6D28D9 100%);
+  --onyx-gradient-subtle: linear-gradient(135deg, rgba(61,53,211,0.07) 0%, rgba(109,40,217,0.05) 100%);
+  --onyx-gradient-text:   linear-gradient(135deg, #3D35D3, #6D28D9);
+
+  /* ── Shadow aliases (legacy compat) ── */
+  --onyx-shadow-xs:  var(--shadow-xs);
+  --onyx-shadow-sm:  var(--shadow-sm);
+  --onyx-shadow-md:  var(--shadow-md);
+  --onyx-shadow-lg:  var(--shadow-lg);
+  --onyx-shadow-xl:  var(--shadow-xl);
+  --onyx-shadow-2xl: var(--shadow-2xl);
+
+  /* ── Ease alias ── */
+  --onyx-ease: var(--ease-out);
 }
 
 /* ── Dark Mode Palette ─────────────────────────────────────────────────────── */
@@ -207,6 +224,10 @@
   --sidebar-accent-foreground:      #C7D2FE;
   --sidebar-border:                 rgba(255, 255, 255, 0.08);
   --sidebar-ring:                   #6366F1;
+
+  /* Brand gradient — same in dark mode */
+  --onyx-gradient:        linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  --onyx-gradient-subtle: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.08) 100%);
 }
 
 /* ── Base Reset ──────────────────────────────────────────────────────────────── */

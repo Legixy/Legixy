@@ -2,14 +2,20 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { ContractRiskCard } from '@/features/contracts/components/ContractRiskCard';
-import { Plus, Filter, Search, FileSignature, AlertTriangle, Shield, Clock, Loader2, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Plus, Search, FileSignature, AlertTriangle, Shield, Clock, Loader2, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-provider';
 import { useContracts, useContractStats } from '@/shared/api';
 import { SmartEmptyState } from '@/shared/components/SmartEmptyState';
 
 const statusFilters = ['All', 'Draft', 'In Review', 'Sent', 'Signed', 'Active', 'Expired'] as const;
+
+const statConfig = [
+  { key: 'totalContracts',  label: 'Total',    icon: FileSignature, color: 'var(--primary)',  bg: 'rgba(61,53,211,0.07)'  },
+  { key: 'highRiskClauses', label: 'High Risk', icon: AlertTriangle, color: 'var(--danger)',   bg: 'rgba(220,38,38,0.06)'  },
+  { key: 'activeContracts', label: 'Active',    icon: Shield,        color: 'var(--success)',  bg: 'rgba(5,150,105,0.07)'  },
+  { key: 'draftContracts',  label: 'Drafts',    icon: Clock,         color: 'var(--warning)',  bg: 'rgba(217,119,6,0.07)'  },
+] as const;
 
 export default function ContractsPage() {
   const [activeFilter, setActiveFilter] = useState<string>('All');
@@ -21,7 +27,6 @@ export default function ContractsPage() {
     if (!authLoading && !isAuthenticated) router.replace('/login');
   }, [authLoading, isAuthenticated, router]);
 
-  // Fetch contracts data
   const { data: contractsResponse, isLoading, error } = useContracts({
     status: activeFilter === 'All' ? undefined : activeFilter.toUpperCase().replace(/\s+/g, '_'),
     search: searchQuery || undefined,
@@ -29,25 +34,20 @@ export default function ContractsPage() {
     limit: 50,
   });
 
-  // Fetch stats
   const { data: stats } = useContractStats();
-
   const contracts = contractsResponse?.data || [];
 
-  // Filter and search
   const filtered = useMemo(() => {
-    return contracts.filter((c) => {
-      if (searchQuery) {
-        return (c.title ?? '').toLowerCase().includes(searchQuery.toLowerCase());
-      }
-      return true;
-    });
+    if (!searchQuery) return contracts;
+    return contracts.filter((c) =>
+      (c.title ?? '').toLowerCase().includes(searchQuery.toLowerCase())
+    );
   }, [contracts, searchQuery]);
 
   if (authLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+        <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--primary)' }} />
       </div>
     );
   }
@@ -55,64 +55,52 @@ export default function ContractsPage() {
   return (
     <div className="w-full flex flex-col pt-2 pb-12 animate-fade-up">
 
-      {error && (
-        <div className="flex items-center gap-2 mb-6 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
-          <AlertCircle size={14} className="shrink-0" />
-          Failed to load contracts — {(error as Error).message || 'backend unavailable'}. Please refresh.
-        </div>
-      )}
-
       {/* ── Page Header ──────────────────────────── */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900 tracking-tight">Contracts</h1>
-          <p className="text-slate-500 mt-0.5 text-sm">Manage and monitor all your legal agreements in one place.</p>
+          <h1 className="font-display text-[26px] tracking-tight" style={{ color: 'var(--foreground)' }}>
+            Contracts
+          </h1>
+          <p className="text-[14px] mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+            Manage and monitor all your legal agreements in one place.
+          </p>
         </div>
-        <Button
+        <button
           onClick={() => router.push('/dashboard/contracts/create')}
-          className="text-white gap-2 h-10 shrink-0 rounded-xl text-sm font-semibold px-5"
+          className="flex items-center gap-2 h-10 px-5 text-[14px] font-medium text-white transition-all duration-150"
           style={{
-            background: 'var(--onyx-gradient)',
-            boxShadow: '0 4px 16px rgba(79, 70, 229, 0.25)',
-            transition: 'all 0.3s var(--onyx-ease)',
+            background: 'var(--primary)',
+            borderRadius: '8px',
+            boxShadow: 'var(--shadow-sm)',
           }}
         >
-          <Plus size={16} />
+          <Plus size={15} />
           New Contract
-        </Button>
+        </button>
       </div>
 
       {/* ── Stats Row ────────────────────────────── */}
       <div className="grid grid-cols-4 gap-4 mb-8">
-        {[
-          { label: 'Total', value: stats?.totalContracts ?? 0, icon: FileSignature, color: 'text-indigo-600', bg: 'bg-indigo-50', glow: 'rgba(79, 70, 229, 0.06)' },
-          { label: 'High Risk', value: stats?.highRiskClauses ?? 0, icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-50', glow: 'rgba(239, 68, 68, 0.06)' },
-          { label: 'Active', value: stats?.activeContracts ?? 0, icon: Shield, color: 'text-emerald-500', bg: 'bg-emerald-50', glow: 'rgba(16, 185, 129, 0.06)' },
-          { label: 'Drafts', value: stats?.draftContracts ?? 0, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50', glow: 'rgba(245, 158, 11, 0.06)' },
-        ].map((stat) => (
+        {statConfig.map((s) => (
           <div
-            key={stat.label}
-            className="bg-white rounded-xl px-4 py-4 flex items-center gap-3"
-            style={{
-              border: '1px solid var(--border)',
-              boxShadow: `var(--onyx-shadow-sm), 0 0 20px ${stat.glow}`,
-              transition: 'all 0.3s var(--onyx-ease)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = `var(--onyx-shadow-md), 0 0 24px ${stat.glow}`;
-              e.currentTarget.style.transform = 'translateY(-1px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = `var(--onyx-shadow-sm), 0 0 20px ${stat.glow}`;
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
+            key={s.label}
+            className="card-hover bg-white flex items-center gap-3 px-4 py-4"
+            style={{ border: '1px solid var(--border)', borderRadius: '12px', boxShadow: 'var(--shadow-xs)' }}
           >
-            <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center shrink-0`}>
-              <stat.icon size={17} className={stat.color} />
+            <div
+              className="w-9 h-9 flex items-center justify-center shrink-0"
+              style={{ background: s.bg, borderRadius: '8px' }}
+            >
+              <s.icon size={16} style={{ color: s.color }} />
             </div>
             <div>
-              <p className="text-xl font-bold text-slate-900 leading-none">{stat.value}</p>
-              <p className="text-[11px] text-slate-500 font-medium mt-0.5">{stat.label}</p>
+              <p
+                className="text-xl font-semibold leading-none"
+                style={{ color: 'var(--foreground)', letterSpacing: '-0.02em' }}
+              >
+                {stats?.[s.key] ?? 0}
+              </p>
+              <p className="text-[11px] font-medium mt-0.5" style={{ color: 'var(--muted-foreground)' }}>{s.label}</p>
             </div>
           </div>
         ))}
@@ -120,62 +108,80 @@ export default function ContractsPage() {
 
       {/* ── Filters & Search ─────────────────────── */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="flex items-center gap-1 bg-slate-50 rounded-xl p-1 overflow-x-auto" style={{ border: '1px solid var(--border)' }}>
+        {/* Status pill filters */}
+        <div
+          className="flex items-center gap-1 p-1 overflow-x-auto"
+          style={{ background: 'var(--secondary)', borderRadius: '10px', border: '1px solid var(--border)' }}
+        >
           {statusFilters.map((f) => (
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 whitespace-nowrap ${
-                activeFilter === f
-                  ? 'bg-white text-indigo-700'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-              style={activeFilter === f ? { boxShadow: 'var(--onyx-shadow-sm)' } : undefined}
+              className="px-3 py-1.5 text-[12px] font-medium whitespace-nowrap transition-all duration-150"
+              style={{
+                borderRadius: '7px',
+                background: activeFilter === f ? 'var(--card)' : 'transparent',
+                color: activeFilter === f ? 'var(--primary)' : 'var(--muted-foreground)',
+                boxShadow: activeFilter === f ? 'var(--shadow-xs)' : 'none',
+              }}
             >
               {f}
             </button>
           ))}
         </div>
+
+        {/* Search input */}
         <div className="relative ml-auto">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+            size={14}
+            style={{ color: 'var(--muted-foreground)' }}
+          />
           <input
             type="text"
-            placeholder="Search contracts..."
+            placeholder="Search contracts…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-9 pl-8 pr-3 bg-white rounded-xl text-xs outline-none w-56 placeholder:text-slate-400"
+            className="h-9 pl-9 pr-4 text-[13px] w-56 transition-all duration-150"
             style={{
+              background: 'var(--card)',
               border: '1px solid var(--border)',
-              transition: 'all 0.3s var(--onyx-ease)',
+              borderRadius: '6px',
+              color: 'var(--foreground)',
+              outline: 'none',
             }}
-            onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 3px rgba(79, 70, 229, 0.08)'; e.currentTarget.style.borderColor = '#818CF8'; }}
-            onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = 'var(--primary)';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(61,53,211,0.10)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           />
         </div>
       </div>
 
+      {/* ── Error Banner ─────────────────────────── */}
+      {error && (
+        <div
+          className="flex items-center gap-3 px-4 py-3 mb-6 text-[13px]"
+          style={{ background: 'rgba(220,38,38,0.04)', border: '1px solid rgba(220,38,38,0.15)', borderRadius: '8px', color: 'var(--danger)' }}
+        >
+          <AlertCircle size={14} className="shrink-0" />
+          Failed to load contracts — {(error as Error).message || 'backend unavailable'}. Please refresh.
+        </div>
+      )}
+
       {/* ── Loading State ────────────────────────── */}
       {isLoading && (
-        <div className="flex items-center justify-center py-16">
-          <div className="onyx-shimmer w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--onyx-gradient)' }}>
-            <Loader2 className="w-5 h-5 text-white animate-spin" />
-          </div>
-          <p className="text-slate-400 ml-3 text-sm font-medium">Loading contracts...</p>
+        <div className="flex items-center gap-3 py-16 justify-center text-[14px]" style={{ color: 'var(--muted-foreground)' }}>
+          <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--primary)' }} />
+          Loading contracts…
         </div>
       )}
 
-      {/* ── Error State ──────────────────────────── */}
-      {error && !isLoading && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200">
-          <AlertCircle className="text-red-500" size={18} />
-          <div>
-            <p className="text-sm font-semibold text-red-900">Failed to load contracts</p>
-            <p className="text-xs text-red-700 mt-0.5">{error instanceof Error ? error.message : 'Unknown error'}</p>
-          </div>
-        </div>
-      )}
-
-      {/* ── Empty State ──────────────────────────– */}
+      {/* ── Empty State ──────────────────────────── */}
       {!isLoading && !error && filtered.length === 0 && (
         <SmartEmptyState
           type="contracts"
@@ -186,11 +192,11 @@ export default function ContractsPage() {
 
       {/* ── Contract Cards ───────────────────────── */}
       {!isLoading && !error && filtered.length > 0 && (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4">
           {filtered.map((contract) => (
             <div
               key={contract.id}
-              className="cursor-pointer transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
+              className="cursor-pointer transition-all duration-200 hover:scale-[1.005]"
               onClick={() => router.push(`/dashboard/contracts/${contract.id}`)}
             >
               <ContractRiskCard
@@ -198,7 +204,15 @@ export default function ContractsPage() {
                 type={contract.template?.category || 'Document'}
                 status={contract.status}
                 date={new Date(contract.createdAt).toLocaleDateString()}
-                riskLevel={contract.riskScore != null ? (contract.riskScore > 70 ? 'high_risk' : contract.riskScore > 40 ? 'needs_action' : 'verified_safe') : 'not_analyzed'}
+                riskLevel={
+                  contract.riskScore != null
+                    ? contract.riskScore > 70
+                      ? 'high_risk'
+                      : contract.riskScore > 40
+                        ? 'needs_action'
+                        : 'verified_safe'
+                    : 'not_analyzed'
+                }
                 aiDiagnosis={`Contract value: ${contract.contractValue || 'N/A'} ${contract.currency}`}
                 businessImpact={`Created by ${contract.createdBy?.name || 'Unknown'} on ${new Date(contract.createdAt).toLocaleDateString()}`}
               />

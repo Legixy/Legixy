@@ -38,11 +38,11 @@ export default function ContractActionsPage() {
           <div className="flex items-center gap-2 mb-0.5">
             <div
               className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{ background: 'var(--onyx-gradient)' }}
+              style={{ background: 'var(--primary)' }}
             >
               <Shield size={12} className="text-white" />
             </div>
-            <h1 className="font-display text-[18px] font-black text-slate-900 tracking-tight">
+            <h1 className="font-display text-[18px] font-semibold text-slate-900 tracking-tight">
               Review &amp; Fix Risks
             </h1>
           </div>

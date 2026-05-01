@@ -28,7 +28,7 @@ export default function ContractDetailPage() {
           {isLoading ? (
             <div className="h-8 w-48 bg-slate-200 rounded-lg animate-pulse" />
           ) : (
-            <h1 className="font-display text-2xl font-bold text-slate-900 tracking-tight">
+            <h1 className="font-display text-2xl text-slate-900 tracking-tight">
               {contract?.title || 'Contract'}
             </h1>
           )}
@@ -177,7 +177,7 @@ export default function ContractDetailPage() {
               <div className="bg-white rounded-xl p-4 border border-slate-200">
                 <p className="text-xs text-slate-500 font-medium uppercase mb-2">Risk Score</p>
                 <div className="flex items-end gap-2">
-                  <p className="text-2xl font-bold text-slate-900">{contract.riskScore}</p>
+                  <p className="text-2xl font-semibold text-slate-900">{contract.riskScore}</p>
                   <p className="text-xs text-slate-500 mb-1">/100</p>
                 </div>
                 <div className="mt-3 h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -203,7 +203,7 @@ export default function ContractDetailPage() {
             {/* Analyses Count */}
             <div className="bg-white rounded-xl p-4 border border-slate-200">
               <p className="text-xs text-slate-500 font-medium uppercase mb-2">AI Analyses</p>
-              <p className="text-2xl font-bold text-slate-900">{contract._count?.analyses || 0}</p>
+              <p className="text-2xl font-semibold text-slate-900">{contract._count?.analyses || 0}</p>
               <p className="text-xs text-slate-500 mt-1">analyses performed</p>
             </div>
 

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Shield, CheckCircle2 } from 'lucide-react';
+import { Scale } from 'lucide-react';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -7,69 +7,90 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen bg-[#FAFAFB] flex flex-col md:flex-row">
-      {/* ── LEFT SIDE (Brand & Value) ── */}
-      <div className="w-full md:w-[45%] lg:w-[40%] bg-indigo-600 p-8 md:p-12 lg:p-16 flex flex-col justify-between relative overflow-hidden text-white flex-shrink-0">
-        
-        {/* Subtle background illustration/gradient */}
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-40 mix-blend-overlay">
-          <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-500 rounded-full blur-[80px]" />
-          <div className="absolute top-1/2 left-1/2 w-[500px] h-[500px] bg-purple-500 rounded-full blur-[100px] opacity-30 translate-x-[-20%] translate-y-[-20%]" />
-        </div>
+    <div className="min-h-screen flex" style={{ background: 'var(--background)' }}>
 
-        {/* Logo area */}
+      {/* ── LEFT PANEL — Brand & value prop ── */}
+      <div
+        className="hidden lg:flex lg:w-[44%] xl:w-[40%] flex-col justify-between p-14 shrink-0 relative overflow-hidden"
+        style={{ background: 'var(--primary)' }}
+      >
+        {/* Subtle geometric texture — not a blob, not a gradient */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `radial-gradient(circle at 80% 20%, rgba(255,255,255,0.04) 0%, transparent 50%),
+                              radial-gradient(circle at 20% 80%, rgba(255,255,255,0.03) 0%, transparent 50%)`,
+          }}
+        />
+
+        {/* Logo */}
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-            <Shield size={22} className="text-indigo-600" />
+          <div
+            className="w-9 h-9 flex items-center justify-center"
+            style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)' }}
+          >
+            <Scale size={18} className="text-white" />
           </div>
-          <span className="font-display text-2xl font-bold tracking-tight text-white">
-            OnyxLegal
-          </span>
+          <span className="font-display text-[19px] text-white tracking-tight">Legixy</span>
         </div>
 
-        {/* Value Proposition */}
-        <div className="relative z-10 mt-16 md:mt-0 max-w-md">
-          <h1 className="font-display text-4xl md:text-5xl font-bold leading-[1.15] tracking-tight mb-5">
-            Understand and fix your contracts in seconds
+        {/* Main copy */}
+        <div className="relative z-10">
+          <h1
+            className="font-display text-white mb-6 leading-[1.1]"
+            style={{ fontSize: '42px', letterSpacing: '-0.03em' }}
+          >
+            Contracts reviewed.<br />
+            Risk eliminated.<br />
+            <em>In seconds.</em>
           </h1>
-          <p className="text-indigo-100 text-lg md:text-xl font-medium mb-10 opacity-90">
-            AI-powered legal analysis for founders and startups
+          <p className="text-[17px] leading-relaxed mb-10" style={{ color: 'rgba(255,255,255,0.70)' }}>
+            AI-powered legal analysis built for Indian founders and SMEs — not for law firms.
           </p>
 
-          <div className="space-y-4 text-indigo-50 font-medium text-base">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 size={20} className="text-indigo-300 flex-shrink-0" />
-              <span>Detect hidden risks and liabilities</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle2 size={20} className="text-indigo-300 flex-shrink-0" />
-              <span>Fix contracts instantly with AI</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle2 size={20} className="text-indigo-300 flex-shrink-0" />
-              <span>Stay compliant automatically</span>
-            </div>
+          {/* Trust signals — understated, not a feature list */}
+          <div className="space-y-3">
+            {[
+              'Detects hidden liabilities before you sign',
+              'Flags non-compliant clauses under Indian law',
+              'Trusted by 500+ startups across India',
+            ].map((point) => (
+              <div key={point} className="flex items-start gap-3">
+                <div
+                  className="w-1.5 h-1.5 rounded-full mt-2 shrink-0"
+                  style={{ background: 'rgba(255,255,255,0.45)' }}
+                />
+                <p className="text-[14px]" style={{ color: 'rgba(255,255,255,0.65)' }}>{point}</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Footer/Trust */}
-        <div className="relative z-10 mt-16 md:mt-0 text-indigo-200 text-sm font-medium">
-          <p>© {new Date().getFullYear()} OnyxLegal. Trusted by 500+ startups.</p>
+        {/* Footer */}
+        <div className="relative z-10">
+          <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            © {new Date().getFullYear()} Legixy. All rights reserved.
+          </p>
         </div>
       </div>
 
-      {/* ── RIGHT SIDE (Form Container) ── */}
-      <div className="flex-1 flex items-center justify-center p-6 md:p-12 relative overflow-hidden bg-[#FAFAFB]">
-        {/* Decorative subtle background blobs on the right side */}
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]">
-           <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-600 rounded-full blur-[120px] translate-x-1/3 -translate-y-1/3" />
-        </div>
-        
-        {/* Glass Card for the Form */}
-        <div className="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-[2rem] p-8 md:p-10 z-50 relative animate-fade-up transition-all duration-300 hover:shadow-[0_8px_40px_rgba(0,0,0,0.08)] pointer-events-auto isolate">
+      {/* ── RIGHT PANEL — Form ── */}
+      <div className="flex-1 flex items-center justify-center p-6 md:p-12">
+        <div className="w-full max-w-[420px]">
+          {/* Mobile logo — only shows when left panel is hidden */}
+          <div className="flex items-center gap-2.5 mb-10 lg:hidden">
+            <div
+              className="w-8 h-8 flex items-center justify-center"
+              style={{ background: 'var(--primary)', borderRadius: '8px' }}
+            >
+              <Scale size={16} className="text-white" />
+            </div>
+            <span className="font-display text-[17px]" style={{ color: 'var(--foreground)' }}>Legixy</span>
+          </div>
           {children}
         </div>
       </div>
+
     </div>
   );
 }

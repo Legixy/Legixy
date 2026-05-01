@@ -79,7 +79,7 @@ export default function ResultsPage() {
             <ArrowLeft size={18} className="text-slate-600" />
           </button>
           <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900 tracking-tight">
+            <h1 className="font-display text-2xl text-slate-900 tracking-tight">
               Analysis Results
             </h1>
             <p className="text-slate-500 mt-0.5 text-sm">{contract?.title || 'Contract'}</p>
@@ -87,8 +87,8 @@ export default function ResultsPage() {
         </div>
         <Button
           onClick={() => router.push(`/dashboard/contracts/${contractId}/analyze`)}
-          className="text-white gap-2 h-10 rounded-xl text-sm font-semibold px-4"
-          style={{ background: 'var(--onyx-gradient)' }}
+          className="text-white gap-2 h-10 text-sm font-medium px-4"
+          style={{ background: 'var(--primary)', borderRadius: '8px' }}
         >
           <Sparkles size={14} />
           Re-analyze
@@ -221,7 +221,7 @@ export default function ResultsPage() {
                           disabled={acceptFixMutation.isPending}
                           className="w-full mt-3 text-white gap-2"
                           style={{
-                            background: 'var(--onyx-gradient)',
+                            background: 'var(--primary)',
                             opacity: acceptFixMutation.isPending ? 0.7 : 1,
                           }}
                         >
@@ -267,7 +267,7 @@ export default function ResultsPage() {
         </Button>
         <Button
           className="flex-1 text-white gap-2"
-          style={{ background: 'var(--onyx-gradient)' }}
+          style={{ background: 'var(--primary)' }}
           onClick={() => router.push(`/dashboard/contracts/${contractId}`)}
         >
           <CheckCircle size={16} />

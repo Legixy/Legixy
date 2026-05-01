@@ -56,7 +56,7 @@ export default function TemplatesPage() {
         >
           <Sparkles size={14} /> AI Recommendation Engine
         </div>
-        <h1 className="font-display text-4xl font-extrabold text-slate-900 tracking-tight mb-4">Smart Contract Templates</h1>
+        <h1 className="font-display text-4xl font-semibold text-slate-900 tracking-tight mb-4">Smart Contract Templates</h1>
         <p className="text-slate-500 text-lg leading-relaxed">Onyx AI has analyzed your company profile and recommends the following optimized legal structures for your current growth stage.</p>
         
         {/* Trust Indicators */}

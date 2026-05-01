@@ -7,28 +7,27 @@ import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth-provider';
 
 const quickLinks = [
-  { label: 'Globex MSA — High Risk clause', badge: 'Contract', color: 'bg-red-50 text-red-600' },
-  { label: 'Net 90 payment term risk', badge: 'AI Insight', color: 'bg-indigo-50 text-indigo-600' },
-  { label: 'WeWork auto-renewal clause', badge: 'Contract', color: 'bg-amber-50 text-amber-600' },
-  { label: 'Standard NDA template', badge: 'Template', color: 'bg-emerald-50 text-emerald-600' },
+  { label: 'Globex MSA — High Risk clause',   badge: 'Contract',   bgColor: 'rgba(220,38,38,0.08)',  fgColor: 'var(--danger)'   },
+  { label: 'Net 90 payment term risk',         badge: 'AI Insight', bgColor: 'rgba(61,53,211,0.08)',  fgColor: 'var(--primary)'  },
+  { label: 'WeWork auto-renewal clause',       badge: 'Contract',   bgColor: 'rgba(217,119,6,0.08)',  fgColor: 'var(--warning)'  },
+  { label: 'Standard NDA template',            badge: 'Template',   bgColor: 'rgba(5,150,105,0.08)',  fgColor: 'var(--success)'  },
 ];
 
 export function Header() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery]       = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
   const { user, logout } = useAuth();
+
   const initials = user?.name
-    ? user.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+    ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
     : '??';
 
-  // Keyboard shortcut: ⌘K
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault();
-      const input = document.getElementById('global-search') as HTMLInputElement;
-      input?.focus();
+      (document.getElementById('global-search') as HTMLInputElement)?.focus();
     }
   }, []);
 
@@ -37,59 +36,64 @@ export function Header() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  const handleNotification = () => {
-    toast.info('You have 3 unread notifications', {
-      description: 'Priya Singh signature pending · AWS renewal in 2 days · AI fix ready',
-    });
-  };
-
-  const handleHelp = () => {
-    toast.info('Help & Resources', {
-      description: 'Documentation, tutorials and support are coming soon.',
-    });
-  };
-
-  const handleSearch = (label: string) => {
-    setSearchOpen(false);
-    setQuery('');
-    toast.success(`Navigating to: ${label}`);
-  };
-
   return (
     <header
-      className="h-[56px] bg-white/80 flex items-center justify-between px-8 sticky top-0 z-20 w-full"
+      className="h-[56px] flex items-center justify-between px-8 sticky top-0 z-20 w-full"
       style={{
+        background: 'rgba(248,249,252,0.88)',
         backdropFilter: 'blur(12px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(12px) saturate(180%)',
         borderBottom: '1px solid var(--border)',
       }}
     >
 
       {/* AI Search Bar */}
-      <div className="flex-1 max-w-2xl relative">
-        <div className="relative group">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors duration-200" size={15} />
+      <div className="flex-1 max-w-lg relative">
+        <div className="relative">
+          <Search
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+            size={14}
+            style={{ color: 'var(--muted-foreground)' }}
+          />
           <input
             id="global-search"
             type="text"
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setSearchOpen(e.target.value.length > 0);
+            onChange={(e) => { setQuery(e.target.value); setSearchOpen(e.target.value.length > 0); }}
+            onFocus={(e) => {
+              setSearchOpen(true);
+              e.currentTarget.style.borderColor = 'var(--primary)';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(61,53,211,0.08)';
             }}
-            onFocus={() => setSearchOpen(true)}
-            onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
-            placeholder="Ask AI to find a clause, or search contracts..."
-            className="w-full h-9 pl-10 pr-14 bg-[#F4F5F7] rounded-xl text-sm outline-none transition-all duration-300 focus:bg-white focus:shadow-[0_0_0_3px_rgba(79,70,229,0.1)] placeholder:text-slate-400"
-            style={{ border: '1px solid transparent' }}
+            onBlur={(e) => {
+              setTimeout(() => setSearchOpen(false), 150);
+              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+            placeholder="Ask AI or search contracts…"
+            className="w-full h-9 pl-10 pr-14 text-[13px] transition-all duration-150"
+            style={{
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
+              borderRadius: '6px',
+              color: 'var(--foreground)',
+              outline: 'none',
+            }}
           />
-          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden md:flex items-center">
             {query ? (
               <button onClick={() => { setQuery(''); setSearchOpen(false); }}>
-                <X size={14} className="text-slate-400 hover:text-slate-700 transition-colors duration-200" />
+                <X size={13} style={{ color: 'var(--muted-foreground)' }} />
               </button>
             ) : (
-              <kbd className="inline-flex items-center justify-center rounded-md bg-white px-1.5 font-mono text-[10px] font-medium text-slate-400 h-5"
-                style={{ boxShadow: 'var(--onyx-shadow-sm)', border: '1px solid var(--border)' }}
+              <kbd
+                className="inline-flex items-center justify-center font-mono text-[10px] h-5 px-1.5"
+                style={{
+                  background: 'var(--secondary)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '4px',
+                  color: 'var(--muted-foreground)',
+                }}
               >
                 ⌘K
               </kbd>
@@ -100,29 +104,47 @@ export function Header() {
         {/* Search Dropdown */}
         {searchOpen && (
           <div
-            className="absolute top-12 left-0 right-0 bg-white rounded-2xl overflow-hidden z-50 animate-fade-up"
-            style={{ boxShadow: 'var(--onyx-shadow-xl)', border: '1px solid var(--border)' }}
+            className="absolute top-11 left-0 right-0 overflow-hidden z-50 animate-fade-up"
+            style={{
+              background: 'var(--card)',
+              borderRadius: '10px',
+              border: '1px solid var(--border)',
+              boxShadow: 'var(--shadow-xl)',
+            }}
           >
-            <p className="px-4 pt-3.5 pb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quick Results</p>
+            <p
+              className="px-4 pt-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
+              Quick Results
+            </p>
             {quickLinks
-              .filter(l => query === '' || l.label.toLowerCase().includes(query.toLowerCase()))
+              .filter((l) => !query || l.label.toLowerCase().includes(query.toLowerCase()))
               .map((link) => (
-              <button
-                key={link.label}
-                onMouseDown={() => handleSearch(link.label)}
-                className="w-full flex items-center justify-between gap-4 px-4 py-3 hover:bg-slate-50/80 text-left text-sm text-slate-700 transition-colors duration-150"
-              >
-                <span className="font-medium">{link.label}</span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${link.color}`}>{link.badge}</span>
-              </button>
-            ))}
+                <button
+                  key={link.label}
+                  onMouseDown={() => { setSearchOpen(false); setQuery(''); toast.success(`Navigating to: ${link.label}`); }}
+                  className="w-full flex items-center justify-between gap-4 px-4 py-2.5 text-left transition-colors duration-100"
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                >
+                  <span className="text-[13px] font-medium" style={{ color: 'var(--foreground)' }}>{link.label}</span>
+                  <span
+                    className="text-[10px] font-semibold px-2 py-0.5 shrink-0"
+                    style={{ background: link.bgColor, color: link.fgColor, borderRadius: '4px' }}
+                  >
+                    {link.badge}
+                  </span>
+                </button>
+              ))}
             {query && (
               <div className="px-4 py-3" style={{ borderTop: '1px solid var(--border)' }}>
                 <button
-                  onMouseDown={() => handleSearch(`AI answer for "${query}"`)}
-                  className="text-sm text-indigo-600 font-semibold hover:text-indigo-700 flex items-center gap-2 transition-colors"
+                  onMouseDown={() => { setSearchOpen(false); setQuery(''); toast.success(`AI answer for "${query}"`); }}
+                  className="text-[13px] font-semibold flex items-center gap-2 transition-colors duration-150"
+                  style={{ color: 'var(--primary)' }}
                 >
-                  <Sparkles size={13} />
+                  <Sparkles size={12} />
                   Ask Onyx AI about &ldquo;{query}&rdquo;
                 </button>
               </div>
@@ -132,62 +154,86 @@ export function Header() {
       </div>
 
       {/* Global Actions */}
-      <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
+      <div className="flex items-center gap-1 ml-4">
+
         {/* Notification Bell */}
         <button
-          onClick={handleNotification}
-          className="relative p-2 hover:bg-slate-50 rounded-xl transition-all duration-200 group"
-          title="Notifications"
+          onClick={() => toast.info('3 unread notifications', { description: 'Priya signature pending · AWS renewal · AI fix ready' })}
+          className="relative p-2 transition-all duration-150"
+          style={{ borderRadius: '8px' }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
         >
-          <Bell size={18} className="text-slate-400 group-hover:text-slate-600 transition-colors duration-200" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+          <Bell size={17} style={{ color: 'var(--muted-foreground)' }} />
+          <span
+            className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
+            style={{ background: 'var(--danger)', outline: '1.5px solid var(--background)' }}
+          />
         </button>
 
         {/* Help */}
-        <button onClick={handleHelp} className="hover:text-slate-700 transition-colors duration-200 px-3 py-1.5 rounded-xl hover:bg-slate-50 text-[13px]">
+        <button
+          onClick={() => toast.info('Help & Resources', { description: 'Documentation coming soon.' })}
+          className="px-3 py-1.5 text-[13px] font-medium transition-all duration-150"
+          style={{ borderRadius: '8px', color: 'var(--muted-foreground)' }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; e.currentTarget.style.color = 'var(--foreground)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--muted-foreground)'; }}
+        >
           Help
         </button>
 
         {/* Divider */}
-        <div className="w-px h-6 bg-slate-200/60 mx-1" />
+        <div className="w-px h-5 mx-1" style={{ background: 'var(--border)' }} />
 
         {/* User Avatar + dropdown */}
         <div className="relative">
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-slate-50 transition-all duration-200 group"
+            className="flex items-center gap-2 pl-1 pr-2 py-1 transition-all duration-150"
+            style={{ borderRadius: '8px' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
           >
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-              style={{ background: 'var(--onyx-gradient)', boxShadow: '0 2px 8px rgba(79, 70, 229, 0.25)' }}
+              className="w-7 h-7 flex items-center justify-center text-white text-[11px] font-semibold"
+              style={{ background: 'var(--primary)', borderRadius: '50%' }}
             >
               {initials}
             </div>
-            <ChevronDown size={13} className={`text-slate-400 group-hover:text-slate-600 transition-all duration-200 ${menuOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              size={12}
+              style={{
+                color: 'var(--muted-foreground)',
+                transition: 'transform 200ms',
+                transform: menuOpen ? 'rotate(180deg)' : 'none',
+              }}
+            />
           </button>
 
           {menuOpen && (
             <>
-              {/* Backdrop */}
               <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-              {/* Menu */}
               <div
-                className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-lg border border-slate-200/80 z-20 overflow-hidden"
-                style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
+                className="absolute right-0 top-full mt-2 w-52 overflow-hidden z-20"
+                style={{
+                  background: 'var(--card)',
+                  borderRadius: '10px',
+                  border: '1px solid var(--border)',
+                  boxShadow: 'var(--shadow-lg)',
+                }}
               >
-                <div className="px-4 py-3 border-b border-slate-100">
-                  <p className="text-xs font-semibold text-slate-900 truncate">{user?.name || 'Account'}</p>
-                  <p className="text-xs text-slate-500 truncate mt-0.5">{user?.email}</p>
+                <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
+                  <p className="text-[13px] font-semibold truncate" style={{ color: 'var(--foreground)' }}>{user?.name || 'Account'}</p>
+                  <p className="text-[12px] truncate mt-0.5" style={{ color: 'var(--muted-foreground)' }}>{user?.email}</p>
                 </div>
                 <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    logout();
-                    router.push('/login');
-                  }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
+                  onClick={() => { setMenuOpen(false); logout(); router.push('/login'); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] transition-colors duration-150"
+                  style={{ color: 'var(--danger)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(220,38,38,0.05)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                 >
-                  <LogOut size={14} />
+                  <LogOut size={13} />
                   Sign out
                 </button>
               </div>

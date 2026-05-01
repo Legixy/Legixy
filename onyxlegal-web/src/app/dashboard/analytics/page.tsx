@@ -73,8 +73,8 @@ function StatCard({
         </div>
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{label}</p>
         <div className="flex items-baseline gap-1">
-          <span className="font-display text-3xl font-extrabold text-slate-900 tracking-tight">{animatedValue}</span>
-          {suffix && <span className="text-lg font-bold text-slate-400">{suffix}</span>}
+          <span className="font-display text-3xl font-semibold text-slate-900 tracking-tight">{animatedValue}</span>
+          {suffix && <span className="text-lg font-medium text-slate-400">{suffix}</span>}
         </div>
         {trendLabel && (
           <div className={`flex items-center gap-1 mt-2 text-xs font-semibold ${trendColor}`}>
@@ -100,7 +100,7 @@ function RiskGauge({ label, value, color }: { label: string; value: number; colo
           style={{ width: `${width}%`, transition: 'width 1.2s var(--onyx-ease)' }}
         />
       </div>
-      <span className="text-xs font-bold text-slate-700 w-8 text-right">{value}%</span>
+      <span className="text-xs font-semibold text-slate-700 w-8 text-right">{value}%</span>
     </div>
   );
 }
@@ -150,13 +150,13 @@ export default function AnalyticsPage() {
       {/* ── Page Header ──────────────────────────── */}
       <div className="mb-10">
         <div
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-indigo-700 text-xs font-bold tracking-widest uppercase mb-4"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-indigo-700 text-xs font-semibold tracking-widest uppercase mb-4"
           style={{ background: 'var(--onyx-gradient-subtle)', border: '1px solid rgba(79, 70, 229, 0.1)' }}
         >
           <BarChart3 size={13} />
           AI Analytics Dashboard
         </div>
-        <h1 className="font-display text-3xl font-bold text-slate-900 tracking-tight">Legal Operations Intelligence</h1>
+        <h1 className="font-display text-3xl text-slate-900 tracking-tight">Legal Operations Intelligence</h1>
         <p className="text-slate-500 mt-1 text-sm">Real-time insights powered by Onyx AI across your contract portfolio.</p>
       </div>
 
@@ -218,7 +218,7 @@ export default function AnalyticsPage() {
           style={{ border: '1px solid var(--border)', boxShadow: 'var(--onyx-shadow-sm)' }}
         >
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display text-sm font-bold text-slate-800">Risk Distribution by Clause Type</h2>
+            <h2 className="font-display text-sm font-semibold text-slate-800">Risk Distribution by Clause Type</h2>
             <span className="text-xs text-slate-400 font-medium">Last 30 days</span>
           </div>
           <div className="space-y-4">
@@ -238,7 +238,7 @@ export default function AnalyticsPage() {
           style={{ border: '1px solid var(--border)', boxShadow: 'var(--onyx-shadow-sm)' }}
         >
           <div className="flex items-center justify-between mb-5">
-            <h2 className="font-display text-sm font-bold text-slate-800">AI Activity Feed</h2>
+            <h2 className="font-display text-sm font-semibold text-slate-800">AI Activity Feed</h2>
             <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live
@@ -276,7 +276,7 @@ export default function AnalyticsPage() {
               <Sparkles size={20} className="text-indigo-300" />
             </div>
             <div>
-              <h3 className="font-display font-bold text-lg">Onyx AI Monthly Summary</h3>
+              <h3 className="font-display font-semibold text-lg">Onyx AI Monthly Summary</h3>
               <p className="text-indigo-200/50 text-xs">Performance metrics for {monthLabel}</p>
             </div>
           </div>
@@ -289,7 +289,7 @@ export default function AnalyticsPage() {
               { label: 'Accuracy Rate', value: '96.8%', sub: 'Verified by legal' },
             ].map((m) => (
               <div key={m.label} className="text-center">
-                <p className="font-display text-2xl font-extrabold mb-1">{m.value}</p>
+                <p className="font-display text-2xl font-semibold mb-1">{m.value}</p>
                 <p className="text-xs font-semibold text-indigo-200/70 uppercase tracking-wider">{m.label}</p>
                 <p className="text-[10px] text-indigo-300/40 mt-0.5">{m.sub}</p>
               </div>

@@ -69,7 +69,7 @@ export default function AnalyzePage() {
           <ArrowLeft size={18} className="text-slate-600" />
         </button>
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900 tracking-tight">
+          <h1 className="font-display text-2xl text-slate-900 tracking-tight">
             AI Analysis in Progress
           </h1>
           <p className="text-slate-500 mt-0.5 text-sm">
@@ -108,7 +108,7 @@ export default function AnalyzePage() {
               <div className="absolute inset-0 flex items-center justify-center">
                 <div
                   className="w-14 h-14 rounded-full flex items-center justify-center"
-                  style={{ background: 'var(--onyx-gradient)' }}
+                  style={{ background: 'var(--primary)' }}
                 >
                   <Sparkles className="w-7 h-7 text-white animate-pulse" />
                 </div>
@@ -243,7 +243,7 @@ export default function AnalyzePage() {
             <Button
               onClick={() => handleTriggerAnalysis()}
               className="flex-1 text-white gap-2"
-              style={{ background: 'var(--onyx-gradient)' }}
+              style={{ background: 'var(--primary)' }}
             >
               <Sparkles size={14} />
               Re-analyze

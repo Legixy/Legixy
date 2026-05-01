@@ -24,17 +24,14 @@ export function LoginForm() {
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
+    defaultValues: { email: '', password: '' },
   });
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
     try {
       await auth.login(data.email, data.password);
-      toast.success('Login successful', { description: 'Welcome back to OnyxLegal' });
+      toast.success('Login successful', { description: 'Welcome back to Legixy' });
       const params = new URLSearchParams(window.location.search);
       router.push(params.get('next') || '/dashboard');
     } catch (error) {
@@ -52,111 +49,185 @@ export function LoginForm() {
 
   return (
     <div className="w-full">
-      <div className="text-center mb-8">
-        <h2 className="font-display text-2xl font-bold text-slate-900 tracking-tight">
+
+      {/* Heading */}
+      <div className="mb-8">
+        <h2
+          className="font-display mb-1.5"
+          style={{ fontSize: '26px', letterSpacing: '-0.02em', color: 'var(--foreground)' }}
+        >
           Log in to your account
         </h2>
-        <p className="text-sm text-slate-500 mt-2">
-          Enter your details below to access your dashboard
+        <p className="text-[14px]" style={{ color: 'var(--muted-foreground)' }}>
+          Enter your details to access the dashboard
         </p>
       </div>
 
+      {/* Social */}
       <SocialLoginButton
         provider="Google"
         disabled={isLoading}
         onClick={() => {
-          toast.success('Redirecting to Google...', { description: 'Opening secure login window' });
+          toast.success('Redirecting to Google…', { description: 'Opening secure login window' });
           setTimeout(() => router.push('/dashboard'), 1500);
         }}
       />
 
-      <div className="relative my-6 pointer-events-none">
+      {/* Divider */}
+      <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-slate-200" />
+          <div className="w-full" style={{ borderTop: '1px solid var(--border)' }} />
         </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="bg-white px-4 text-slate-400 font-medium tracking-wide text-xs uppercase pointer-events-auto">
+        <div className="relative flex justify-center">
+          <span
+            className="px-4 text-[11px] font-medium tracking-[0.1em] uppercase"
+            style={{ background: 'var(--background)', color: 'var(--muted-foreground)' }}
+          >
             Or continue with email
           </span>
         </div>
       </div>
 
+      {/* Form */}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-1.5 relative">
-          <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+
+        {/* Email */}
+        <div>
+          <label
+            className="block text-[12px] font-semibold mb-1.5 uppercase tracking-[0.08em]"
+            style={{ color: 'var(--foreground)' }}
+          >
             Email
           </label>
-          <div className="relative group">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={16} />
+          <div className="relative">
+            <Mail
+              className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-150"
+              size={15}
+              style={{ color: 'var(--muted-foreground)' }}
+            />
             <input
               {...form.register('email')}
+              type="email"
               placeholder="name@company.com"
-              className={`w-full pl-10 h-11 bg-slate-50 border border-slate-200 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all ${form.formState.errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''
-                }`}
               disabled={isLoading}
+              className="w-full pl-10 pr-4 h-11 text-[15px] transition-all duration-150"
+              style={{
+                background: 'var(--card)',
+                border: `1.5px solid ${form.formState.errors.email ? 'var(--danger)' : 'var(--border)'}`,
+                borderRadius: '6px',
+                color: 'var(--foreground)',
+                outline: 'none',
+              }}
+              onFocus={(e) => {
+                if (!form.formState.errors.email) {
+                  e.currentTarget.style.borderColor = 'var(--primary)';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(61,53,211,0.10)';
+                }
+              }}
+              onBlur={(e) => {
+                if (!form.formState.errors.email) {
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
+              }}
             />
           </div>
           {form.formState.errors.email && (
-            <p className="text-xs font-medium text-red-500 mt-1 flex items-center gap-1 animate-fade-up">
+            <p className="text-[12px] mt-1 animate-fade-up" style={{ color: 'var(--danger)' }}>
               {form.formState.errors.email.message}
             </p>
           )}
         </div>
 
-        <div className="space-y-1.5 relative pt-2">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+        {/* Password */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label
+              className="block text-[12px] font-semibold uppercase tracking-[0.08em]"
+              style={{ color: 'var(--foreground)' }}
+            >
               Password
             </label>
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); toast('Password reset link sent'); }}
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-500 hover:underline transition-all"
+            <button
+              type="button"
+              className="text-[12px] font-medium transition-colors duration-150"
+              style={{ color: 'var(--primary)' }}
+              onClick={() => toast('Password reset coming soon')}
             >
               Forgot password?
-            </a>
+            </button>
           </div>
-          <div className="relative group">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors pointer-events-none" size={16} />
+          <div className="relative">
+            <Lock
+              className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              size={15}
+              style={{ color: 'var(--muted-foreground)' }}
+            />
             <input
               {...form.register('password')}
               type="password"
               placeholder="••••••••"
-              className={`w-full pl-10 h-11 bg-slate-50 border border-slate-200 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 transition-all ${form.formState.errors.password ? 'border-red-500 focus-visible:ring-red-500' : ''
-                }`}
               disabled={isLoading}
+              className="w-full pl-10 pr-4 h-11 text-[15px] transition-all duration-150"
+              style={{
+                background: 'var(--card)',
+                border: `1.5px solid ${form.formState.errors.password ? 'var(--danger)' : 'var(--border)'}`,
+                borderRadius: '6px',
+                color: 'var(--foreground)',
+                outline: 'none',
+              }}
+              onFocus={(e) => {
+                if (!form.formState.errors.password) {
+                  e.currentTarget.style.borderColor = 'var(--primary)';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(61,53,211,0.10)';
+                }
+              }}
+              onBlur={(e) => {
+                if (!form.formState.errors.password) {
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
+              }}
             />
           </div>
           {form.formState.errors.password && (
-            <p className="text-xs font-medium text-red-500 mt-1 flex items-center gap-1 animate-fade-up">
+            <p className="text-[12px] mt-1 animate-fade-up" style={{ color: 'var(--danger)' }}>
               {form.formState.errors.password.message}
             </p>
           )}
         </div>
 
+        {/* Submit */}
         <button
           type="submit"
-          className="w-full h-11 mt-6 rounded-xl text-[15px] font-bold text-white shadow-[0_4px_14px_rgba(79,70,229,0.30)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.40)] hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
-          style={{ background: 'var(--onyx-gradient)' }}
           disabled={isLoading}
+          className="w-full h-11 mt-2 text-[15px] font-medium text-white flex items-center justify-center transition-all duration-150"
+          style={{
+            background: isLoading ? 'rgba(61,53,211,0.7)' : 'var(--primary)',
+            borderRadius: '8px',
+            boxShadow: 'var(--shadow-sm)',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+          }}
         >
           {isLoading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin pointer-events-none" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            'Log in to OnyxLegal'
+            'Log in to Legixy'
           )}
         </button>
       </form>
 
-      <p className="text-center text-sm text-slate-500 mt-8">
-        Don't have an account?{' '}
+      <p className="text-center text-[14px] mt-8" style={{ color: 'var(--muted-foreground)' }}>
+        Don&apos;t have an account?{' '}
         <a
           href="/register"
-          className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors hover:underline"
+          className="font-semibold transition-colors duration-150"
+          style={{ color: 'var(--primary)' }}
         >
-          Sign up
+          Sign up free
         </a>
       </p>
+
     </div>
   );
 }
