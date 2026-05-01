@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Bell, X, ChevronDown, Sparkles, LogOut } from 'lucide-react';
+import { Search, Bell, X, ChevronDown, Sparkles, LogOut, Menu } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -13,7 +13,7 @@ const quickLinks = [
   { label: 'Standard NDA template',            badge: 'Template',   bgColor: 'rgba(5,150,105,0.08)',  fgColor: 'var(--success)'  },
 ];
 
-export function Header() {
+export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const [query, setQuery]       = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -46,6 +46,18 @@ export function Header() {
         borderBottom: '1px solid var(--border)',
       }}
     >
+
+      {/* Hamburger — mobile only */}
+      {onMenuClick && (
+        <button
+          onClick={onMenuClick}
+          className="mr-3 p-2 md:hidden"
+          style={{ borderRadius: '8px', color: 'var(--muted-foreground)' }}
+          aria-label="Open navigation"
+        >
+          <Menu size={20} />
+        </button>
+      )}
 
       {/* AI Search Bar */}
       <div className="flex-1 max-w-lg relative">
