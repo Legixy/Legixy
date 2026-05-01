@@ -8,8 +8,10 @@ import {
   AlertCircle,
   Loader2,
   FileCheck,
+  Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 import { RiskHeroCard }      from './RiskHeroCard';
 import { BusinessImpactCard } from './BusinessImpactCard';
@@ -25,70 +27,6 @@ import {
   useApplyFix,
   useApplyBulkFixes,
 } from '@/shared/api/contracts';
-
-// ── Mock Data ──────────────────────────────────────────────────────────────────
-// Production-ready fallback. Swap with real API by wiring useContractActionPanel.
-
-const MOCK_SCORE = 78;
-const MOCK_CONTRACT_VALUE = 1_500_000;
-
-const MOCK_RISKS: SimpleRisk[] = [
-  {
-    level:    'CRITICAL',
-    emoji:    '🚨',
-    headline: 'You could owe unlimited money if something goes wrong',
-    explanation:
-      'There is no cap on how much money you could owe the other party. If a dispute happens, they can sue you for any amount — with no limit.',
-    businessImpact:   'Worst case: ₹5,00,000+ loss',
-    recommendedAction:'Add a liability cap equal to 12 months of fees paid (₹18L). This is standard and fair.',
-    severity: 'dealbreaker',
-  },
-  {
-    level:    'HIGH',
-    emoji:    '🔴',
-    headline: 'Contract renews automatically and keeps charging you',
-    explanation:
-      "Unless you cancel 90 days before the end date, this contract automatically extends and charges you again — even if you forgot about it.",
-    businessImpact:   'You may lose ₹1,50,000 unexpectedly',
-    recommendedAction:'Reduce the notice period to 30 days and add a mandatory renewal reminder 60 days before renewal.',
-    severity: 'fixAsap',
-  },
-  {
-    level:    'MEDIUM',
-    emoji:    '⚠️',
-    headline: 'If you disagree, you must fight in a foreign court',
-    explanation:
-      "Any dispute must be resolved under US law in Delaware courts. As an Indian company, this means expensive international litigation if anything goes wrong.",
-    businessImpact:   'Legal costs: ₹10L+ for any dispute',
-    recommendedAction:'Change to Indian Contract Act 1872 with courts of Mumbai having exclusive jurisdiction.',
-    severity: 'fix',
-  },
-  {
-    level:    'HIGH',
-    emoji:    '🔴',
-    headline: 'You pay for custom work but the vendor owns it',
-    explanation:
-      'All intellectual property created for you stays owned by the vendor. You cannot use, modify, or sell the deliverables without their permission.',
-    businessImpact:   'You lose ownership of ₹2,00,000 of custom work',
-    recommendedAction:'Add a "work-for-hire" clause: all custom IP created specifically for you transfers to you upon full payment.',
-    severity: 'fixAsap',
-  },
-];
-
-const MOCK_SUMMARY: RiskSummary = {
-  totalRisks:           4,
-  critical:             1,
-  high:                 2,
-  medium:               1,
-  low:                  0,
-  safe:                 0,
-  overallSeverity:      'severe',
-  topThreats:           MOCK_RISKS,
-  fixableSoonCount:     4,
-  needsLawyerReviewCount: 0,
-};
-
-const MOCK_CLAUSE_IDS = ['clause-001', 'clause-002', 'clause-003', 'clause-004'];
 
 // ── Status Badge ───────────────────────────────────────────────────────────────
 
@@ -145,19 +83,21 @@ interface Props {
 }
 
 export function ContractActionPanel({ contractId, contractTitle }: Props) {
+  const router = useRouter();
+
   // ── Hooks ─────────────────────────────────────────────────────────────────
   const { data: apiData, isLoading: isPanelLoading } = useContractActionPanel(contractId);
   const { data: _progressData }                       = useContractProgress(contractId);
   const { mutateAsync: applyFix }                     = useApplyFix();
   const { mutateAsync: applyBulkFixes }               = useApplyBulkFixes();
 
-  // ── Data / Fallback ────────────────────────────────────────────────────────
-  const isMock = !apiData || apiData.riskSummary?.topThreats?.length === 0;
-  const summary: RiskSummary = isMock
-    ? MOCK_SUMMARY
-    : { ...apiData!.riskSummary, topThreats: apiData!.riskSummary.topThreats };
+  // ── Data — only use real API data, no mock fallback ───────────────────────
+  const hasRisks = !!apiData && (apiData.riskSummary?.topThreats?.length ?? 0) > 0;
+  const summary: RiskSummary | null = hasRisks
+    ? { ...apiData!.riskSummary, topThreats: apiData!.riskSummary.topThreats }
+    : null;
 
-  const initialScore: number = isMock ? MOCK_SCORE : (apiData?.riskScore ?? MOCK_SCORE);
+  const initialScore: number = apiData?.riskScore ?? 0;
 
   // ── Local state ───────────────────────────────────────────────────────────
   const [fixedSet,    setFixedSet]    = useState<Set<string>>(new Set());
@@ -165,15 +105,16 @@ export function ContractActionPanel({ contractId, contractTitle }: Props) {
   const [bulkResult,  setBulkResult]  = useState<BulkFixResult | null>(null);
 
   // ── Computed ──────────────────────────────────────────────────────────────
-  const allFixed        = fixedSet.size >= summary.topThreats.length || bulkResult !== null;
-  const currentScore    = Math.max(0, initialScore - fixedSet.size * Math.round(initialScore / (summary.totalRisks || 1)));
+  const threats         = summary?.topThreats ?? [];
+  const allFixed        = threats.length > 0 && (fixedSet.size >= threats.length || bulkResult !== null);
+  const currentScore    = Math.max(0, initialScore - fixedSet.size * Math.round(initialScore / (summary?.totalRisks || 1)));
   const afterScore      = bulkResult
     ? Math.max(0, initialScore - (bulkResult.riskReductionPercent ?? 0))
     : currentScore;
 
   const contractStatus  = bulkResult ? 'REVIEWED' : (apiData?.status || 'IN_REVIEW');
 
-  const estimatedLoss   = summary.topThreats.reduce((acc, r) => {
+  const estimatedLoss   = threats.reduce((acc, r) => {
     const m = r.businessImpact?.match(/₹([\d,]+)/);
     return acc + (m ? parseInt(m[1].replace(/,/g, ''), 10) : 100_000);
   }, 0);
@@ -183,57 +124,27 @@ export function ContractActionPanel({ contractId, contractTitle }: Props) {
     if (fixingSet.has(clauseId)) return;
     setFixingSet((p) => new Set(p).add(clauseId));
     try {
-      if (!isMock) {
-        await applyFix({ contractId, clauseId });
-      } else {
-        await new Promise((r) => setTimeout(r, 900));
-        toast.success('Fix applied! ✅', { description: 'AI-suggested improvement applied.' });
-      }
+      await applyFix({ contractId, clauseId });
       setFixedSet((p) => new Set(p).add(clauseId));
     } catch {
       // error toast fired by mutation hook
     } finally {
       setFixingSet((p) => { const n = new Set(p); n.delete(clauseId); return n; });
     }
-  }, [contractId, applyFix, isMock, fixingSet]);
+  }, [contractId, applyFix, fixingSet]);
 
   const handleFixAll = useCallback(async () => {
-    if (!isMock) {
-      const res = await applyBulkFixes({ contractId });
-      setBulkResult(res);
-      setFixedSet(new Set(summary.topThreats.map((_, i) => MOCK_CLAUSE_IDS[i] ?? `c-${i}`)));
-      return {
-        riskReductionPercent: res.riskReductionPercent,
-        estimatedSavings:     res.estimatedSavings,
-        appliedFixes:         res.appliedFixes,
-        riskScoreBefore:      initialScore,
-        riskScoreAfter:       Math.max(0, initialScore - res.riskReductionPercent),
-      };
-    }
-    // Mock
-    await new Promise((r) => setTimeout(r, 1800));
-    const reduction   = 57;
-    const savings     = Math.round(MOCK_CONTRACT_VALUE * 0.28);
-    const mockResult: BulkFixResult = {
-      contractId,
-      totalClauses:        summary.topThreats.length,
-      appliedFixes:        summary.topThreats.length,
-      skippedClauses:      0,
-      riskReductionPercent: reduction,
-      estimatedSavings:    savings,
-      results:             [],
-      versionNumber:       2,
-    };
-    setBulkResult(mockResult);
-    setFixedSet(new Set(MOCK_CLAUSE_IDS));
+    const res = await applyBulkFixes({ contractId });
+    setBulkResult(res);
+    setFixedSet(new Set(threats.map((r, i) => r.clauseId || `c-${i}`)));
     return {
-      riskReductionPercent: reduction,
-      estimatedSavings:    savings,
-      appliedFixes:        summary.topThreats.length,
-      riskScoreBefore:     initialScore,
-      riskScoreAfter:      Math.max(0, initialScore - reduction),
+      riskReductionPercent: res.riskReductionPercent,
+      estimatedSavings:     res.estimatedSavings,
+      appliedFixes:         res.appliedFixes,
+      riskScoreBefore:      initialScore,
+      riskScoreAfter:       Math.max(0, initialScore - res.riskReductionPercent),
     };
-  }, [contractId, applyBulkFixes, isMock, summary.topThreats, initialScore]);
+  }, [contractId, applyBulkFixes, threats, initialScore]);
 
   const handleDownload = useCallback(async () => {
     const toastId = toast.loading('Preparing download…');
@@ -267,39 +178,65 @@ export function ContractActionPanel({ contractId, contractTitle }: Props) {
     );
   }
 
-  // ── Fully safe state ──────────────────────────────────────────────────────
-  if (apiData && apiData.riskSummary?.totalRisks === 0 && !isMock) {
+  // ── Not analyzed yet ──────────────────────────────────────────────────────
+  if (!apiData) {
+    return (
+      <div className="w-full animate-fade-up">
+        <div
+          className="rounded-xl p-10 text-center"
+          style={{ background: 'var(--accent)', border: '1px solid rgba(61,53,211,0.10)' }}
+        >
+          <div
+            className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5"
+            style={{ background: 'var(--primary)', boxShadow: 'var(--shadow-md)' }}
+          >
+            <Sparkles size={28} className="text-white" />
+          </div>
+          <h2 className="font-display text-xl font-semibold mb-2" style={{ color: 'var(--foreground)' }}>
+            No analysis yet
+          </h2>
+          <p className="text-sm text-slate-500 max-w-xs mx-auto mb-6 leading-relaxed">
+            Run an AI analysis to detect risks, get fix suggestions, and protect yourself before signing.
+          </p>
+          <button
+            onClick={() => router.push(`/dashboard/contracts/${contractId}/analyze`)}
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white"
+            style={{ background: 'var(--primary)', boxShadow: 'var(--shadow-sm)' }}
+          >
+            <Sparkles size={14} />
+            Analyze with AI
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Analyzed — no risks found ─────────────────────────────────────────────
+  if (!hasRisks) {
     return (
       <div className="w-full space-y-5 animate-fade-up">
         <div
-          className="rounded-3xl p-10 text-center"
-          style={{
-            background: 'linear-gradient(135deg, rgba(16,185,129,0.06), rgba(5,150,105,0.04))',
-            border: '1.5px solid rgba(16,185,129,0.2)',
-            boxShadow: '0 0 40px rgba(16,185,129,0.10)',
-          }}
+          className="rounded-xl p-10 text-center"
+          style={{ background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.2)' }}
         >
           <div
-            className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5"
-            style={{ background: 'linear-gradient(135deg, #10B981, #059669)', boxShadow: '0 8px 24px rgba(16,185,129,0.35)' }}
+            className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-5"
+            style={{ background: '#059669', boxShadow: 'var(--shadow-md)' }}
           >
-            <ShieldCheck size={36} className="text-white" />
+            <ShieldCheck size={28} className="text-white" />
           </div>
-          <h2 className="font-display text-2xl font-black text-emerald-900 mb-2">
-            This contract is safe! ✅
+          <h2 className="font-display text-xl font-semibold text-emerald-900 mb-2">
+            Contract looks safe
           </h2>
-          <p className="text-[14px] font-medium text-emerald-700 max-w-sm mx-auto mb-6 leading-relaxed">
-            Our AI found zero risks. The terms are fair and balanced. Safe to proceed.
+          <p className="text-sm text-emerald-700 max-w-sm mx-auto mb-6 leading-relaxed">
+            AI found no high-risk clauses. The terms are fair and balanced — safe to proceed.
           </p>
           <button
             onClick={handleDownload}
-            className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl font-display font-bold text-white"
-            style={{
-              background: 'linear-gradient(135deg, #10B981, #059669)',
-              boxShadow: '0 6px 20px rgba(16,185,129,0.35)',
-            }}
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white"
+            style={{ background: '#059669', boxShadow: 'var(--shadow-sm)' }}
           >
-            <Download size={18} />
+            <Download size={14} />
             Download Contract
           </button>
         </div>
@@ -314,11 +251,11 @@ export function ContractActionPanel({ contractId, contractTitle }: Props) {
       {/* ── 1. RISK HERO ───────────────────────────────────────────────── */}
       <RiskHeroCard
         riskScore={allFixed ? afterScore : initialScore}
-        totalRisks={allFixed ? 0 : summary.totalRisks}
+        totalRisks={allFixed ? 0 : (summary?.totalRisks ?? 0)}
       />
 
       {/* ── 2. BUSINESS IMPACT ─────────────────────────────────────────── */}
-      {!allFixed && (
+      {!allFixed && summary && (
         <BusinessImpactCard
           estimatedLoss={estimatedLoss}
           criticalIssues={summary.critical + summary.high}
@@ -330,7 +267,7 @@ export function ContractActionPanel({ contractId, contractTitle }: Props) {
       {/* ── 3. FIX ALL CTA — visible early so user sees it immediately ─── */}
       <div>
         <FixAllButton
-          fixableCount={summary.fixableSoonCount}
+          fixableCount={summary?.fixableSoonCount ?? 0}
           isAllFixed={allFixed}
           onFixAll={handleFixAll}
         />
@@ -345,12 +282,12 @@ export function ContractActionPanel({ contractId, contractTitle }: Props) {
       />
 
       {/* ── 5. TOP RISKS LIST ───────────────────────────────────────────── */}
-      {!allFixed && (
+      {!allFixed && threats.length > 0 && (
         <div>
-          <SectionLabel>⚠️ Top Risks — {fixedSet.size}/{summary.topThreats.length} resolved</SectionLabel>
+          <SectionLabel>⚠️ Top Risks — {fixedSet.size}/{threats.length} resolved</SectionLabel>
           <div className="space-y-3">
-            {summary.topThreats.map((risk, idx) => {
-              const cId = risk.clauseId || MOCK_CLAUSE_IDS[idx] || `c-${idx}`;
+            {threats.map((risk, idx) => {
+              const cId = risk.clauseId || `c-${idx}`;
               return (
                 <RiskItemCard
                   key={cId}
@@ -380,9 +317,9 @@ export function ContractActionPanel({ contractId, contractTitle }: Props) {
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-xl flex items-center justify-center"
-            style={{ background: 'var(--onyx-gradient-subtle)' }}
+            style={{ background: 'var(--accent)' }}
           >
-            <FileCheck size={15} style={{ color: '#4F46E5' }} />
+            <FileCheck size={15} style={{ color: 'var(--primary)' }} />
           </div>
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.12em] mb-0.5">
@@ -404,8 +341,8 @@ export function ContractActionPanel({ contractId, contractTitle }: Props) {
           className="w-full rounded-2xl text-white font-display font-black text-[15px] flex items-center justify-center gap-3 animate-bounce-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500"
           style={{
             height: '60px',
-            background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-            boxShadow: '0 8px 28px rgba(16,185,129,0.38), 0 2px 8px rgba(16,185,129,0.20), inset 0 1px 0 rgba(255,255,255,0.15)',
+            background: '#059669',
+            boxShadow: 'var(--shadow-md)',
           }}
         >
           <Download size={20} />

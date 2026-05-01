@@ -66,11 +66,23 @@ export function useAIInsights() {
   return useQuery({
     queryKey: aiKeys.insights(),
     queryFn: async () => {
-      const metrics = await import('@/lib/api').then((m) => m.analytics.dashboard());
+      const api = await import('@/lib/api');
+      const [metrics, contractsResp] = await Promise.all([
+        api.analytics.dashboard(),
+        api.contracts.list({ limit: 50 }),
+      ]);
+
+      const thirtyDaysFromNow = Date.now() + 30 * 24 * 60 * 60 * 1000;
+      const expiringContracts = contractsResp.data.filter((c) => {
+        if (!c.expirationDate) return false;
+        const exp = new Date(c.expirationDate).getTime();
+        return exp > Date.now() && exp <= thirtyDaysFromNow;
+      }).length;
+
       return {
         risksDetected: metrics.highRiskClauses,
-        expiringContracts: 0, // No expiry endpoint yet — placeholder
-        financialExposure: metrics.costSaved * 1000,
+        expiringContracts,
+        financialExposure: metrics.highRiskClauses * 5000,
         complianceScore: metrics.riskReduced,
       };
     },

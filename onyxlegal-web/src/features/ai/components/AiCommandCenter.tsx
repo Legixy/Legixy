@@ -28,7 +28,7 @@ export function AiCommandCenter() {
   if (!data) return null;
 
   return (
-    <div className="mb-8 bg-linear-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-xl border border-indigo-200/50 p-6 backdrop-blur-sm">
+    <div className="mb-8 bg-white rounded-xl p-6" style={{ border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
@@ -52,7 +52,7 @@ export function AiCommandCenter() {
       {/* Insights Grid */}
       <div className="grid grid-cols-4 gap-4">
         {/* Risks Detected */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-lg p-4 border border-white/50 hover:bg-white/90 transition-all">
+        <div className="rounded-lg p-4 transition-all" style={{ background: 'var(--secondary)', border: '1px solid var(--border)' }}>
           <div className="flex items-start justify-between mb-2">
             <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Risks Detected</span>
             <AlertTriangle className="w-4 h-4 text-red-600" />
@@ -73,7 +73,7 @@ export function AiCommandCenter() {
         </div>
 
         {/* Expiring Contracts */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-lg p-4 border border-white/50 hover:bg-white/90 transition-all">
+        <div className="rounded-lg p-4 transition-all" style={{ background: 'var(--secondary)', border: '1px solid var(--border)' }}>
           <div className="flex items-start justify-between mb-2">
             <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Expiring Soon</span>
             <Clock className="w-4 h-4 text-amber-600" />
@@ -94,7 +94,7 @@ export function AiCommandCenter() {
         </div>
 
         {/* Financial Exposure */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-lg p-4 border border-white/50 hover:bg-white/90 transition-all">
+        <div className="rounded-lg p-4 transition-all" style={{ background: 'var(--secondary)', border: '1px solid var(--border)' }}>
           <div className="flex items-start justify-between mb-2">
             <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Financial Exposure</span>
             <TrendingDown className="w-4 h-4 text-red-600" />
@@ -106,7 +106,11 @@ export function AiCommandCenter() {
             </div>
           ) : (
             <>
-              <p className="text-2xl font-bold text-slate-900 mb-1">₹{data.financialExposure.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-slate-900 mb-1">
+                {data.financialExposure >= 100000
+                  ? `₹${(data.financialExposure / 100000).toFixed(1)}L`
+                  : `₹${(data.financialExposure / 1000).toFixed(0)}K`}
+              </p>
               <p className="text-xs text-slate-600">
                 💰 Potential loss detected from risky clauses
               </p>
@@ -115,7 +119,7 @@ export function AiCommandCenter() {
         </div>
 
         {/* Compliance Score */}
-        <div className="bg-white/70 backdrop-blur-sm rounded-lg p-4 border border-white/50 hover:bg-white/90 transition-all">
+        <div className="rounded-lg p-4 transition-all" style={{ background: 'var(--secondary)', border: '1px solid var(--border)' }}>
           <div className="flex items-start justify-between mb-2">
             <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Compliance Score</span>
             <div className="text-xl font-bold text-emerald-600">{data.complianceScore}%</div>
@@ -130,7 +134,7 @@ export function AiCommandCenter() {
               {/* Compliance Bar */}
               <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mb-1">
                 <div
-                  className="h-full bg-linear-to-r from-emerald-500 to-emerald-600 transition-all duration-500"
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                   style={{ width: `${Math.max(20, Math.min(data.complianceScore, 100))}%` }}
                 />
               </div>
