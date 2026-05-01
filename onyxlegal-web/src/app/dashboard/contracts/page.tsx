@@ -11,10 +11,10 @@ import { SmartEmptyState } from '@/shared/components/SmartEmptyState';
 const statusFilters = ['All', 'Draft', 'In Review', 'Sent', 'Signed', 'Active', 'Expired'] as const;
 
 const statConfig = [
-  { key: 'totalContracts',  label: 'Total',    icon: FileSignature, color: 'var(--primary)',  bg: 'rgba(61,53,211,0.07)'  },
-  { key: 'highRiskClauses', label: 'High Risk', icon: AlertTriangle, color: 'var(--danger)',   bg: 'rgba(220,38,38,0.06)'  },
-  { key: 'activeContracts', label: 'Active',    icon: Shield,        color: 'var(--success)',  bg: 'rgba(5,150,105,0.07)'  },
-  { key: 'draftContracts',  label: 'Drafts',    icon: Clock,         color: 'var(--warning)',  bg: 'rgba(217,119,6,0.07)'  },
+  { key: 'totalContracts',  label: 'Total',    icon: FileSignature, color: 'var(--muted-foreground)' },
+  { key: 'highRiskClauses', label: 'High Risk', icon: AlertTriangle, color: 'var(--danger)'          },
+  { key: 'activeContracts', label: 'Active',    icon: Shield,        color: 'var(--success)'         },
+  { key: 'draftContracts',  label: 'Drafts',    icon: Clock,         color: 'var(--muted-foreground)' },
 ] as const;
 
 export default function ContractsPage() {
@@ -87,12 +87,7 @@ export default function ContractsPage() {
             className="card-hover bg-white flex items-center gap-3 px-4 py-4"
             style={{ border: '1px solid var(--border)', borderRadius: '12px', boxShadow: 'var(--shadow-xs)' }}
           >
-            <div
-              className="w-9 h-9 flex items-center justify-center shrink-0"
-              style={{ background: s.bg, borderRadius: '8px' }}
-            >
-              <s.icon size={16} style={{ color: s.color }} />
-            </div>
+            <s.icon size={16} style={{ color: s.color, flexShrink: 0 }} />
             <div>
               <p
                 className="text-xl font-semibold leading-none"

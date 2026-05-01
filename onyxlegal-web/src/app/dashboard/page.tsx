@@ -96,24 +96,22 @@ export default function DashboardPage() {
       ) : (
         <div className="grid grid-cols-4 gap-4 mb-10">
           {[
-            { label: 'Cost Saved', value: metrics?.costSavedFormatted || '₹0', sub: 'through AI automation', icon: TrendingDown, color: 'var(--success)', bg: 'rgba(5,150,105,0.07)' },
-            { label: 'Risk Reduced', value: `${metrics?.riskReduced || 0}%`, sub: 'identified & mitigated', icon: AlertTriangle, color: 'var(--danger)', bg: 'rgba(220,38,38,0.06)' },
-            { label: 'Time Saved', value: `${metrics?.timeSavedHours || 0}h`, sub: 'legal review hours', icon: Clock, color: 'var(--ai)', bg: 'rgba(37,99,235,0.07)' },
-            { label: 'AI Usage', value: `${metrics?.aiUsage ? Math.round((metrics.aiUsage.tokensUsed / metrics.aiUsage.tokenLimit) * 100) : 0}%`, sub: 'of monthly tokens', icon: Zap, color: 'var(--primary)', bg: 'rgba(61,53,211,0.07)' },
+            { label: 'Cost Saved', value: metrics?.costSavedFormatted || '₹0', sub: 'through AI automation', icon: TrendingDown, color: 'var(--success)' },
+            { label: 'Risk Reduced', value: `${metrics?.riskReduced || 0}%`, sub: 'identified & mitigated', icon: AlertTriangle, color: 'var(--danger)' },
+            { label: 'Time Saved', value: `${metrics?.timeSavedHours || 0}h`, sub: 'legal review hours', icon: Clock, color: 'var(--muted-foreground)' },
+            { label: 'AI Usage', value: `${metrics?.aiUsage ? Math.round((metrics.aiUsage.tokensUsed / metrics.aiUsage.tokenLimit) * 100) : 0}%`, sub: 'of monthly tokens', icon: Zap, color: 'var(--primary)' },
           ].map((stat) => (
             <div
               key={stat.label}
-              className="card-hover bg-white border p-6"
+              className="card-hover bg-white border p-5"
               style={{ borderColor: 'var(--border)', borderRadius: '12px', boxShadow: 'var(--shadow-sm)' }}
             >
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center justify-between mb-3">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color: 'var(--muted-foreground)' }}>{stat.label}</p>
-                <div className="w-8 h-8 flex items-center justify-center" style={{ background: stat.bg, borderRadius: '8px' }}>
-                  <stat.icon size={15} style={{ color: stat.color }} />
-                </div>
+                <stat.icon size={14} style={{ color: stat.color }} />
               </div>
               <p className="text-2xl font-semibold" style={{ color: 'var(--foreground)', letterSpacing: '-0.02em' }}>{stat.value}</p>
-              <p className="text-xs mt-1.5" style={{ color: 'var(--muted-foreground)' }}>{stat.sub}</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>{stat.sub}</p>
             </div>
           ))}
         </div>
@@ -128,19 +126,17 @@ export default function DashboardPage() {
       </div>
       <div className="grid grid-cols-4 gap-4 mb-10">
         {[
-          { label: 'Total Contracts', value: metrics?.totalContracts || 0, icon: FileSignature, color: 'var(--primary)', bg: 'rgba(61,53,211,0.07)' },
-          { label: 'Active', value: metrics?.activeContracts || 0, icon: Shield, color: 'var(--success)', bg: 'rgba(5,150,105,0.07)' },
-          { label: 'High Risk', value: metrics?.highRiskClauses || 0, icon: AlertTriangle, color: 'var(--danger)', bg: 'rgba(220,38,38,0.06)' },
-          { label: 'Resolved', value: metrics?.resolvedClauses || 0, icon: Sparkles, color: 'var(--teal)', bg: 'rgba(13,148,136,0.07)' },
+          { label: 'Total Contracts', value: metrics?.totalContracts || 0, icon: FileSignature, color: 'var(--muted-foreground)' },
+          { label: 'Active', value: metrics?.activeContracts || 0, icon: Shield, color: 'var(--success)' },
+          { label: 'High Risk', value: metrics?.highRiskClauses || 0, icon: AlertTriangle, color: 'var(--danger)' },
+          { label: 'Resolved', value: metrics?.resolvedClauses || 0, icon: Sparkles, color: 'var(--teal)' },
         ].map((stat) => (
           <div
             key={stat.label}
             className="bg-white border px-4 py-4 flex items-center gap-3"
             style={{ borderColor: 'var(--border)', borderRadius: '12px', boxShadow: 'var(--shadow-xs)' }}
           >
-            <div className="w-9 h-9 flex items-center justify-center shrink-0" style={{ background: stat.bg, borderRadius: '8px' }}>
-              <stat.icon size={16} style={{ color: stat.color }} />
-            </div>
+            <stat.icon size={16} style={{ color: stat.color, flexShrink: 0 }} />
             <div>
               <p className="text-xl font-semibold leading-none" style={{ color: 'var(--foreground)', letterSpacing: '-0.02em' }}>{stat.value}</p>
               <p className="text-[11px] mt-0.5 font-medium" style={{ color: 'var(--muted-foreground)' }}>{stat.label}</p>
@@ -156,9 +152,7 @@ export default function DashboardPage() {
           style={{ borderColor: 'var(--border)', borderRadius: '12px', boxShadow: 'var(--shadow-sm)' }}
           onClick={() => router.push('/dashboard/contracts/create')}
         >
-          <div className="w-10 h-10 flex items-center justify-center mb-4" style={{ background: 'rgba(61,53,211,0.07)', borderRadius: '8px' }}>
-            <Plus size={20} style={{ color: 'var(--primary)' }} />
-          </div>
+          <Plus size={18} className="mb-4" style={{ color: 'var(--primary)' }} />
           <h3 className="text-[15px] font-semibold mb-1" style={{ color: 'var(--foreground)' }}>Create New Contract</h3>
           <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Start a fresh contract or upload an existing one</p>
         </div>
@@ -168,9 +162,7 @@ export default function DashboardPage() {
           style={{ borderColor: 'var(--border)', borderRadius: '12px', boxShadow: 'var(--shadow-sm)' }}
           onClick={() => router.push('/dashboard/analytics')}
         >
-          <div className="w-10 h-10 flex items-center justify-center mb-4" style={{ background: 'rgba(37,99,235,0.07)', borderRadius: '8px' }}>
-            <TrendingDown size={20} style={{ color: 'var(--ai)' }} />
-          </div>
+          <TrendingDown size={18} className="mb-4" style={{ color: 'var(--muted-foreground)' }} />
           <h3 className="text-[15px] font-semibold mb-1" style={{ color: 'var(--foreground)' }}>View Analytics</h3>
           <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Deep dive into contracts, risks, and AI impact</p>
         </div>
