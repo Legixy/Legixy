@@ -7,3 +7,4 @@
 export * from './contracts';
 export * from './ai';
 export * from './analytics';
+export * from './notifications';

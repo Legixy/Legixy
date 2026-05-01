@@ -11,6 +11,7 @@ export declare class ContractAnalysisWorker {
     constructor(redisConnection: any, aiEngine: AIEngine, prisma: PrismaService, dlqQueue: Queue, concurrency?: number);
     private processorFn;
     private attachEventHandlers;
+    private extractExpirationDate;
     private mapRiskLevel;
     private emitEvent;
     attachWebSocketGateway(gateway: any): void;

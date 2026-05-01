@@ -45,17 +45,19 @@ export declare class AuthService {
             createdAt: Date;
             updatedAt: Date;
             supabaseId: string | null;
+            passwordResetToken: string | null;
             tenantId: string;
             email: string;
             avatarUrl: string | null;
             role: UserRole;
             password: string | null;
+            passwordResetExpiry: Date | null;
         };
         tenant: {
             id: string;
+            domain: string | null;
             name: string;
             plan: Plan;
-            domain: string | null;
             aiTokensUsed: number;
             aiTokenLimit: number;
             billingCycleStart: Date;
@@ -78,12 +80,35 @@ export declare class AuthService {
         createdAt: Date;
         updatedAt: Date;
         supabaseId: string | null;
+        passwordResetToken: string | null;
         tenantId: string;
         email: string;
         avatarUrl: string | null;
         role: UserRole;
         password: string | null;
+        passwordResetExpiry: Date | null;
     }) | null>;
+    googleLogin(profile: {
+        googleId: string;
+        email: string;
+        name: string;
+        avatarUrl?: string;
+    }): Promise<{
+        access_token: string;
+        user: {
+            id: string;
+            email: string;
+            name: string | null;
+            role: string;
+            tenantId: string;
+        };
+    }>;
+    forgotPassword(email: string): Promise<{
+        message: string;
+    }>;
+    resetPassword(token: string, newPassword: string): Promise<{
+        message: string;
+    }>;
     private issueToken;
 }
 export {};

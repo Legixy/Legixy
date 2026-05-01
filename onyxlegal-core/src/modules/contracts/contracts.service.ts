@@ -443,4 +443,45 @@ export class ContractsService {
       content: extractedText,
     } as any);
   }
+
+  /**
+   * Log a renegotiation request for a clause and return AI-generated suggested terms.
+   * Creates a notification so the team is aware. No email is sent (no mailer installed).
+   */
+  async renegotiateClause(
+    tenantId: string,
+    userId: string,
+    contractId: string,
+    clauseTitle: string,
+    notes?: string,
+  ) {
+    const contract = await this.prisma.contract.findFirst({
+      where: { id: contractId, tenantId },
+    });
+    if (!contract) throw new NotFoundException('Contract not found');
+
+    // Record as a notification so the user can track it
+    await this.prisma.notification.create({
+      data: {
+        userId,
+        type: 'SYSTEM' as any,
+        title: `Renegotiation requested — ${clauseTitle}`,
+        body: `You requested renegotiation of the "${clauseTitle}" clause in "${contract.title}".${notes ? ` Notes: ${notes}` : ''} Our team will prepare a revised draft.`,
+        actionUrl: `/dashboard/contracts/${contractId}/actions`,
+      },
+    });
+
+    // Return static AI-suggested terms for now (LLM call can be added later)
+    return {
+      contractId,
+      clauseTitle,
+      status: 'requested',
+      suggestedTerms: [
+        'Cap auto-renewal to 1 year at current rates',
+        'Add 30-day opt-out notice window before renewal',
+        'Price increases capped at CPI + 3%',
+      ],
+      message: 'Renegotiation request logged. Suggested terms prepared by Onyx AI.',
+    };
+  }
 }

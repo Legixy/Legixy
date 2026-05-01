@@ -1,7 +1,9 @@
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
 import { AuthenticatedUser } from './jwt.strategy';
 export declare class AuthController {
     private readonly authService;
@@ -55,11 +57,21 @@ export declare class AuthController {
             createdAt: Date;
             updatedAt: Date;
             supabaseId: string | null;
+            passwordResetToken: string | null;
             tenantId: string;
             email: string;
             avatarUrl: string | null;
             role: import("../../../generated/prisma/enums").UserRole;
             password: string | null;
+            passwordResetExpiry: Date | null;
         }) | null;
     }>;
+    forgotPassword(dto: ForgotPasswordDto): Promise<{
+        message: string;
+    }>;
+    resetPassword(dto: ResetPasswordDto): Promise<{
+        message: string;
+    }>;
+    googleAuth(): void;
+    googleCallback(req: Request, res: Response): Promise<void>;
 }

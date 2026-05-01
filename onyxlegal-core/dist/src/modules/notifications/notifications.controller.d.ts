@@ -8,10 +8,10 @@ export declare class NotificationsController {
         createdAt: Date;
         title: string;
         type: import("../../../generated/prisma/enums").NotificationType;
-        userId: string;
         body: string;
         read: boolean;
         actionUrl: string | null;
+        userId: string;
     }[]>;
     getUnreadCount(user: AuthenticatedUser): Promise<{
         unreadCount: number;
@@ -21,10 +21,10 @@ export declare class NotificationsController {
         createdAt: Date;
         title: string;
         type: import("../../../generated/prisma/enums").NotificationType;
-        userId: string;
         body: string;
         read: boolean;
         actionUrl: string | null;
+        userId: string;
     }>;
     markAllRead(user: AuthenticatedUser): Promise<{
         updated: number;

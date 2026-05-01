@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Loader2, Mail, Lock } from 'lucide-react';
+import { Loader2, Mail, Lock, X, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { auth, ApiError } from '@/lib/api';
@@ -18,9 +18,106 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+// ── Forgot Password Modal ─────────────────────────────────────────────────────
+
+function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
+  const [email, setEmail]     = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [sent, setSent]       = React.useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setLoading(true);
+    try {
+      await auth.forgotPassword(email);
+      setSent(true);
+    } catch {
+      toast.error('Failed to send reset email', { description: 'Please try again.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
+      <div
+        className="w-full max-w-sm rounded-2xl p-6 relative animate-fade-up"
+        style={{ background: 'var(--card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-xl)' }}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1 rounded-lg transition-colors"
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+        >
+          <X size={16} style={{ color: 'var(--muted-foreground)' }} />
+        </button>
+
+        {sent ? (
+          <div className="text-center py-4">
+            <CheckCircle size={40} className="mx-auto mb-3" style={{ color: '#10B981' }} />
+            <h3 className="text-[16px] font-semibold mb-1" style={{ color: 'var(--foreground)' }}>Check your inbox</h3>
+            <p className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
+              If {email} is registered, a reset link has been sent. Check your spam folder too.
+            </p>
+            <button
+              onClick={onClose}
+              className="mt-5 w-full h-10 text-[14px] font-medium text-white rounded-lg"
+              style={{ background: 'var(--primary)' }}
+            >
+              Back to login
+            </button>
+          </div>
+        ) : (
+          <>
+            <h3 className="text-[16px] font-semibold mb-1" style={{ color: 'var(--foreground)' }}>Reset your password</h3>
+            <p className="text-[13px] mb-5" style={{ color: 'var(--muted-foreground)' }}>
+              Enter your email and we&apos;ll send you a reset link.
+            </p>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="relative">
+                <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--muted-foreground)' }} />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@company.com"
+                  required
+                  className="w-full pl-9 pr-4 h-10 text-[14px]"
+                  style={{
+                    background: 'var(--card)',
+                    border: '1.5px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--foreground)',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading || !email}
+                className="w-full h-10 text-[14px] font-medium text-white rounded-lg flex items-center justify-center gap-2 transition-opacity"
+                style={{ background: 'var(--primary)', opacity: loading || !email ? 0.7 : 1 }}
+              >
+                {loading ? <Loader2 size={14} className="animate-spin" /> : 'Send reset link'}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main Login Form ───────────────────────────────────────────────────────────
+
 export function LoginForm() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, setIsLoading]         = React.useState(false);
+  const [showForgotPw, setShowForgotPw]   = React.useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -50,6 +147,8 @@ export function LoginForm() {
   return (
     <div className="w-full">
 
+      {showForgotPw && <ForgotPasswordModal onClose={() => setShowForgotPw(false)} />}
+
       {/* Heading */}
       <div className="mb-8">
         <h2
@@ -66,9 +165,10 @@ export function LoginForm() {
       {/* Social */}
       <SocialLoginButton
         provider="Google"
-        disabled={true}
+        disabled={false}
         onClick={() => {
-          toast.info('Google Sign-In coming soon', { description: 'Use email and password to log in for now.' });
+          const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+          window.location.href = `${apiBase}/auth/google`;
         }}
       />
 
@@ -151,7 +251,7 @@ export function LoginForm() {
               type="button"
               className="text-[12px] font-medium transition-colors duration-150 py-3 px-1 -my-3"
               style={{ color: 'var(--primary)' }}
-              onClick={() => toast.info('Password reset', { description: 'Email support@legixy.com to reset your password.' })}
+              onClick={() => setShowForgotPw(true)}
             >
               Forgot password?
             </button>

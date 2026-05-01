@@ -17,6 +17,7 @@ import {
   UpdateContractDto,
   UpdateStatusDto,
   ListContractsQueryDto,
+  RenegotiateDto,
 } from './dto/contract.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../auth/jwt.strategy';
@@ -125,5 +126,20 @@ export class ContractsController {
     @Body() body: { versionId?: string; versionNumber?: number },
   ) {
     return this.contractsService.restoreVersion(user.tenantId, user.id, id, body.versionId, body.versionNumber);
+  }
+
+  @Post(':id/renegotiate')
+  renegotiateClause(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: RenegotiateDto,
+  ) {
+    return this.contractsService.renegotiateClause(
+      user.tenantId,
+      user.id,
+      id,
+      dto.clauseTitle,
+      dto.notes,
+    );
   }
 }

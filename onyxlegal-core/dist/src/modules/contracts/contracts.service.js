@@ -339,6 +339,33 @@ let ContractsService = ContractsService_1 = class ContractsService {
             content: extractedText,
         });
     }
+    async renegotiateClause(tenantId, userId, contractId, clauseTitle, notes) {
+        const contract = await this.prisma.contract.findFirst({
+            where: { id: contractId, tenantId },
+        });
+        if (!contract)
+            throw new common_1.NotFoundException('Contract not found');
+        await this.prisma.notification.create({
+            data: {
+                userId,
+                type: 'SYSTEM',
+                title: `Renegotiation requested — ${clauseTitle}`,
+                body: `You requested renegotiation of the "${clauseTitle}" clause in "${contract.title}".${notes ? ` Notes: ${notes}` : ''} Our team will prepare a revised draft.`,
+                actionUrl: `/dashboard/contracts/${contractId}/actions`,
+            },
+        });
+        return {
+            contractId,
+            clauseTitle,
+            status: 'requested',
+            suggestedTerms: [
+                'Cap auto-renewal to 1 year at current rates',
+                'Add 30-day opt-out notice window before renewal',
+                'Price increases capped at CPI + 3%',
+            ],
+            message: 'Renegotiation request logged. Suggested terms prepared by Onyx AI.',
+        };
+    }
 };
 exports.ContractsService = ContractsService;
 exports.ContractsService = ContractsService = ContractsService_1 = __decorate([

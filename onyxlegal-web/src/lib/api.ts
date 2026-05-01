@@ -100,6 +100,18 @@ export const auth = {
         tenant: { id: string; name: string; plan: string; aiTokensUsed: number; aiTokenLimit: number };
       };
     }>('/auth/me'),
+
+  forgotPassword: (email: string) =>
+    request<{ message: string }>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: (token: string, password: string) =>
+    request<{ message: string }>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
+    }),
 };
 
 // ── Contracts ───────────────────────────────────────────────
@@ -403,4 +415,21 @@ export const notifications = {
 
   markAllRead: () =>
     request<{ updated: number }>('/notifications/read-all', { method: 'PATCH' }),
+};
+
+// ── Renegotiate ─────────────────────────────────────────────
+export interface RenegotiateResult {
+  contractId: string;
+  clauseTitle: string;
+  status: string;
+  suggestedTerms: string[];
+  message: string;
+}
+
+export const renegotiate = {
+  request: (contractId: string, clauseTitle: string, notes?: string) =>
+    request<RenegotiateResult>(`/contracts/${contractId}/renegotiate`, {
+      method: 'POST',
+      body: JSON.stringify({ clauseTitle, notes }),
+    }),
 };

@@ -1,5 +1,5 @@
 import { ContractsService } from './contracts.service';
-import { CreateContractDto, UpdateContractDto, UpdateStatusDto, ListContractsQueryDto } from './dto/contract.dto';
+import { CreateContractDto, UpdateContractDto, UpdateStatusDto, ListContractsQueryDto, RenegotiateDto } from './dto/contract.dto';
 import { AuthenticatedUser } from '../auth/jwt.strategy';
 export declare class ContractsController {
     private readonly contractsService;
@@ -14,7 +14,7 @@ export declare class ContractsController {
             id: string;
             name: string | null;
             email: string;
-        };
+        } | null;
     } & {
         id: string;
         createdAt: Date;
@@ -22,7 +22,7 @@ export declare class ContractsController {
         tenantId: string;
         riskScore: number | null;
         templateId: string | null;
-        createdById: string;
+        createdById: string | null;
         title: string;
         status: import("../../../generated/prisma/enums").ContractStatus;
         parties: import("@prisma/client/runtime/client").JsonValue;
@@ -45,7 +45,7 @@ export declare class ContractsController {
             id: string;
             name: string | null;
             email: string;
-        };
+        } | null;
     } & {
         id: string;
         createdAt: Date;
@@ -53,7 +53,7 @@ export declare class ContractsController {
         tenantId: string;
         riskScore: number | null;
         templateId: string | null;
-        createdById: string;
+        createdById: string | null;
         title: string;
         status: import("../../../generated/prisma/enums").ContractStatus;
         parties: import("@prisma/client/runtime/client").JsonValue;
@@ -77,7 +77,7 @@ export declare class ContractsController {
                 id: string;
                 name: string | null;
                 email: string;
-            };
+            } | null;
             clauses: {
                 id: string;
                 type: import("../../../generated/prisma/enums").ClauseType;
@@ -93,7 +93,7 @@ export declare class ContractsController {
             tenantId: string;
             riskScore: number | null;
             templateId: string | null;
-            createdById: string;
+            createdById: string | null;
             title: string;
             status: import("../../../generated/prisma/enums").ContractStatus;
             parties: import("@prisma/client/runtime/client").JsonValue;
@@ -130,7 +130,7 @@ export declare class ContractsController {
             id: string;
             name: string | null;
             email: string;
-        };
+        } | null;
         versions: {
             id: string;
             createdAt: Date;
@@ -158,9 +158,9 @@ export declare class ContractsController {
                 id: string;
                 createdAt: Date;
                 title: string;
+                clause: string;
                 analysisId: string;
                 severity: import("../../../generated/prisma/enums").RiskLevel;
-                clause: string;
                 impact: string;
                 suggestion: string;
                 legalRef: string | null;
@@ -187,7 +187,7 @@ export declare class ContractsController {
         tenantId: string;
         riskScore: number | null;
         templateId: string | null;
-        createdById: string;
+        createdById: string | null;
         title: string;
         status: import("../../../generated/prisma/enums").ContractStatus;
         parties: import("@prisma/client/runtime/client").JsonValue;
@@ -210,7 +210,7 @@ export declare class ContractsController {
             id: string;
             name: string | null;
             email: string;
-        };
+        } | null;
     } & {
         id: string;
         createdAt: Date;
@@ -218,7 +218,7 @@ export declare class ContractsController {
         tenantId: string;
         riskScore: number | null;
         templateId: string | null;
-        createdById: string;
+        createdById: string | null;
         title: string;
         status: import("../../../generated/prisma/enums").ContractStatus;
         parties: import("@prisma/client/runtime/client").JsonValue;
@@ -238,7 +238,7 @@ export declare class ContractsController {
         tenantId: string;
         riskScore: number | null;
         templateId: string | null;
-        createdById: string;
+        createdById: string | null;
         title: string;
         status: import("../../../generated/prisma/enums").ContractStatus;
         parties: import("@prisma/client/runtime/client").JsonValue;
@@ -289,5 +289,12 @@ export declare class ContractsController {
             changeNote: string | null;
             changedBy: string;
         };
+    }>;
+    renegotiateClause(user: AuthenticatedUser, id: string, dto: RenegotiateDto): Promise<{
+        contractId: string;
+        clauseTitle: string;
+        status: string;
+        suggestedTerms: string[];
+        message: string;
     }>;
 }

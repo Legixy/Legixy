@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ListContractsQueryDto = exports.UpdateStatusDto = exports.UpdateContractDto = exports.CreateContractDto = void 0;
+exports.ListContractsQueryDto = exports.RenegotiateDto = exports.UpdateStatusDto = exports.UpdateContractDto = exports.CreateContractDto = void 0;
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 class PartyDto {
@@ -142,6 +142,21 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], UpdateStatusDto.prototype, "status", void 0);
+class RenegotiateDto {
+    clauseTitle;
+    notes;
+}
+exports.RenegotiateDto = RenegotiateDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], RenegotiateDto.prototype, "clauseTitle", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], RenegotiateDto.prototype, "notes", void 0);
 class ListContractsQueryDto {
     status;
     search;

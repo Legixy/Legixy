@@ -16,7 +16,7 @@ export declare class ContractsService {
             id: string;
             name: string | null;
             email: string;
-        };
+        } | null;
     } & {
         id: string;
         createdAt: Date;
@@ -24,7 +24,7 @@ export declare class ContractsService {
         tenantId: string;
         riskScore: number | null;
         templateId: string | null;
-        createdById: string;
+        createdById: string | null;
         title: string;
         status: ContractStatus;
         parties: import("@prisma/client/runtime/client").JsonValue;
@@ -48,7 +48,7 @@ export declare class ContractsService {
                 id: string;
                 name: string | null;
                 email: string;
-            };
+            } | null;
             clauses: {
                 id: string;
                 type: import("generated/prisma/client").ClauseType;
@@ -64,7 +64,7 @@ export declare class ContractsService {
             tenantId: string;
             riskScore: number | null;
             templateId: string | null;
-            createdById: string;
+            createdById: string | null;
             title: string;
             status: ContractStatus;
             parties: import("@prisma/client/runtime/client").JsonValue;
@@ -94,7 +94,7 @@ export declare class ContractsService {
             id: string;
             name: string | null;
             email: string;
-        };
+        } | null;
         versions: {
             id: string;
             createdAt: Date;
@@ -122,9 +122,9 @@ export declare class ContractsService {
                 id: string;
                 createdAt: Date;
                 title: string;
+                clause: string;
                 analysisId: string;
                 severity: import("generated/prisma/client").RiskLevel;
-                clause: string;
                 impact: string;
                 suggestion: string;
                 legalRef: string | null;
@@ -151,7 +151,7 @@ export declare class ContractsService {
         tenantId: string;
         riskScore: number | null;
         templateId: string | null;
-        createdById: string;
+        createdById: string | null;
         title: string;
         status: ContractStatus;
         parties: import("@prisma/client/runtime/client").JsonValue;
@@ -174,7 +174,7 @@ export declare class ContractsService {
             id: string;
             name: string | null;
             email: string;
-        };
+        } | null;
     } & {
         id: string;
         createdAt: Date;
@@ -182,7 +182,7 @@ export declare class ContractsService {
         tenantId: string;
         riskScore: number | null;
         templateId: string | null;
-        createdById: string;
+        createdById: string | null;
         title: string;
         status: ContractStatus;
         parties: import("@prisma/client/runtime/client").JsonValue;
@@ -202,7 +202,7 @@ export declare class ContractsService {
         tenantId: string;
         riskScore: number | null;
         templateId: string | null;
-        createdById: string;
+        createdById: string | null;
         title: string;
         status: ContractStatus;
         parties: import("@prisma/client/runtime/client").JsonValue;
@@ -268,7 +268,7 @@ export declare class ContractsService {
             id: string;
             name: string | null;
             email: string;
-        };
+        } | null;
     } & {
         id: string;
         createdAt: Date;
@@ -276,7 +276,7 @@ export declare class ContractsService {
         tenantId: string;
         riskScore: number | null;
         templateId: string | null;
-        createdById: string;
+        createdById: string | null;
         title: string;
         status: ContractStatus;
         parties: import("@prisma/client/runtime/client").JsonValue;
@@ -288,5 +288,12 @@ export declare class ContractsService {
         expirationDate: Date | null;
         signedAt: Date | null;
         lastReviewedAt: Date | null;
+    }>;
+    renegotiateClause(tenantId: string, userId: string, contractId: string, clauseTitle: string, notes?: string): Promise<{
+        contractId: string;
+        clauseTitle: string;
+        status: string;
+        suggestedTerms: string[];
+        message: string;
     }>;
 }

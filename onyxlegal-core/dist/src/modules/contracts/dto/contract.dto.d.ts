@@ -25,6 +25,10 @@ export declare class UpdateContractDto {
 export declare class UpdateStatusDto {
     status: string;
 }
+export declare class RenegotiateDto {
+    clauseTitle: string;
+    notes?: string;
+}
 export declare class ListContractsQueryDto {
     status?: string;
     search?: string;

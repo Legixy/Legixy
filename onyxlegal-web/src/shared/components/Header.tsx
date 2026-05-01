@@ -3,17 +3,22 @@
 import { Search, Bell, X, ChevronDown, Sparkles, LogOut, Menu } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth-provider';
+import { useUnreadCount } from '@/shared/api/notifications';
+import { NotificationsPanel } from '@/features/notifications/components/NotificationsPanel';
 
 const quickLinks: { label: string; badge: string; bgColor: string; fgColor: string }[] = [];
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
-  const [query, setQuery]       = useState('');
+  const [query, setQuery]           = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen]     = useState(false);
+  const [notifOpen, setNotifOpen]   = useState(false);
   const router = useRouter();
   const { user, logout } = useAuth();
+
+  const { data: countData } = useUnreadCount();
+  const unreadCount = countData?.unreadCount ?? 0;
 
   const initials = user?.name
     ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
@@ -130,7 +135,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
               .map((link) => (
                 <button
                   key={link.label}
-                  onMouseDown={() => { setSearchOpen(false); setQuery(''); toast.success(`Navigating to: ${link.label}`); }}
+                  onMouseDown={() => { setSearchOpen(false); setQuery(''); }}
                   className="w-full flex items-center justify-between gap-4 px-4 py-2.5 text-left transition-colors duration-100"
                   onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
@@ -147,7 +152,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
             {query && (
               <div className="px-4 py-3" style={{ borderTop: '1px solid var(--border)' }}>
                 <button
-                  onMouseDown={() => { setSearchOpen(false); setQuery(''); toast.success(`AI answer for "${query}"`); }}
+                  onMouseDown={() => { setSearchOpen(false); setQuery(''); }}
                   className="text-[13px] font-semibold flex items-center gap-2 transition-colors duration-150"
                   style={{ color: 'var(--primary)' }}
                 >
@@ -164,19 +169,28 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
       <div className="flex items-center gap-1 ml-4">
 
         {/* Notification Bell */}
-        <button
-          onClick={() => toast.info('Notifications coming soon', { description: 'In-app notification centre is in development.' })}
-          className="relative p-2 transition-all duration-150"
-          style={{ borderRadius: '8px' }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-        >
-          <Bell size={17} style={{ color: 'var(--muted-foreground)' }} />
-          <span
-            className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
-            style={{ background: 'var(--danger)', outline: '1.5px solid var(--background)' }}
-          />
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setNotifOpen((v) => !v)}
+            className="relative p-2 transition-all duration-150"
+            style={{ borderRadius: '8px' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            aria-label="Notifications"
+          >
+            <Bell size={17} style={{ color: 'var(--muted-foreground)' }} />
+            {unreadCount > 0 && (
+              <span
+                className="absolute top-1 right-1 min-w-[16px] h-4 flex items-center justify-center rounded-full text-[9px] font-black text-white px-0.5"
+                style={{ background: 'var(--danger)', outline: '1.5px solid var(--background)' }}
+              >
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {notifOpen && <NotificationsPanel onClose={() => setNotifOpen(false)} />}
+        </div>
 
         {/* Help */}
         <button

@@ -62,6 +62,9 @@ let ContractsController = class ContractsController {
     restoreVersion(user, id, body) {
         return this.contractsService.restoreVersion(user.tenantId, user.id, id, body.versionId, body.versionNumber);
     }
+    renegotiateClause(user, id, dto) {
+        return this.contractsService.renegotiateClause(user.tenantId, user.id, id, dto.clauseTitle, dto.notes);
+    }
 };
 exports.ContractsController = ContractsController;
 __decorate([
@@ -149,6 +152,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, Object]),
     __metadata("design:returntype", void 0)
 ], ContractsController.prototype, "restoreVersion", null);
+__decorate([
+    (0, common_1.Post)(':id/renegotiate'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, contract_dto_1.RenegotiateDto]),
+    __metadata("design:returntype", void 0)
+], ContractsController.prototype, "renegotiateClause", null);
 exports.ContractsController = ContractsController = __decorate([
     (0, common_1.Controller)('contracts'),
     __metadata("design:paramtypes", [contracts_service_1.ContractsService])

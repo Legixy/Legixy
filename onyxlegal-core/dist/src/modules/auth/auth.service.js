@@ -16,6 +16,8 @@ const jwt_1 = require("@nestjs/jwt");
 const prisma_service_1 = require("../../database/prisma.service");
 const client_1 = require("../../../generated/prisma/client");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 const BCRYPT_ROUNDS = 12;
 let AuthService = AuthService_1 = class AuthService {
     prisma;
@@ -98,6 +100,73 @@ let AuthService = AuthService_1 = class AuthService {
                 },
             },
         });
+    }
+    async googleLogin(profile) {
+        let user = await this.prisma.user.findFirst({ where: { email: profile.email } });
+        if (!user) {
+            const tenant = await this.prisma.tenant.create({
+                data: { name: `${profile.name}'s Workspace`, plan: client_1.Plan.FREE, aiTokenLimit: 5000 },
+            });
+            user = await this.prisma.user.create({
+                data: {
+                    tenantId: tenant.id,
+                    email: profile.email,
+                    name: profile.name,
+                    avatarUrl: profile.avatarUrl,
+                    role: client_1.UserRole.OWNER,
+                },
+            });
+            this.logger.log(`New Google user: ${profile.email} (tenant: ${tenant.id})`);
+        }
+        return this.issueToken(user);
+    }
+    async forgotPassword(email) {
+        const user = await this.prisma.user.findFirst({ where: { email } });
+        if (user && user.password) {
+            const token = crypto.randomBytes(32).toString('hex');
+            const expiry = new Date(Date.now() + 60 * 60 * 1000);
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: { passwordResetToken: token, passwordResetExpiry: expiry },
+            });
+            const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+            if (process.env.SMTP_HOST) {
+                const transporter = nodemailer.createTransport({
+                    host: process.env.SMTP_HOST,
+                    port: Number(process.env.SMTP_PORT) || 587,
+                    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+                });
+                await transporter.sendMail({
+                    from: process.env.SMTP_FROM || 'noreply@legixy.com',
+                    to: email,
+                    subject: 'Reset your Legixy password',
+                    html: `<p>Click the link below to reset your password (expires in 1 hour):</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
+                });
+                this.logger.log(`Password reset email sent to ${email}`);
+            }
+            else {
+                this.logger.warn(`[DEV] Password reset URL for ${email}: ${resetUrl}`);
+            }
+        }
+        return { message: 'If that email is registered, a reset link has been sent.' };
+    }
+    async resetPassword(token, newPassword) {
+        const user = await this.prisma.user.findFirst({
+            where: {
+                passwordResetToken: token,
+                passwordResetExpiry: { gt: new Date() },
+            },
+        });
+        if (!user) {
+            throw new common_1.BadRequestException('Invalid or expired reset token.');
+        }
+        const hash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: { password: hash, passwordResetToken: null, passwordResetExpiry: null },
+        });
+        this.logger.log(`Password reset for ${user.email}`);
+        return { message: 'Password updated. You can now log in.' };
     }
     issueToken(user) {
         const payload = { sub: user.id, email: user.email, role: user.role, type: 'local' };

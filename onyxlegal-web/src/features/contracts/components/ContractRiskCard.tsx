@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, ShieldCheck, Sparkles, Bot, MessageSquare, Clock } from 'lucide-react';
+import { AlertTriangle, ShieldCheck, Sparkles, Bot, MessageSquare, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/shared/components/Modal';
 import { toast } from 'sonner';
+import { renegotiate } from '@/lib/api';
 
 type RiskLevel = 'high_risk' | 'needs_action' | 'verified_safe' | 'ai_suggested_fix' | 'not_analyzed';
 
@@ -13,6 +14,7 @@ interface Props {
   title: string;
   type: string;
   status: string;
+  contractId?: string;
   date: string;
   riskLevel: RiskLevel;
   aiDiagnosis: string;
@@ -136,31 +138,48 @@ function FixWithAIModal({ title, onClose }: { title: string; onClose: () => void
   );
 }
 
-function RenegotiateModal({ title, onClose }: { title: string; onClose: () => void }) {
+function RenegotiateModal({ title, contractId, onClose }: { title: string; contractId?: string; onClose: () => void }) {
+  const [loading, setLoading] = useState(false);
+  const [terms, setTerms]     = useState<string[]>([
+    'Cap auto-renewal clause to 1 year at current rates',
+    'Add 30-day opt-out notice window before renewal',
+    'Price increase capped at CPI + 3%',
+  ]);
   const [sent, setSent] = useState(false);
-  const handleSend = () => {
-    setSent(true);
-    toast.success('Renegotiation request sent!', { description: `${title} — Counterparty notified with AI-suggested terms.` });
-    setTimeout(onClose, 1400);
+
+  const handleSend = async () => {
+    setLoading(true);
+    try {
+      if (contractId) {
+        const result = await renegotiate.request(contractId, title);
+        setTerms(result.suggestedTerms);
+      }
+      setSent(true);
+      toast.success('Renegotiation request logged', { description: `${title} — AI-suggested terms prepared.` });
+      setTimeout(onClose, 1400);
+    } catch {
+      toast.error('Request failed', { description: 'Please try again.' });
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
     <div className="space-y-4">
       <p className="text-sm text-slate-600">Onyx AI has prepared revised terms. Review before sending to the counterparty.</p>
       <div className="bg-amber-50/60 rounded-xl p-4 space-y-2" style={{ border: '1px solid rgba(245, 158, 11, 0.1)' }}>
         <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">AI Suggested Terms</p>
         <ul className="text-sm text-amber-800 space-y-1 list-disc list-inside">
-          <li>Cap auto-renewal clause to 1 year at current rates</li>
-          <li>Add 30-day opt-out notice window before renewal</li>
-          <li>Price increase capped at CPI + 3%</li>
+          {terms.map((t) => <li key={t}>{t}</li>)}
         </ul>
       </div>
       <Button
         onClick={handleSend}
-        disabled={sent}
-        className="w-full text-white h-10 rounded-xl"
+        disabled={sent || loading}
+        className="w-full text-white h-10 rounded-xl flex items-center justify-center gap-2"
         style={{ background: 'var(--primary)', boxShadow: 'var(--shadow-sm)' }}
       >
-        {sent ? '✓ Request Sent' : 'Send Renegotiation Request'}
+        {loading ? <><Loader2 size={14} className="animate-spin" /> Submitting…</> : sent ? '✓ Request Sent' : 'Send Renegotiation Request'}
       </Button>
     </div>
   );
@@ -226,7 +245,7 @@ function CompareVersionsModal() {
 
 // ── Main Card Component ───────────────────────────────────────────────────────
 
-export function ContractRiskCard({ title, type, status, date, riskLevel, aiDiagnosis, businessImpact }: Props) {
+export function ContractRiskCard({ title, type, status, date, riskLevel, aiDiagnosis, businessImpact, contractId }: Props) {
   const c = config[riskLevel];
   const Icon = c.icon;
   const [modal, setModal] = useState(false);
@@ -316,7 +335,7 @@ export function ContractRiskCard({ title, type, status, date, riskLevel, aiDiagn
       )}
       {riskLevel === 'needs_action' && (
         <Modal open={modal} onClose={() => setModal(false)} title={`Renegotiate — ${title}`} maxWidth="max-w-lg">
-          <RenegotiateModal title={title} onClose={() => setModal(false)} />
+          <RenegotiateModal title={title} contractId={contractId} onClose={() => setModal(false)} />
         </Modal>
       )}
       {riskLevel === 'verified_safe' && (

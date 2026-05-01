@@ -67,6 +67,13 @@ class ContractAnalysisWorker {
                     },
                 })));
             }
+            const extractedExpiry = this.extractExpirationDate(content);
+            if (extractedExpiry) {
+                await this.prisma.contract.updateMany({
+                    where: { id: contractId, expirationDate: null },
+                    data: { expirationDate: extractedExpiry },
+                });
+            }
             await this.prisma.tenant.update({
                 where: { id: tenantId },
                 data: {
@@ -137,6 +144,25 @@ class ContractAnalysisWorker {
         this.worker.on('error', (err) => {
             this.logger.error(`Worker error: ${err.message}`);
         });
+    }
+    extractExpirationDate(content) {
+        const patterns = [
+            /(?:this agreement|contract|term)\s+(?:shall\s+)?(?:expire|end|terminate)\s+(?:on|at)\s+([A-Za-z0-9, /.-]+)/i,
+            /(?:expiration|expiry|termination|end)\s+date[:\s]+([A-Za-z0-9, /.-]+)/i,
+            /(?:valid|effective)\s+(?:until|through|to)\s+([A-Za-z0-9, /.-]+)/i,
+            /(?:on|by)\s+([0-9]{1,2}[\/\-\.][0-9]{1,2}[\/\-\.][0-9]{2,4})/i,
+        ];
+        for (const pattern of patterns) {
+            const match = content.match(pattern);
+            if (!match)
+                continue;
+            const raw = match[1].trim().replace(/\.$/, '');
+            const parsed = new Date(raw);
+            if (!isNaN(parsed.getTime()) && parsed.getFullYear() > 2000) {
+                return parsed;
+            }
+        }
+        return null;
     }
     mapRiskLevel(level) {
         const mapping = {

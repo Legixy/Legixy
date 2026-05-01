@@ -900,6 +900,8 @@ export declare const UserScalarFieldEnum: {
     readonly avatarUrl: "avatarUrl";
     readonly role: "role";
     readonly password: "password";
+    readonly passwordResetToken: "passwordResetToken";
+    readonly passwordResetExpiry: "passwordResetExpiry";
     readonly createdAt: "createdAt";
     readonly updatedAt: "updatedAt";
 };

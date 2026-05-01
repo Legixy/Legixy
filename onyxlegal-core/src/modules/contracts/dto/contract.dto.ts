@@ -100,6 +100,16 @@ export class UpdateStatusDto {
   status: string; // ContractStatus enum value
 }
 
+export class RenegotiateDto {
+  @IsString()
+  @IsNotEmpty()
+  clauseTitle: string;
+
+  @IsString()
+  @IsOptional()
+  notes?: string;
+}
+
 export class ListContractsQueryDto {
   @IsOptional()
   @IsString()

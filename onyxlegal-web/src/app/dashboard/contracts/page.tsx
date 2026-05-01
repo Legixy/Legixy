@@ -195,6 +195,7 @@ export default function ContractsPage() {
               onClick={() => router.push(`/dashboard/contracts/${contract.id}`)}
             >
               <ContractRiskCard
+                contractId={contract.id}
                 title={contract.title}
                 type={contract.template?.category || 'Document'}
                 status={contract.status}

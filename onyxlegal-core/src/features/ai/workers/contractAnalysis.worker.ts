@@ -124,6 +124,15 @@ export class ContractAnalysisWorker {
         );
       }
 
+      // Extract expiration date from contract text (regex — no extra AI call)
+      const extractedExpiry = this.extractExpirationDate(content);
+      if (extractedExpiry) {
+        await this.prisma.contract.updateMany({
+          where: { id: contractId, expirationDate: null },
+          data: { expirationDate: extractedExpiry },
+        });
+      }
+
       // Update tenant AI token usage
       await this.prisma.tenant.update({
         where: { id: tenantId },
@@ -234,6 +243,31 @@ export class ContractAnalysisWorker {
     this.worker.on('error', (err) => {
       this.logger.error(`Worker error: ${err.message}`);
     });
+  }
+
+  /**
+   * Extract contract expiration/termination date from raw text.
+   * Looks for common patterns like "expires on", "valid until", "termination date".
+   * Only the first plausible future date is returned.
+   */
+  private extractExpirationDate(content: string): Date | null {
+    const patterns = [
+      /(?:this agreement|contract|term)\s+(?:shall\s+)?(?:expire|end|terminate)\s+(?:on|at)\s+([A-Za-z0-9, /.-]+)/i,
+      /(?:expiration|expiry|termination|end)\s+date[:\s]+([A-Za-z0-9, /.-]+)/i,
+      /(?:valid|effective)\s+(?:until|through|to)\s+([A-Za-z0-9, /.-]+)/i,
+      /(?:on|by)\s+([0-9]{1,2}[\/\-\.][0-9]{1,2}[\/\-\.][0-9]{2,4})/i,
+    ];
+
+    for (const pattern of patterns) {
+      const match = content.match(pattern);
+      if (!match) continue;
+      const raw = match[1].trim().replace(/\.$/, '');
+      const parsed = new Date(raw);
+      if (!isNaN(parsed.getTime()) && parsed.getFullYear() > 2000) {
+        return parsed;
+      }
+    }
+    return null;
   }
 
   /**
