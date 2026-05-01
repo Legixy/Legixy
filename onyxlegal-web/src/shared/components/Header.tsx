@@ -6,12 +6,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth-provider';
 
-const quickLinks = [
-  { label: 'Globex MSA — High Risk clause',   badge: 'Contract',   bgColor: 'rgba(220,38,38,0.08)',  fgColor: 'var(--danger)'   },
-  { label: 'Net 90 payment term risk',         badge: 'AI Insight', bgColor: 'rgba(61,53,211,0.08)',  fgColor: 'var(--primary)'  },
-  { label: 'WeWork auto-renewal clause',       badge: 'Contract',   bgColor: 'rgba(217,119,6,0.08)',  fgColor: 'var(--warning)'  },
-  { label: 'Standard NDA template',            badge: 'Template',   bgColor: 'rgba(5,150,105,0.08)',  fgColor: 'var(--success)'  },
-];
+const quickLinks: { label: string; badge: string; bgColor: string; fgColor: string }[] = [];
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const [query, setQuery]       = useState('');
@@ -170,7 +165,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
 
         {/* Notification Bell */}
         <button
-          onClick={() => toast.info('3 unread notifications', { description: 'Priya signature pending · AWS renewal · AI fix ready' })}
+          onClick={() => toast.info('Notifications coming soon', { description: 'In-app notification centre is in development.' })}
           className="relative p-2 transition-all duration-150"
           style={{ borderRadius: '8px' }}
           onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; }}
@@ -185,7 +180,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
 
         {/* Help */}
         <button
-          onClick={() => toast.info('Help & Resources', { description: 'Documentation coming soon.' })}
+          onClick={() => window.open('https://legixy.com/docs', '_blank')}
           className="px-3 py-1.5 text-[13px] font-medium transition-all duration-150"
           style={{ borderRadius: '8px', color: 'var(--muted-foreground)' }}
           onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; e.currentTarget.style.color = 'var(--foreground)'; }}

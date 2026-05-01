@@ -1,17 +1,15 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PUBLIC_PATHS = ['/login', '/signup', '/api/auth'];
+const PUBLIC_PATHS = ['/login', '/register', '/signup', '/api/auth'];
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public paths through without auth check
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
   }
 
-  // Protect /dashboard and all sub-routes
   if (pathname.startsWith('/dashboard')) {
     const token = request.cookies.get('auth_token')?.value;
     if (!token) {

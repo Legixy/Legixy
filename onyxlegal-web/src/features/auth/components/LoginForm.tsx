@@ -66,10 +66,9 @@ export function LoginForm() {
       {/* Social */}
       <SocialLoginButton
         provider="Google"
-        disabled={isLoading}
+        disabled={true}
         onClick={() => {
-          toast.success('Redirecting to Google…', { description: 'Opening secure login window' });
-          setTimeout(() => router.push('/dashboard'), 1500);
+          toast.info('Google Sign-In coming soon', { description: 'Use email and password to log in for now.' });
         }}
       />
 
@@ -152,7 +151,7 @@ export function LoginForm() {
               type="button"
               className="text-[12px] font-medium transition-colors duration-150 py-3 px-1 -my-3"
               style={{ color: 'var(--primary)' }}
-              onClick={() => toast('Password reset coming soon')}
+              onClick={() => toast.info('Password reset', { description: 'Email support@legixy.com to reset your password.' })}
             >
               Forgot password?
             </button>
