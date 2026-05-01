@@ -37,7 +37,7 @@ export default function TemplatesPage() {
   if (isLoading) {
     return (
       <div className="w-full flex flex-col pt-4 pb-12 items-center justify-center min-h-[60vh]">
-        <div className="onyx-shimmer w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--onyx-gradient)' }}>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--primary)' }}>
           <Loader2 className="w-5 h-5 text-white animate-spin" />
         </div>
         <p className="text-slate-400 mt-4 text-sm font-medium">Loading templates...</p>
@@ -46,38 +46,42 @@ export default function TemplatesPage() {
   }
 
   return (
-    <div className="w-full flex flex-col pt-4 pb-12 animate-fade-up items-center">
-      
-      {/* Header Container */}
-      <div className="max-w-2xl text-center mb-10 mt-4">
+    <div className="w-full flex flex-col pt-4 pb-12 animate-fade-up">
+
+      {/* Page Header — left-aligned per DESIGN.md "Left Alignment = Document Literacy" */}
+      <div className="mb-10 mt-4">
         <div
-          className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full text-indigo-700 text-xs font-bold tracking-widest uppercase mb-6"
-          style={{ background: 'var(--onyx-gradient-subtle)', border: '1px solid rgba(79, 70, 229, 0.1)' }}
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-indigo-700 text-xs font-semibold tracking-widest uppercase mb-4"
+          style={{ background: 'var(--onyx-gradient-subtle)', border: '1px solid rgba(61,53,211,0.10)' }}
         >
-          <Sparkles size={14} /> AI Recommendation Engine
+          <Sparkles size={13} /> AI Recommendation Engine
         </div>
-        <h1 className="font-display text-4xl font-semibold text-slate-900 tracking-tight mb-4">Smart Contract Templates</h1>
-        <p className="text-slate-500 text-lg leading-relaxed">Onyx AI has analyzed your company profile and recommends the following optimized legal structures for your current growth stage.</p>
-        
-        {/* Trust Indicators */}
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 mt-8 text-sm font-semibold text-slate-600">
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={18} className="text-emerald-500" />
+        <h1 className="font-display text-3xl text-slate-900 tracking-tight mb-2">
+          Smart Contract Templates
+        </h1>
+        <p className="text-slate-500 text-[15px] leading-relaxed max-w-xl">
+          Onyx AI has analyzed your company profile and recommends optimized legal structures for your current growth stage.
+        </p>
+
+        {/* Trust Indicators — left-aligned, compact */}
+        <div className="flex flex-wrap items-center gap-6 mt-6 text-[13px] font-medium text-slate-500">
+          <div className="flex items-center gap-1.5">
+            <ShieldCheck size={15} className="text-emerald-500" />
             Lawyer Verified
           </div>
-          <div className="flex items-center gap-2">
-            <Scale size={18} className="text-indigo-500" />
+          <div className="flex items-center gap-1.5">
+            <Scale size={15} className="text-indigo-500" />
             Indian Contract Act Compliant
           </div>
-          <div className="flex items-center gap-2">
-            <Users size={18} className="text-amber-500" />
+          <div className="flex items-center gap-1.5">
+            <Users size={15} className="text-slate-400" />
             Trusted by 5,000+ Startups
           </div>
         </div>
       </div>
 
       {/* Templates Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl mx-auto px-4 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {templatesList.length > 0 ? (
           templatesList.map((template, idx) => (
             <TemplateDiscoveryCard
@@ -92,7 +96,7 @@ export default function TemplatesPage() {
           ))
         ) : (
           <>
-            <TemplateDiscoveryCard 
+            <TemplateDiscoveryCard
               isRecommended
               iconType="briefcase"
               score={98}
@@ -100,14 +104,14 @@ export default function TemplatesPage() {
               description="Establish robust terms for services, IP ownership, and deliverables with external contractors."
               socialProof="Used by 850+ B2B SaaS startups"
             />
-            <TemplateDiscoveryCard 
+            <TemplateDiscoveryCard
               iconType="shield"
               score={95}
               title="Non-Disclosure Agreement"
               description="Protect IP when sharing sensitive information. Configurable for mutual or one-way protection."
               socialProof="Used by 1,200+ similar companies"
             />
-            <TemplateDiscoveryCard 
+            <TemplateDiscoveryCard
               iconType="document"
               score={99}
               title="Employment Offer Letter"
