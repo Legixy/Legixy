@@ -150,7 +150,7 @@ export function LoginForm() {
             </label>
             <button
               type="button"
-              className="text-[12px] font-medium transition-colors duration-150"
+              className="text-[12px] font-medium transition-colors duration-150 py-3 px-1 -my-3"
               style={{ color: 'var(--primary)' }}
               onClick={() => toast('Password reset coming soon')}
             >
@@ -221,7 +221,7 @@ export function LoginForm() {
         Don&apos;t have an account?{' '}
         <a
           href="/register"
-          className="font-semibold transition-colors duration-150"
+          className="font-semibold transition-colors duration-150 py-3 px-1 -my-3 inline-block"
           style={{ color: 'var(--primary)' }}
         >
           Sign up free
