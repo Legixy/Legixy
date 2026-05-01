@@ -35,12 +35,12 @@ function useCounter(end: number, duration = 1200) {
   return count;
 }
 
-// ── Stat Card ──────────────────────────────────────────────────────────────
+// ── Stat Card — flat icon, no gradient blobs, no colored glow ─────────────
 function StatCard({
-  label, value, suffix, trend, trendLabel, icon: Icon, gradient, glow,
+  label, value, suffix, trend, trendLabel, icon: Icon, iconColor,
 }: {
   label: string; value: number; suffix?: string; trend?: 'up' | 'down';
-  trendLabel?: string; icon: React.ElementType; gradient: string; glow: string;
+  trendLabel?: string; icon: React.ElementType; iconColor: string;
 }) {
   const animatedValue = useCounter(value);
   const TrendIcon = trend === 'up' ? TrendingUp : TrendingDown;
@@ -48,41 +48,35 @@ function StatCard({
 
   return (
     <div
-      className="bg-white rounded-2xl p-6 relative overflow-hidden group"
+      className="bg-white rounded-xl p-5"
       style={{
         border: '1px solid var(--border)',
-        boxShadow: `var(--onyx-shadow-sm), 0 0 24px ${glow}`,
-        transition: 'all 0.4s var(--onyx-ease)',
+        boxShadow: 'var(--shadow-sm)',
+        transition: 'box-shadow 250ms var(--ease-out), transform 250ms var(--ease-out)',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = `var(--onyx-shadow-lg), 0 0 32px ${glow}`;
+        e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
         e.currentTarget.style.transform = 'translateY(-2px)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = `var(--onyx-shadow-sm), 0 0 24px ${glow}`;
+        e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
         e.currentTarget.style.transform = 'translateY(0)';
       }}
     >
-      <div className={`absolute top-0 right-0 w-28 h-28 ${gradient} rounded-full blur-[50px] opacity-20 group-hover:opacity-40 transition-opacity duration-500`} />
-      <div className="relative z-10">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-          style={{ background: 'var(--onyx-gradient)', boxShadow: '0 4px 12px rgba(79, 70, 229, 0.2)' }}
-        >
-          <Icon size={18} className="text-white" />
-        </div>
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{label}</p>
-        <div className="flex items-baseline gap-1">
-          <span className="font-display text-3xl font-semibold text-slate-900 tracking-tight">{animatedValue}</span>
-          {suffix && <span className="text-lg font-medium text-slate-400">{suffix}</span>}
-        </div>
-        {trendLabel && (
-          <div className={`flex items-center gap-1 mt-2 text-xs font-semibold ${trendColor}`}>
-            <TrendIcon size={13} />
-            {trendLabel}
-          </div>
-        )}
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-4 ${iconColor}`}>
+        <Icon size={16} />
       </div>
+      <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">{label}</p>
+      <div className="flex items-baseline gap-1">
+        <span className="font-display text-2xl text-slate-900 tracking-tight">{animatedValue}</span>
+        {suffix && <span className="text-sm font-medium text-slate-400">{suffix}</span>}
+      </div>
+      {trendLabel && (
+        <div className={`flex items-center gap-1 mt-1.5 text-xs font-semibold ${trendColor}`}>
+          <TrendIcon size={12} />
+          {trendLabel}
+        </div>
+      )}
     </div>
   );
 }
@@ -94,10 +88,10 @@ function RiskGauge({ label, value, color }: { label: string; value: number; colo
   return (
     <div className="flex items-center gap-4">
       <span className="text-xs font-medium text-slate-500 w-28 shrink-0">{label}</span>
-      <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+      <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full ${color}`}
-          style={{ width: `${width}%`, transition: 'width 1.2s var(--onyx-ease)' }}
+          style={{ width: `${width}%`, transition: 'width 1.2s var(--ease-out)' }}
         />
       </div>
       <span className="text-xs font-semibold text-slate-700 w-8 text-right">{value}%</span>
@@ -108,11 +102,15 @@ function RiskGauge({ label, value, color }: { label: string; value: number; colo
 // ── AI Activity Item ───────────────────────────────────────────────────────
 function ActivityItem({ title, time, type }: { title: string; time: string; type: 'analysis' | 'fix' | 'alert' }) {
   const icons = { analysis: Sparkles, fix: Zap, alert: AlertTriangle };
-  const colors = { analysis: 'text-indigo-500 bg-indigo-50', fix: 'text-emerald-500 bg-emerald-50', alert: 'text-amber-500 bg-amber-50' };
+  const colors = {
+    analysis: 'text-indigo-500 bg-indigo-50',
+    fix: 'text-emerald-500 bg-emerald-50',
+    alert: 'text-amber-500 bg-amber-50',
+  };
   const Icon = icons[type];
   const colorClass = colors[type];
   return (
-    <div className="flex items-start gap-3 py-3 last:border-0" style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+    <div className="flex items-start gap-3 py-3" style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
       <div className={`w-7 h-7 rounded-lg ${colorClass} flex items-center justify-center shrink-0 mt-0.5`}>
         <Icon size={13} />
       </div>
@@ -139,7 +137,7 @@ export default function AnalyticsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Zap className="w-6 h-6 animate-pulse text-indigo-600" />
+        <Zap className="w-6 h-6 animate-pulse" style={{ color: 'var(--primary)' }} />
       </div>
     );
   }
@@ -151,13 +149,13 @@ export default function AnalyticsPage() {
       <div className="mb-10">
         <div
           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-indigo-700 text-xs font-semibold tracking-widest uppercase mb-4"
-          style={{ background: 'var(--onyx-gradient-subtle)', border: '1px solid rgba(79, 70, 229, 0.1)' }}
+          style={{ background: 'var(--onyx-gradient-subtle)', border: '1px solid rgba(61,53,211,0.10)' }}
         >
           <BarChart3 size={13} />
           AI Analytics Dashboard
         </div>
         <h1 className="font-display text-3xl text-slate-900 tracking-tight">Legal Operations Intelligence</h1>
-        <p className="text-slate-500 mt-1 text-sm">Real-time insights powered by Onyx AI across your contract portfolio.</p>
+        <p className="text-slate-500 mt-1 text-[15px]">Real-time insights powered by Onyx AI across your contract portfolio.</p>
       </div>
 
       {/* ── Stat Cards Grid ──────────────────────── */}
@@ -167,7 +165,7 @@ export default function AnalyticsPage() {
           Metrics unavailable — backend may be starting up. Showing last known values.
         </div>
       )}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10 ${metricsLoading ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 ${metricsLoading ? 'opacity-50 pointer-events-none' : ''}`}>
         <StatCard
           label="Cost Saved"
           value={metrics?.costSaved ?? 0}
@@ -175,8 +173,7 @@ export default function AnalyticsPage() {
           trend="up"
           trendLabel="+₹18K this week"
           icon={TrendingUp}
-          gradient="bg-emerald-400"
-          glow="rgba(16, 185, 129, 0.08)"
+          iconColor="text-emerald-600 bg-emerald-50"
         />
         <StatCard
           label="Risk Reduced"
@@ -185,8 +182,7 @@ export default function AnalyticsPage() {
           trend="up"
           trendLabel="+8% vs last month"
           icon={Shield}
-          gradient="bg-indigo-400"
-          glow="rgba(79, 70, 229, 0.08)"
+          iconColor="text-indigo-600 bg-indigo-50"
         />
         <StatCard
           label="Hours Saved"
@@ -195,8 +191,7 @@ export default function AnalyticsPage() {
           trend="up"
           trendLabel="3.2 hrs this week"
           icon={Clock}
-          gradient="bg-amber-400"
-          glow="rgba(245, 158, 11, 0.08)"
+          iconColor="text-amber-600 bg-amber-50"
         />
         <StatCard
           label="Contracts Active"
@@ -204,8 +199,7 @@ export default function AnalyticsPage() {
           trend="up"
           trendLabel="6 new this month"
           icon={FileText}
-          gradient="bg-violet-400"
-          glow="rgba(124, 58, 237, 0.08)"
+          iconColor="text-slate-600 bg-slate-100"
         />
       </div>
 
@@ -214,11 +208,11 @@ export default function AnalyticsPage() {
 
         {/* Risk Distribution */}
         <div
-          className="lg:col-span-3 bg-white rounded-2xl p-6"
-          style={{ border: '1px solid var(--border)', boxShadow: 'var(--onyx-shadow-sm)' }}
+          className="lg:col-span-3 bg-white rounded-xl p-6"
+          style={{ border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
         >
           <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display text-sm font-semibold text-slate-800">Risk Distribution by Clause Type</h2>
+            <h2 className="text-[13px] font-semibold text-slate-800 tracking-tight">Risk Distribution by Clause Type</h2>
             <span className="text-xs text-slate-400 font-medium">Last 30 days</span>
           </div>
           <div className="space-y-4">
@@ -234,11 +228,11 @@ export default function AnalyticsPage() {
 
         {/* AI Activity Feed */}
         <div
-          className="lg:col-span-2 bg-white rounded-2xl p-6"
-          style={{ border: '1px solid var(--border)', boxShadow: 'var(--onyx-shadow-sm)' }}
+          className="lg:col-span-2 bg-white rounded-xl p-6"
+          style={{ border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}
         >
           <div className="flex items-center justify-between mb-5">
-            <h2 className="font-display text-sm font-semibold text-slate-800">AI Activity Feed</h2>
+            <h2 className="text-[13px] font-semibold text-slate-800 tracking-tight">AI Activity Feed</h2>
             <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live
@@ -255,59 +249,52 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* ── AI Performance Summary ────────────────── */}
+      {/* ── AI Performance Summary — clean dark card, no gradient, no blobs ── */}
       <div
-        className="rounded-2xl p-8 text-white relative overflow-hidden"
+        className="rounded-xl p-8"
         style={{
-          background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 40%, #3730A3 70%, #4338CA 100%)',
-          boxShadow: '0 8px 32px rgba(30, 27, 75, 0.25)',
+          background: '#0F172A',
+          border: '1px solid rgba(255,255,255,0.06)',
+          boxShadow: 'var(--shadow-lg)',
         }}
       >
-        <div className="absolute -top-10 right-1/4 w-80 h-48 bg-indigo-500/15 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-10 left-1/3 w-60 h-40 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute top-1/2 left-[10%] w-24 h-24 bg-cyan-400/8 rounded-full blur-2xl pointer-events-none animate-float" />
-
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-start justify-between mb-8">
+          <div className="flex items-center gap-3">
             <div
-              className="w-11 h-11 rounded-xl flex items-center justify-center"
-              style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}
+              className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.2)' }}
             >
-              <Sparkles size={20} className="text-indigo-300" />
+              <Sparkles size={16} className="text-indigo-400" />
             </div>
             <div>
-              <h3 className="font-display font-semibold text-lg">Onyx AI Monthly Summary</h3>
-              <p className="text-indigo-200/50 text-xs">Performance metrics for {monthLabel}</p>
+              <h3 className="font-display text-lg text-white tracking-tight">Onyx AI Monthly Summary</h3>
+              <p className="text-slate-500 text-xs mt-0.5">Performance metrics for {monthLabel}</p>
             </div>
           </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
-            {[
-              { label: 'Contracts Analyzed', value: '47', sub: 'Last 30 days' },
-              { label: 'Clauses Reviewed', value: '312', sub: '92% auto-resolved' },
-              { label: 'Avg. Processing Time', value: '2.4s', sub: 'Per clause' },
-              { label: 'Accuracy Rate', value: '96.8%', sub: 'Verified by legal' },
-            ].map((m) => (
-              <div key={m.label} className="text-center">
-                <p className="font-display text-2xl font-semibold mb-1">{m.value}</p>
-                <p className="text-xs font-semibold text-indigo-200/70 uppercase tracking-wider">{m.label}</p>
-                <p className="text-[10px] text-indigo-300/40 mt-0.5">{m.sub}</p>
-              </div>
-            ))}
-          </div>
+          <button
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 transition-colors duration-150"
+            style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#fff'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgb(203,213,225)'; }}
+          >
+            <ArrowUpRight size={13} />
+            Export Report
+          </button>
         </div>
 
-        {/* CTA */}
-        <div className="mt-8 flex items-center justify-center relative z-10">
-          <button
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300"
-            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.18)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
-          >
-            <ArrowUpRight size={15} />
-            Export Full Report
-          </button>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '24px' }}>
+          {[
+            { label: 'Contracts Analyzed', value: '47', sub: 'Last 30 days' },
+            { label: 'Clauses Reviewed', value: '312', sub: '92% auto-resolved' },
+            { label: 'Avg. Processing Time', value: '2.4s', sub: 'Per clause' },
+            { label: 'Accuracy Rate', value: '96.8%', sub: 'Verified by legal' },
+          ].map((m) => (
+            <div key={m.label}>
+              <p className="font-display text-2xl text-white tracking-tight mb-1">{m.value}</p>
+              <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{m.label}</p>
+              <p className="text-[11px] text-slate-600 mt-0.5">{m.sub}</p>
+            </div>
+          ))}
         </div>
       </div>
 
