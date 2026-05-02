@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useContractStats } from '@/shared/api';
 import {
   LayoutDashboard,
@@ -23,6 +23,7 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: stats } = useContractStats();
   const activeCount = stats?.activeContracts ?? 0;
 
@@ -189,8 +190,11 @@ export function Sidebar() {
             Free Plan
           </span>
           <button
+            onClick={() => router.push('/dashboard/preferences')}
             className="ml-auto text-[11px] font-semibold transition-colors duration-150"
             style={{ color: 'var(--primary)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
           >
             Upgrade
           </button>

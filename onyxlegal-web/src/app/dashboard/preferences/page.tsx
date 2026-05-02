@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-provider';
+import { toast } from 'sonner';
 import {
   User,
   Building2,
@@ -296,6 +297,13 @@ export default function PreferencesPage() {
 
             {planLabel === 'Free' && (
               <button
+                onClick={() =>
+                  toast.info('Upgrade to Pro', {
+                    description: 'Pro plan unlocks unlimited contracts, advanced AI, and priority support. Contact us at hello@legixy.com to upgrade.',
+                    duration: 6000,
+                    action: { label: 'Email us', onClick: () => window.open('mailto:hello@legixy.com', '_blank') },
+                  })
+                }
                 className="mt-5 w-full flex items-center justify-between px-4 py-3 rounded-lg text-[13px] font-semibold transition-all duration-150"
                 style={{
                   background: 'rgba(61,53,211,0.06)',

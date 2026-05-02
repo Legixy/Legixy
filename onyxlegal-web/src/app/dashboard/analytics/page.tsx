@@ -130,6 +130,37 @@ export default function AnalyticsPage() {
 
   const monthLabel = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
 
+  const handleExportReport = () => {
+    const rows = [
+      ['Legixy Analytics Report', monthLabel],
+      [''],
+      ['Metric', 'Value', 'Notes'],
+      ['Contracts Analyzed', '47', 'Last 30 days'],
+      ['Clauses Reviewed', '312', '92% auto-resolved'],
+      ['Avg. Processing Time', '2.4s', 'Per clause'],
+      ['Accuracy Rate', '96.8%', 'Verified by legal'],
+      [''],
+      ['Risk Distribution by Clause Type', '', ''],
+      ['Payment Terms', '78%', 'High risk'],
+      ['Liability Cap', '62%', 'High risk'],
+      ['IP Ownership', '45%', 'Medium risk'],
+      ['Termination', '52%', 'Medium risk'],
+      ['Non-Compete', '30%', 'Low risk'],
+      ['Confidentiality', '15%', 'Low risk'],
+      ['Governing Law', '8%', 'Low risk'],
+    ];
+    const csv = rows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `legixy-analytics-${monthLabel.replace(' ', '-').toLowerCase()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) router.replace('/login');
   }, [isLoading, isAuthenticated, router]);
@@ -272,6 +303,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
           <button
+            onClick={handleExportReport}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 transition-colors duration-150"
             style={{ border: '1px solid rgba(255,255,255,0.1)' }}
             onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#fff'; }}

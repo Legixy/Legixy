@@ -29,6 +29,7 @@ export default function ResultsPage() {
 
   // Local state
   const [expandedClauseId, setExpandedClauseId] = useState<string | null>(null);
+  const [showAllFindings, setShowAllFindings] = useState(false);
 
   // Process results
   const analyses = results?.analyses || [];
@@ -118,7 +119,7 @@ export default function ResultsPage() {
         <div className="mb-8">
           <h2 className="text-sm font-semibold text-slate-900 mb-4">Key Risk Findings</h2>
           <div className="space-y-3">
-            {riskFindings.slice(0, 3).map((finding: any, idx: number) => {
+            {(showAllFindings ? riskFindings : riskFindings.slice(0, 3)).map((finding: any, idx: number) => {
               const Icon = getSeverityIcon(finding.severity);
               return (
                 <div key={idx} className={`p-4 rounded-xl border ${getSeverityColor(finding.severity)}`}>
@@ -137,8 +138,11 @@ export default function ResultsPage() {
             })}
             {riskFindings.length > 3 && (
               <div className="text-center">
-                <button className="text-xs text-indigo-600 font-semibold hover:text-indigo-700">
-                  View all {riskFindings.length} findings
+                <button
+                  onClick={() => setShowAllFindings((v) => !v)}
+                  className="text-xs text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
+                >
+                  {showAllFindings ? 'Show fewer findings' : `View all ${riskFindings.length} findings`}
                 </button>
               </div>
             )}

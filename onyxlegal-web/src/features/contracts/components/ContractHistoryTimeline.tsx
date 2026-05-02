@@ -59,6 +59,7 @@ export function ContractHistoryTimeline({
     versionId: string;
     version: number;
   } | null>(null);
+  const [viewContentVersion, setViewContentVersion] = useState<ContractVersionWithUser | null>(null);
 
   const handleRestore = async () => {
     if (!showRestoreModal) return;
@@ -184,8 +185,11 @@ export function ContractHistoryTimeline({
                     )}
 
                     {/* Preview Button */}
-                    <button className="text-xs font-medium text-indigo-600 hover:text-indigo-700 mt-3">
-                      [View Full Content]
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setViewContentVersion(version); }}
+                      className="text-xs font-medium text-indigo-600 hover:text-indigo-700 mt-3 transition-colors"
+                    >
+                      View Full Content
                     </button>
 
                     {/* Restore Button */}
@@ -212,6 +216,38 @@ export function ContractHistoryTimeline({
           );
         })}
       </div>
+
+      {/* View Full Content Modal */}
+      {viewContentVersion && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setViewContentVersion(null)} />
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 p-6 max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold text-slate-900">
+                Version {viewContentVersion.version} — Full Content
+              </h3>
+              <button
+                onClick={() => setViewContentVersion(null)}
+                className="p-1 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            {viewContentVersion.changeNote && (
+              <p className="text-xs text-slate-500 mb-3">{viewContentVersion.changeNote}</p>
+            )}
+            <div className="flex-1 overflow-y-auto bg-slate-50 rounded-lg p-4 font-mono text-xs text-slate-700 leading-relaxed border border-slate-200 whitespace-pre-wrap">
+              {viewContentVersion.content || 'No content available for this version.'}
+            </div>
+            <button
+              onClick={() => setViewContentVersion(null)}
+              className="mt-4 w-full px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Restore Confirmation Modal */}
       {showRestoreModal && (

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { ContractRiskCard } from '@/features/contracts/components/ContractRiskCard';
+import { ContractIntelligentCard } from '@/features/contracts/components/ContractIntelligentCard';
 import { Plus, Search, FileSignature, AlertTriangle, Shield, Clock, Loader2, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-provider';
@@ -187,33 +187,34 @@ export default function ContractsPage() {
 
       {/* ── Contract Cards ───────────────────────── */}
       {!isLoading && !error && filtered.length > 0 && (
-        <div className="flex flex-col gap-4">
-          {filtered.map((contract) => (
-            <div
-              key={contract.id}
-              className="cursor-pointer transition-all duration-200 hover:scale-[1.005]"
-              onClick={() => router.push(`/dashboard/contracts/${contract.id}`)}
-            >
-              <ContractRiskCard
-                contractId={contract.id}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((contract) => {
+            const statusMap: Record<string, 'draft' | 'in-review' | 'sent' | 'signed' | 'expired'> = {
+              DRAFT: 'draft', IN_REVIEW: 'in-review', SENT: 'sent', SIGNED: 'signed', EXPIRED: 'expired',
+            };
+            const riskMap: 'high' | 'medium' | 'low' | 'none' =
+              contract.riskScore == null ? 'none'
+              : contract.riskScore > 70 ? 'high'
+              : contract.riskScore > 40 ? 'medium'
+              : 'low';
+            return (
+              <ContractIntelligentCard
+                key={contract.id}
+                id={contract.id}
                 title={contract.title}
-                type={contract.template?.category || 'Document'}
-                status={contract.status}
-                date={new Date(contract.createdAt).toLocaleDateString()}
-                riskLevel={
+                status={statusMap[contract.status] ?? 'draft'}
+                riskLevel={riskMap}
+                aiSummary={
                   contract.riskScore != null
-                    ? contract.riskScore > 70
-                      ? 'high_risk'
-                      : contract.riskScore > 40
-                        ? 'needs_action'
-                        : 'verified_safe'
-                    : 'not_analyzed'
+                    ? `Risk score ${contract.riskScore}/100 — review flagged clauses before signing.`
+                    : 'Run AI analysis to detect hidden liabilities and risk clauses.'
                 }
-                aiDiagnosis={`Contract value: ${contract.contractValue || 'N/A'} ${contract.currency}`}
-                businessImpact={`Created by ${contract.createdBy?.name || 'Unknown'} on ${new Date(contract.createdAt).toLocaleDateString()}`}
+                companyName={contract.createdBy?.name}
+                updatedAt={new Date(contract.updatedAt).toLocaleDateString()}
+                onAnalyze={(id) => router.push(`/dashboard/contracts/${id}/analyze`)}
               />
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
