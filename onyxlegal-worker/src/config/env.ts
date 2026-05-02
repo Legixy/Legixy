@@ -8,7 +8,9 @@ config({ path: path.resolve(__dirname, '../../.env') });
 const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   REDIS_URL: z.string().default('redis://localhost:6379'),
-  OPENAI_API_KEY: z.string().min(1),
+  GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),
+  // OpenAI key is no longer used by the core engine but may be present in existing .env files
+  OPENAI_API_KEY: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

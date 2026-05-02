@@ -115,22 +115,41 @@ export function Sidebar() {
           Settings
         </p>
         <nav>
-          <Link
-            href="/dashboard/preferences"
-            className="flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-medium transition-all duration-200"
-            style={{ borderRadius: '8px', color: 'var(--muted-foreground)' }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(0,0,0,0.04)';
-              e.currentTarget.style.color = 'var(--foreground)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--muted-foreground)';
-            }}
-          >
-            <Settings size={16} strokeWidth={1.75} />
-            Preferences
-          </Link>
+          {(() => {
+            const active = isActive('/dashboard/preferences');
+            return (
+              <Link
+                href="/dashboard/preferences"
+                className="relative flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-medium transition-all duration-200"
+                style={{
+                  borderRadius: '8px',
+                  background: active ? 'rgba(61,53,211,0.07)' : 'transparent',
+                  color: active ? 'var(--primary)' : 'var(--muted-foreground)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.background = 'rgba(0,0,0,0.04)';
+                    e.currentTarget.style.color = 'var(--foreground)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = 'var(--muted-foreground)';
+                  }
+                }}
+              >
+                {active && (
+                  <span
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5"
+                    style={{ background: 'var(--primary)', borderRadius: '0 2px 2px 0' }}
+                  />
+                )}
+                <Settings size={16} strokeWidth={active ? 2 : 1.75} style={{ color: active ? 'var(--primary)' : 'inherit' }} />
+                Preferences
+              </Link>
+            );
+          })()}
         </nav>
       </div>
 
