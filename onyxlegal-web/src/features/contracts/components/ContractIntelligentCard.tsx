@@ -12,8 +12,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, ShieldCheck, Eye, Zap, ArrowRight, MoreVertical, ExternalLink, Copy, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { contracts } from '@/lib/api';
+import { Modal } from '@/shared/components/Modal';
+import { Button } from '@/components/ui/button';
 
 export interface ContractIntelligentCardProps {
   id: string;
@@ -24,6 +28,7 @@ export interface ContractIntelligentCardProps {
   companyName?: string;
   updatedAt?: string;
   onAnalyze?: (id: string) => void;
+  onDeleted?: () => void;
 }
 
 const riskConfig = {
@@ -74,11 +79,24 @@ export function ContractIntelligentCard({
   companyName,
   updatedAt,
   onAnalyze,
+  onDeleted,
 }: ContractIntelligentCardProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isHovered, setIsHovered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const deleteMutation = useMutation({
+    mutationFn: () => contracts.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contracts'] });
+      toast.success('Contract deleted');
+      onDeleted?.();
+    },
+    onError: () => toast.error('Failed to delete contract'),
+  });
   const risk = riskConfig[riskLevel];
   const statusInfo = statusConfig[status];
   const RiskIcon = risk.icon;
@@ -195,7 +213,7 @@ export function ContractIntelligentCard({
                     onClick={(e) => {
                       e.stopPropagation();
                       setMenuOpen(false);
-                      toast.error('Delete not yet available', { description: 'Contract deletion is coming in a future update.' });
+                      setConfirmDeleteOpen(true);
                     }}
                     className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors text-left"
                   >
@@ -219,6 +237,24 @@ export function ContractIntelligentCard({
           <ArrowRight className="w-3 h-3 text-slate-400" />
         </div>
       )}
+      <Modal open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)} title="Delete Contract">
+        <p className="text-sm text-slate-600">
+          Are you sure you want to delete <strong>"{title}"</strong>? This cannot be undone.
+        </p>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" size="sm" onClick={() => setConfirmDeleteOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            className="bg-red-600 hover:bg-red-700 text-white"
+            onClick={() => { deleteMutation.mutate(); setConfirmDeleteOpen(false); }}
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? 'Deleting…' : 'Delete'}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

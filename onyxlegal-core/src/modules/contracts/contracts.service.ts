@@ -225,6 +225,13 @@ export class ContractsService {
     return contract;
   }
 
+  async remove(tenantId: string, id: string): Promise<void> {
+    const contract = await this.prisma.contract.findFirst({ where: { id, tenantId } });
+    if (!contract) throw new NotFoundException(`Contract ${id} not found`);
+    await this.prisma.contract.delete({ where: { id } });
+    this.logger.log(`Contract ${id} deleted from tenant ${tenantId}`);
+  }
+
   /**
    * Move contract to a new lifecycle state.
    * Validates transition rules.

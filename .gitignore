@@ -1,0 +1,5 @@
+# QA / browser tool artifacts
+.gstack/
+
+# OS
+.DS_Store

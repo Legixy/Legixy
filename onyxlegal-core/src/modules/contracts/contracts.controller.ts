@@ -3,6 +3,8 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
+  HttpCode,
   Param,
   Body,
   Query,
@@ -87,6 +89,15 @@ export class ContractsController {
     @Body() dto: UpdateContractDto,
   ) {
     return this.contractsService.update(user.tenantId, id, user.id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  remove(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+  ) {
+    return this.contractsService.remove(user.tenantId, id);
   }
 
   @Patch(':id/status')

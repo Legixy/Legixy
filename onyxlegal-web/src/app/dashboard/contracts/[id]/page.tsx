@@ -3,8 +3,11 @@
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useContractById } from '@/shared/api';
+import { contracts } from '@/lib/api';
 import { Loader2, AlertCircle, ArrowLeft, Eye, Download, Share2, Sparkles, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Modal } from '@/shared/components/Modal';
+import { toast } from 'sonner';
 
 export default function ContractDetailPage() {
   const router = useRouter();
@@ -12,6 +15,28 @@ export default function ContractDetailPage() {
   const contractId = params.id as string;
 
   const { data: contract, isLoading, error } = useContractById(contractId);
+
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  async function handleExport() {
+    if (!contract) return;
+    setIsExporting(true);
+    try {
+      const { blob, filename } = await contracts.download(contract.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Contract exported');
+    } catch {
+      toast.error('Export failed');
+    } finally {
+      setIsExporting(false);
+    }
+  }
 
   return (
     <div className="w-full flex flex-col animate-fade-up">
@@ -34,15 +59,21 @@ export default function ContractDetailPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => setPreviewOpen(true)} disabled={!contract}>
             <Eye size={14} />
             Preview
           </Button>
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={handleExport} disabled={isExporting || !contract}>
             <Download size={14} />
-            Export
+            {isExporting ? 'Exporting…' : 'Export'}
           </Button>
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button
+            variant="outline" size="sm" className="gap-2"
+            onClick={() => {
+              navigator.clipboard.writeText(`${window.location.origin}/dashboard/contracts/${contractId}`);
+              toast.success('Link copied to clipboard');
+            }}
+          >
             <Share2 size={14} />
             Share
           </Button>
@@ -212,6 +243,13 @@ export default function ContractDetailPage() {
         </div>
       )}
 
+      {contract && (
+        <Modal open={previewOpen} onClose={() => setPreviewOpen(false)} title={contract.title} maxWidth="max-w-3xl">
+          <div className="whitespace-pre-wrap text-sm text-slate-700 font-mono leading-relaxed max-h-[60vh] overflow-y-auto">
+            {contract.content || 'No content available.'}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

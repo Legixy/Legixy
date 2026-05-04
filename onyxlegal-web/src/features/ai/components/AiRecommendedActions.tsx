@@ -76,6 +76,7 @@ export function AiRecommendedActions() {
     actionId: string;
     title: string;
   } | null>(null);
+  const [showAllActions, setShowAllActions] = useState(false);
 
   if (isLoading) {
     return (
@@ -99,7 +100,7 @@ export function AiRecommendedActions() {
     );
   }
 
-  const actions = (data.actions ?? []).slice(0, 4);
+  const actions = showAllActions ? (data.actions ?? []) : (data.actions ?? []).slice(0, 4);
 
   return (
     <div className="space-y-4">
@@ -204,7 +205,10 @@ export function AiRecommendedActions() {
 
       {/* View All Actions CTA */}
       {actions.length < (data.actions.length || 0) && (
-        <button className="w-full py-2 text-xs font-medium text-indigo-600 hover:text-indigo-700 border border-indigo-200 rounded-lg transition-colors">
+        <button
+          onClick={() => setShowAllActions(true)}
+          className="w-full py-2 text-xs font-medium text-indigo-600 hover:text-indigo-700 border border-indigo-200 rounded-lg transition-colors"
+        >
           View all {data.actions.length} recommendations
         </button>
       )}

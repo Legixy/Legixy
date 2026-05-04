@@ -218,6 +218,17 @@ export const contracts = {
   getProgress: (contractId: string) =>
     request<ContractProgress>(`/contracts/${contractId}/progress`),
 
+  delete: async (contractId: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/contracts/${contractId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: res.statusText }));
+      throw new ApiError(res.status, error.message || 'Delete failed', error);
+    }
+  },
+
   download: async (contractId: string): Promise<{ blob: Blob; filename: string }> => {
     const url = `${API_BASE}/contracts/${contractId}/download`;
     const res = await fetch(url, { credentials: 'include' });
