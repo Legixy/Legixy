@@ -5,3 +5,7 @@ dist/
 .env
 
 /generated/prisma
+
+# Encrypted licence documents. Never commit client files.
+.storage/
+.gstack/

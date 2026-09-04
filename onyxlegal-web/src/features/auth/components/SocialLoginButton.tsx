@@ -11,12 +11,21 @@ export function SocialLoginButton({ provider, onClick, disabled }: SocialLoginBu
     <Button
       type="button"
       variant="outline"
-      className="w-full h-11 bg-white hover:bg-slate-50 text-slate-700 font-medium border border-slate-200 shadow-sm transition-all duration-200 flex items-center justify-center gap-3 rounded-xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500"
+      className="w-full h-11 bg-[var(--surface)] hover:bg-[var(--surface-sunken)] text-[var(--foreground)] font-medium border border-[var(--border)] shadow-sm transition-all duration-200 flex items-center justify-center gap-3 rounded-xl focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--ring)]"
       onClick={onClick}
       disabled={disabled}
     >
       {provider === "Google" && (
         <svg viewBox="0 0 24 24" className="w-5 h-5">
+          {/*
+            BRAND-EXEMPT. The four hexes below are Google's trademarked logo
+            colours (#4285F4 #34A853 #FBBC05 #EA4335). They are the ONLY literal
+            visual values left in the propagation subset, and they must stay
+            literal: Google's brand guidelines require the mark to render in its
+            own colours, unaltered, in both light and dark themes. Tokenising
+            them would let a palette change silently deface a third party's
+            trademark. A token is for a value WE choose; this is not one.
+          */}
           <path
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
             fill="#4285F4"

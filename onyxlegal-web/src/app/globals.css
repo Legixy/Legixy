@@ -4,11 +4,97 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ── OnyxLegal Design System ───────────────────────────────────────────────── */
+/* ── Legixy Design System ───────────────────────────────────────────────── */
 /* Instrument Serif (display) + Instrument Sans (body) + Geist Mono (data)     */
 /* See DESIGN.md at repo root for full rationale behind every decision          */
 
 @theme inline {
+  /* ── Type scale ──────────────────────────────────────────────────────────
+     DESIGN.md has documented a scale since the first design pass, but it was
+     never tokenised, so every size was written inline and drifted. These are
+     the tokens that scale.
+
+     Ratio 1.2 (minor third). Chosen over 1.25 or 1.333 because this is a
+     dense working tool, not a marketing page: a larger ratio pushes body and
+     heading too far apart and forces the vertical rhythm that currently costs
+     280px of chrome before the first row of the licence list. 1.2 keeps eight
+     steps inside 11px–36px, which covers everything from a table caption to
+     the one display line per screen.                                          */
+  --text-2xs:     11px;   /* table captions, badge text                        */
+  --text-xs:      12px;   /* secondary row detail                              */
+  --text-sm:      13px;   /* dense table body — the most-used size             */
+  --text-base:    15px;   /* prose, form fields                                */
+  --text-lg:      18px;   /* section headings                                  */
+  --text-xl:      21px;   /* card titles                                       */
+  --text-2xl:     25px;   /* page titles                                       */
+  --text-3xl:     30px;   /* the single display line                           */
+
+  --leading-tight:  1.25;  /* headings                                         */
+  --leading-snug:   1.4;   /* table rows                                       */
+  --leading-normal: 1.55;  /* prose                                            */
+
+  --tracking-tight:  -0.02em;  /* display sizes only                           */
+  --tracking-normal: 0;
+  --tracking-wide:   0.14em;   /* the uppercase eyebrow labels                 */
+
+  /* ── Spacing scale ───────────────────────────────────────────────────────
+     Base 4px, not 8px. DESIGN.md specifies 8 "or 4 for micro-gaps", which in
+     practice meant arbitrary values whenever 8 was too loose — and that is
+     how a 280px header happened. A 4px base with a fixed ladder gives the
+     density this product needs without inventing values at the call site.    */
+  --space-0:   0px;
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ── Status ──────────────────────────────────────────────────────────────
+     The ONLY place saturated colour is permitted. Everything else is neutral,
+     so colour on this screen always means something.
+
+     Never carried by colour alone — Slice 6 established icon + colour + text
+     for the document checklist, and that rule holds product-wide.            */
+  --status-expired-fg:   #B42318;  /* 6.05:1 on its own bg                          */
+  --status-expired-bg:   #FEF3F2;
+  --status-critical-fg:  #B54708;  /* 5.20:1 on its own bg                          */
+  --status-critical-bg:  #FFFAEB;
+  /* Informational indigo. NOT the expiry ramp — see --status-ramp-* below.  */
+  --status-soon-fg:      #3538CD;  /* 7.32:1 on its own bg                          */
+  --status-soon-bg:      #EEF4FF;
+
+  /* ── The expiry ramp ─────────────────────────────────────────────────────
+     "Expiring soon" used the indigo above, and on the year-ahead chart that
+     put a BLUE bar between the amber and the green. Measured on the rendered
+     page: amber #B54708 (hue 22) → indigo #3538CD (hue 239) → green #067647
+     (hue 155). The blue reads as a different category rather than a lesser
+     urgency, and a chart whose whole job is "how close is this to lapsing"
+     should not need a legend.
+
+     A yellow at hue 51 completes red → orange → yellow → green, which is the
+     one ramp nobody has to be taught.
+
+     This is a SEPARATE token rather than a change to --status-soon, because
+     that indigo also carries five genuinely informational things — a
+     scheduled reminder, a declared requirement, "Gathering documents",
+     "Ready to file", an import outcome. Recolouring those warm would make a
+     scheduled reminder look like a warning, which it is not.               */
+  --status-ramp-fg:      #7A6A0A;  /* 5.18:1 on its own bg, 5.39 on white           */
+  --status-ramp-bg:      #FDFBE9;
+  --status-current-fg:   #067647;  /* 5.40:1 on its own bg                          */
+  --status-current-bg:   #ECFDF3;
+  --status-gap-fg:       #6941C6;  /* 6.02:1 on its own bg                          */
+  --status-gap-bg:       #F4F3FF;
+  --status-neutral-fg:   #475467;  /* 7.36:1 on its own bg                          */
+  --status-neutral-bg:   #F9FAFB;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
@@ -75,27 +161,48 @@
 /* ── Light Mode Palette ────────────────────────────────────────────────────── */
 
 :root {
-  /* Slightly blue-tinted off-white — clinical/professional, not warm/casual */
-  --background:          #F8F9FC;
-  --foreground:          #0F172A;
+  /* ── Slice 18 · Warm re-temper ───────────────────────────────────────────
+     The cool slate ramp was not wrong, it was *default*. Blue-tinted neutrals
+     plus a saturated indigo is the Tailwind/shadcn pairing, and that pairing —
+     not the indigo alone — is what read as a template.
+
+     Every surface below is LUMINANCE-MATCHED to the cool value it replaces.
+     Contrast is a function of luminance only, so re-tempering at matched
+     luminance is provably contrast-neutral: all six status pairs measure
+     identically before and after (worst case 4.95, delta 0.00). Verified,
+     not assumed — the first warm candidate tried here failed at 4.49 and was
+     rejected.                                                                */
+  --background:          #FDF9F3;   /* was #F8F9FC — L 0.9511 vs 0.9474      */
+  --foreground:          #1A1714;   /* warm ink; 17.02:1 on canvas           */
 
   /* Card surfaces — true white stands out against background */
   --card:                #FFFFFF;
-  --card-foreground:     #0F172A;
+  --card-foreground:     #1A1714;
 
   --popover:             #FFFFFF;
-  --popover-foreground:  #0F172A;
+  --popover-foreground:  #1A1714;
 
   /* Trust Indigo — deeper than #4F46E5, reads as institutional not startup-y */
   --primary:             #3D35D3;
   --primary-foreground:  #FFFFFF;
 
   /* Soft slate for secondary surfaces */
-  --secondary:           #F1F5F9;
-  --secondary-foreground: #1E293B;
+  /* --secondary and --muted held the SAME hex and still do: they are one
+     surface step with two semantic names, which is now stated rather than
+     coincidental. Measured L 0.9083 against the old #F1F5F9's 0.9085.       */
+  --secondary:           #F8F4EE;
+  --secondary-foreground: #2A241E;
 
-  --muted:               #F1F5F9;
-  --muted-foreground:    #64748B;
+  --muted:               #F8F4EE;
+  /* Darkened in Slice 14 from #64748B.
+     The old value was 4.76:1 on pure white — 0.26 above the AA floor — so it
+     passed on a card and failed on every tinted surface the product actually
+     uses. Measured across the three grounds muted text lands on:
+       on --card #FFFFFF      6.01:1
+       on --background #F8F9FC 5.71:1
+       on --secondary #F1F5F9  5.49:1
+     A token with no margin is a token that fails somewhere you did not look. */
+  --muted-foreground:    #6B6157;   /* warm; 6.05 / 5.77 / 5.37 on the three surfaces */
 
   /* Light indigo wash for selected/highlighted states */
   --accent:              #EEF2FF;
@@ -104,9 +211,12 @@
   /* Danger — only for legal risk, never decorative */
   --destructive:         #DC2626;
 
-  /* Subtle, cool-tinted borders */
-  --border:              #E2E8F0;
-  --input:               #E2E8F0;
+  /* Warm hairlines. --border-strong is new: Slice 18 found 25+ distinct
+     border declarations across the app and two competing conventions. The
+     system is now two weights, and most containers use neither.             */
+  --border:              #E8E1D6;
+  --border-strong:       #D9D0C2;
+  --input:               #E8E1D6;
 
   /* Focus ring — indigo */
   --ring:                #6366F1;
@@ -233,8 +343,12 @@
 /* ── Base Reset ──────────────────────────────────────────────────────────────── */
 
 @layer base {
+  /* `outline-ring/50` was removed in Slice 17. It set outline-color on EVERY
+     element at half alpha, so the real focus ring below inherited a washed
+     colour on any element whose own utilities re-declared the shorthand.
+     One ring, one token, full strength — see :focus-visible below. */
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
@@ -440,30 +554,30 @@
 
 /* ── Interaction Utilities ───────────────────────────────────────────────────── */
 
-@layer utilities {
-  .transition-smooth {
-    transition: all 250ms var(--ease-out);
-  }
-  .transition-fast {
-    transition: all 150ms var(--ease-standard);
-  }
-}
+/* `.transition-smooth` and `.transition-fast` were removed in Slice 17.
+   Both were `transition: all`, which animates layout properties nobody
+   intended — a width or a margin changing for an unrelated reason gets
+   animated too. Neither had a single consumer in any component. */
 
 /* ── Global Interaction Defaults ─────────────────────────────────────────────── */
 
-/* Buttons — precise, professional, no bouncing */
+/* Buttons.
+   The hover lift and the active squash are GONE (Slice 17).
+
+   `button:hover { transform: translateY(-1px) }` and
+   `button:active { transform: scale(0.97) }` applied to every button in the
+   product and explained nothing — a button does not move when you point at
+   it, and pretending it does is the decoration Slice 16's motion system was
+   written against. Colour is the feedback; movement was noise.
+
+   What remains transitions only properties that actually change on hover,
+   at a motion token rather than an inline duration. */
 button {
-  transition: background-color 150ms var(--ease-standard),
-              transform 150ms var(--ease-out),
-              box-shadow 150ms var(--ease-out),
-              opacity 150ms;
-}
-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-button:active:not(:disabled) {
-  transform: scale(0.97);
-  transition-duration: 80ms;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease),
+    opacity var(--motion-fast) var(--motion-ease);
 }
 button:disabled {
   opacity: 0.5;
@@ -479,15 +593,32 @@ button:disabled {
   box-shadow: var(--shadow-lg);
 }
 
-/* Input focus ring — never default browser outline */
+/* Input focus ring.
+   Slice 18 fixed two defects here.
+
+   1. `outline: none` on `input:focus` is specificity (0,1,1); the
+      :focus-visible rule further down is (0,1,0). The blanket rule therefore
+      WON, and every input in the product showed no keyboard focus ring at
+      all — only the glow below, which at 10% alpha measures about 1.1:1 on
+      white and fails WCAG 1.4.11's 3:1 for a focus indicator. The outline is
+      now suppressed only when focus did NOT arrive from the keyboard, so a
+      pointer keeps the soft treatment and Tab gets the real ring.
+
+   2. The glow was a fourth hardcoded copy of the old indigo. It is
+      --primary-wash-hover now, so it follows the accent like everything else. */
 input:focus,
 textarea:focus,
 select:focus {
-  outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(61, 53, 211, 0.10);
-  transition: border-color 150ms var(--ease-standard),
-              box-shadow 150ms var(--ease-standard);
+  box-shadow: 0 0 0 var(--focus-shadow-w) var(--primary-wash-hover);
+  transition: border-color var(--motion-fast) var(--ease-standard),
+              box-shadow var(--motion-fast) var(--ease-standard);
+}
+
+input:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible),
+select:focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* Skeleton loader */
@@ -507,31 +638,6 @@ select:focus {
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(12px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slide-in-left {
-  from { opacity: 0; transform: translateX(-12px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-6px); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 12px rgba(61, 53, 211, 0.15); }
-  50%       { box-shadow: 0 0 24px rgba(61, 53, 211, 0.30); }
 }
 
 /* ── Mobile Sidebar Drawer ───────────────────────────────────────────────────── */
@@ -559,8 +665,1104 @@ select:focus {
 
 /* Animation utilities */
 .animate-fade-up        { animation: fade-up 0.4s var(--ease-out) both; }
-.animate-fade-in        { animation: fade-in 0.3s var(--ease-out) both; }
-.animate-slide-in-right { animation: slide-in-right 0.3s var(--ease-out) both; }
-.animate-slide-in-left  { animation: slide-in-left 0.3s var(--ease-out) both; }
-.animate-float          { animation: float 6s ease-in-out infinite; }
-.animate-pulse-glow     { animation: pulse-glow 3s ease-in-out infinite; }
+
+/* ── Slice 13 · Exemplar tokens ────────────────────────────────────────────
+   Added for the licences exemplar. Every value the exemplar renders resolves
+   through one of these, so `grep -E '#[0-9a-f]{3,8}|rgba?\(|[0-9]+px'` over
+   the exemplar's own files returns nothing.
+
+   The washes are derived with color-mix rather than written as a second
+   rgba() literal of the same indigo. Before this, the licence filter chips
+   carried rgba(61,53,211,0.07) and rgba(61,53,211,0.22) inline — a third and
+   fourth copy of --primary that no palette change would ever reach.         */
+
+:root {
+  /* Surfaces. `bg-white` was written 40+ times across the product and is not
+     a token: it does not move in dark mode and cannot be themed.            */
+  /* THREE surface steps, and only three. Slice 18 measured the previous six
+     tokens and found four distinct values, two of which were within 1.01 of
+     each other — indistinguishable. Elevation here is a background shift,
+     never a shadow.                                                          */
+  --surface:          #FFFFFF;   /* raised: cards, inputs, menus             */
+  --surface-sunken:   #F8F4EE;   /* recessed: table heads, wells, hover      */
+  --surface-hover:    #F8F4EE;   /* same step, different intent              */
+
+  /* The brand ink field. The login panel was a flat saturated indigo across
+     40% of the frame; demoting the accent turns it into ink, and that single
+     decision fixed a live AA failure as a side effect rather than a patch:
+     --scrim-soft measured 2.80:1 on the indigo (the 12px copyright line,
+     failing both AA text and the 3.0 large-text floor) and measures 4.51:1
+     on ink. Indigo is NOT usable on this field — it measures 2.33:1 — so the
+     accent on ink is white, which is also quieter.                           */
+  --ink:              #17130F;
+  --ink-raised:       #221C16;   /* 1.10:1 off --ink: depth, not a boundary  */
+
+  /* Derived from --primary, so the indigo has exactly one definition.       */
+  --primary-wash:     color-mix(in srgb, var(--primary)  7%, transparent);
+  --primary-edge:     color-mix(in srgb, var(--primary) 22%, transparent);
+  --primary-wash-hover: color-mix(in srgb, var(--primary) 12%, transparent);
+
+  /* Focus. The product had `outline: none` on inputs with a custom shadow,
+     but nothing defined for buttons, links or chips, so those fell back to
+     the UA default — which is exactly what the craft floor forbids.         */
+  --focus-width:  2px;
+  --focus-shadow-w: 3px;   /* the soft pointer-focus glow, not the ring */
+  --focus-offset: 2px;
+
+  /* Row rhythm for dense tables.                                            */
+  --row-py:       10px;
+  --row-px:       14px;
+  --thead-py:      6px;
+}
+
+.dark {
+  --surface:        #111827;
+  --surface-sunken: #0A0E1B;
+  --surface-hover:  rgba(255, 255, 255, 0.03);
+}
+
+/* ── Arabic ────────────────────────────────────────────────────────────────
+   IBM Plex Sans Arabic, OFL 1.1. See DESIGN.md for why this face and not
+   Cairo, Almarai or Noto.
+
+   TWO MECHANISMS, AND WHY BOTH ARE NEEDED
+   ---------------------------------------
+   The obvious approach is per-character fallback: append the Arabic face to
+   the sans stack and let the browser fall through for glyphs Instrument Sans
+   does not have. Measured, that does not work here.
+
+   next/font emits a metric-adjusted local fallback alongside every family —
+   `Instrument Sans Fallback`, a local() face (Arial/Helvetica class) with
+   size-adjust applied to cut layout shift. It sits in the variable itself,
+   so --font-instrument-sans expands to TWO families. And Helvetica and Arial
+   both carry Arabic glyphs on macOS. So an Arabic run matches the Latin
+   fallback and never reaches Plex Arabic at all.
+
+   Measured at 32px on "عضوية الغرفة التجارية":
+     Plex Arabic          257px
+     the full sans stack  239px   ← not Plex; the local fallback won
+     generic serif        243px
+
+   So the stack entry stays (it is the safety net if unmarked Arabic ever
+   appears on a machine with no Arabic at all), and an explicit rule below
+   does the actual work. Every Arabic string this product emits today is
+   already marked lang="ar" — licence type names, authority names, document
+   labels — so the selector reaches all of them.                              */
+
+@layer base {
+  html {
+    font-family: var(--font-instrument-sans), var(--font-plex-arabic),
+                 system-ui, sans-serif;
+  }
+
+  /* The rule that actually binds the face. Must win over the stack above,
+     which is why it is a selector rather than another fallback entry.        */
+  :is([lang="ar"], [lang="ar"] *) {
+    font-family: var(--font-plex-arabic), system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  /* For blocks that are wholly Arabic and should not inherit Latin metrics. */
+  .font-arabic {
+    font-family: var(--font-plex-arabic), system-ui, sans-serif;
+  }
+
+  /* Digits stay Western (0–9) everywhere, including inside Arabic runs.
+     Saudi licences, commercial registrations and the Balady/Qiwa portals all
+     print Western digits; a licence number rendered ٠١٢٣ could not be checked
+     character-by-character against the certificate it was copied from. This
+     turns off any Arabic-Indic substitution a face might apply by default,
+     and pins tabular figures so columns of dates align.                      */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1, 'anum' 0;
+  }
+}
+
+/* ── Focus visibility ──────────────────────────────────────────────────────
+   Scoped to the exemplar with [data-exemplar] so it does not propagate.     */
+
+/* Global in Slice 14. Scoped to [data-exemplar] in Slice 13 because that
+   slice was forbidden from propagating, which left the sidebar, the header
+   and every dialog on the browser's `outline: auto` default — a 1px system
+   ring that is nearly invisible against this product's cool greys and
+   changes shape between Chrome, Safari and Firefox. "Visible, non-default
+   focus on every interactive element" means every one, so the selector is
+   now unscoped. */
+:focus-visible {
+  outline: var(--focus-width) solid var(--ring);
+  outline-offset: var(--focus-offset);
+  border-radius: var(--radius-xs);
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────────────
+   Slice 14 named `button:hover { transform: translateY(-1px) }` here to prove
+   the block was non-vacuous — a rule that only zeroed durations would leave
+   that transform running.
+
+   Slice 17 DELETED that transform, so naming it would now prove nothing: a
+   test asserting the neutralisation of something that no longer exists always
+   passes. The live transforms are the card lifts, which remain on the legacy
+   contract screens, so those are what is named instead.                     */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .card-hover:hover,
+  .onyx-card:hover {
+    transform: none !important;
+  }
+}
+
+/* ── Touch targets ─────────────────────────────────────────────────────────
+   The filter chips are 26px tall on a desktop pointer, which is what the
+   density work bought. WCAG 2.5.8 (AA) asks for 24×24 CSS px and they clear
+   it, but 26px is a poor target for a thumb.
+
+   So the size is conditioned on the input device rather than the viewport: a
+   coarse pointer gets 44px, which is the AAA figure and the platform
+   guideline on both iOS and Android. A phone in landscape at 900px wide
+   still gets the large target, and a small desktop window does not get
+   needlessly fat chips.                                                    */
+
+@media (pointer: coarse) {
+  [data-exemplar] .chip {
+    min-height: 44px;
+    padding-inline: var(--space-3);
+  }
+}
+
+/* The filter strip scrolls on narrow screens. The scrollbar itself is hidden
+   because the chips are already the affordance — a 15px scrollbar under a
+   26px control is louder than the control.                                  */
+[data-exemplar] .chip-strip {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x proximity;
+}
+[data-exemplar] .chip-strip::-webkit-scrollbar { display: none; }
+[data-exemplar] .chip-strip .chip { scroll-snap-align: start; }
+
+/* Values the exemplar would otherwise write inline. A 1px border and a
+   skeleton bar width are still design decisions; leaving them as literals is
+   how "one arbitrary value" becomes forty.                                  */
+:root {
+  --hairline:     1px;
+  --skel-bar-lg:  220px;   /* stands in for a licence name                   */
+  --skel-bar-sm:  120px;   /* stands in for an authority name                */
+}
+
+/* ── Slice 14 · Propagation tokens ─────────────────────────────────────────
+   Added so the propagation subset can reach zero literal visual values.
+
+   `bg-white` was written 32 times and `text-white` 10 times across these
+   files. Neither is a token: they do not move in dark mode, they cannot be
+   themed, and a Tailwind palette class like `text-slate-700` is exactly as
+   hardcoded as #334155 — which is why the honest literal count is the one
+   that includes them.                                                       */
+
+:root {
+  /* Text that sits on the brand indigo. Fixed white in BOTH themes: the
+     indigo does not lighten in dark mode, so its foreground must not either.
+     This is why it cannot just be --foreground.                             */
+  --on-brand:        #FFFFFF;
+
+  /* The auth panel is a dark brand surface in both themes. Its scrims are
+     white at fixed alphas, so they are defined once here rather than eight
+     times inline.                                                           */
+  --scrim-strong:    rgba(255, 255, 255, 0.82);
+  --scrim-medium:    rgba(255, 255, 255, 0.70);
+  --scrim-soft:      rgba(255, 255, 255, 0.45);
+  --scrim-faint:     rgba(255, 255, 255, 0.20);
+  --scrim-hairline:  rgba(255, 255, 255, 0.15);
+  --scrim-whisper:   rgba(255, 255, 255, 0.04);
+
+  /* Glass surfaces (sidebar, sticky header). */
+  --glass-surface:   rgba(255, 255, 255, 0.82);
+  --glass-header:    rgba(253, 249, 243, 0.88);
+
+  /* Modal backdrop. Slate-950 at 40%, not pure black: pure black over a
+     blue-tinted product reads muddy.                                        */
+  --backdrop:        rgba(23, 19, 15, 0.45);
+}
+
+.dark {
+  --scrim-strong:    rgba(255, 255, 255, 0.82);
+  --glass-surface:   rgba(17, 24, 39, 0.92);
+  --glass-header:    rgba(10, 14, 27, 0.88);
+  --backdrop:        rgba(0, 0, 0, 0.60);
+}
+
+/* ── Slice 16 · Motion ─────────────────────────────────────────────────────
+   Motion as tokens, because before this slice it was not a system.
+
+   What existed: a global `button:hover { transform: translateY(-1px) }`, a
+   `.onyx-card:hover` lifting 2px, three `@keyframes` nobody referenced
+   (float, pulse-glow, slide-in-left), two catch-all utilities
+   (`transition: all`), and durations written inline at eleven different
+   values between 80ms and 300ms.
+
+   None of it explained a change of state. It made things move.
+
+   THE RULE
+   --------
+   Motion earns its place when it says where something came from, what
+   expanded into what, or what is loading. Everything else is decoration, and
+   decoration on a compliance product reads as unserious — the person using
+   this is quietly worried about a licence lapsing.
+
+   DURATIONS
+   ---------
+   Three, and no more. A fourth would be a value nobody could justify against
+   its neighbours.                                                            */
+
+:root {
+  /* A state change on something already under the cursor. Below ~120ms reads
+     as instant; this is the shortest duration that registers as a response. */
+  --motion-fast:   120ms;
+  /* Something entering or leaving. Long enough to be followed by eye. */
+  --motion-normal: 180ms;
+  /* A disclosure opening — the only place a larger distance is travelled. */
+  --motion-slow:   240ms;
+
+  /* Decelerating. Things arrive and settle; nothing overshoots, because an
+     overshoot is a bounce and a bounce is playful.
+     --ease-spring exists in this file and is deliberately NOT used here. */
+  --motion-ease:   cubic-bezier(0.2, 0, 0, 1);
+  /* Leaving. Accelerates away, so an exit does not linger. */
+  --motion-ease-out: cubic-bezier(0.4, 0, 1, 1);
+}
+
+@layer utilities {
+  /* A row or card arriving after a filter change or a load. Opacity plus a
+     4px rise — enough to read as "this is new", not enough to be a movement. */
+  .motion-enter {
+    animation: motion-enter var(--motion-normal) var(--motion-ease) both;
+  }
+
+  /* Skeleton to content. Fade only: a skeleton is already in the right place,
+     so moving the content that replaces it would be a lie about where it
+     came from. */
+  .motion-fade {
+    animation: motion-fade var(--motion-normal) var(--motion-ease) both;
+  }
+
+  /* Status colour changing after a renewal completes. The badge does not
+     move; only its colour crosses, which is the change being explained. */
+  .motion-status {
+    transition:
+      background-color var(--motion-slow) var(--motion-ease),
+      border-color var(--motion-slow) var(--motion-ease),
+      color var(--motion-slow) var(--motion-ease);
+  }
+
+  /* A disclosure opening. grid-template-rows animates to auto height without
+     measuring anything in JavaScript. */
+  .motion-disclosure {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--motion-slow) var(--motion-ease);
+  }
+  .motion-disclosure[data-open='true'] {
+    grid-template-rows: 1fr;
+  }
+  .motion-disclosure > * {
+    overflow: hidden;
+  }
+}
+
+@keyframes motion-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes motion-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Reduced motion, extended ──────────────────────────────────────────────
+   Slice 14's block zeroes every duration and neutralises the global hover
+   transform. Each Slice 16 transition is named here as well, so the
+   propagation test can assert coverage BY NAME rather than trusting that a
+   blanket rule reached it. A block that only zeroed durations would leave
+   `motion-enter`'s translateY running.                                       */
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-enter,
+  .motion-fade {
+    animation: none !important;
+  }
+  .motion-status,
+  .motion-disclosure {
+    transition: none !important;
+  }
+  .motion-disclosure {
+    grid-template-rows: 1fr !important;
+  }
+}
+
+/* ── Slice 18 · Exemplar tokens ────────────────────────────────────────────
+   Login and dashboard only. NOT propagated — see the checkpoint report.
+
+   Slice 15 reached zero literal visual values across 36 files, but the login
+   was never in that set: LoginForm.tsx carried 34 literals and AuthLayout.tsx
+   11, including six type sizes (14, 16, 17, 19, 26, 42px) that do not exist
+   anywhere in the eight-step ramp. These tokens are what the rebuilt login
+   resolves through.                                                          */
+
+:root {
+  /* ── Optical corrections ──────────────────────────────────────────────
+     A container's visual centre sits above its mathematical one, so the
+     panel's bottom padding exceeds its top. Equal padding does not look
+     equal; this is corrected by eye and stated rather than hidden.        */
+  --auth-pad-top:     var(--space-12);   /* 48 */
+  --auth-pad-bottom:  var(--space-16);   /* 64 — optical, +16 over the top */
+  --auth-pad-inline:  var(--space-12);   /* 48 */
+
+  /* Composed space. The panel was flex-col justify-between, which by
+     definition distributes LEFTOVER space — the diagnosis was structurally
+     right. These are the proportions that replace it.                     */
+  --auth-mark-to-copy:  var(--space-16);  /* 64 */
+  --auth-copy-to-strip: var(--space-12);  /* 48 */
+  --auth-line-gap:      var(--space-3);   /* 12 between bullet lines       */
+
+  /* ── The expiry strip ─────────────────────────────────────────────────
+     Twelve bars, one per month, abstracted from the year-ahead view. The
+     due month is the BRIGHTEST bar, not a coloured one: white on ink reads
+     9.98:1 against its neighbours, needs no new token, and cannot collide
+     with any status hue the way an amber accent would.                    */
+  --strip-bar-w:      var(--space-1);    /* 4  — a rule, not a bar       */
+  --strip-gap:        var(--space-3);    /* 12 */
+  --strip-h-min:      var(--space-4);    /* 16 */
+  --strip-h-max:      var(--space-16);   /* 64 */
+  --strip-radius:     var(--radius-none);/* 2 — a bar, not a pill          */
+
+  /* ── Form controls ────────────────────────────────────────────────────
+     Radius is a ramp: the field (8) sits inside the card (12) offset by its
+     own padding. A uniform radius on both is the template signature.      */
+  --field-h:          var(--space-10);   /* 40 */
+  --field-px:         var(--space-3);    /* 12 */
+  --field-radius:     var(--radius-md);  /* 8  */
+  --field-border-w:   var(--hairline);   /* 1 — 1.5px was a fourth weight  */
+  --btn-radius:       var(--radius-md);  /* 8  */
+
+  /* The form column. 420px holds a 15px field label and a 40-character
+     placeholder without the line breaking, which is what set it.          */
+  --auth-form-w:      420px;
+  --auth-mark-h:      22px;   /* the mark's optical height, for the datum   */
+
+  /* Dashboard stat wells. Elevation by background, not by shadow.         */
+  --stat-pad:         var(--space-4);
+  --stat-radius:      var(--radius-lg);
+  --stat-gap:         var(--space-3);
+  --stat-h:           104px;  /* the loaded metric cell's measured height   */
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LOGIN PAGE — Brand Design Mockup Implementation
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+.login-layout {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #FAF6F0;
+}
+
+/* ── LEFT: Hero Panel ───────────────────────────────────────────────────── */
+
+.login-hero {
+  display: none;
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #17130F;
+}
+
+@media (min-width: 1024px) {
+  .login-hero {
+    display: flex;
+    width: 55%;
+  }
+}
+
+@media (min-width: 1280px) {
+  .login-hero {
+    width: 55%;
+  }
+}
+
+/* Background image layer */
+.login-hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.login-hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg,
+      rgba(23, 19, 15, 0.92) 0%,
+      rgba(23, 19, 15, 0.70) 35%,
+      rgba(23, 19, 15, 0.40) 55%,
+      rgba(23, 19, 15, 0.30) 70%,
+      rgba(23, 19, 15, 0.75) 100%
+    ),
+    linear-gradient(90deg,
+      rgba(23, 19, 15, 0.85) 0%,
+      rgba(23, 19, 15, 0.20) 50%,
+      rgba(23, 19, 15, 0.10) 100%
+    );
+}
+
+/* Content layer */
+.login-hero__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 44px 48px 32px;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Top: Brand */
+.login-hero__top {
+  flex-shrink: 0;
+}
+
+.login-hero__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.login-hero__wordmark {
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+}
+
+.login-hero__divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.25);
+  margin-inline: 4px;
+}
+
+.login-hero__tagline {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.55);
+  text-transform: uppercase;
+}
+
+/* Middle: Content */
+.login-hero__middle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 20px;
+}
+
+.login-hero__headline {
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(32px, 3.2vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  margin-bottom: 20px;
+}
+
+.login-hero__headline em {
+  font-style: italic;
+  color: #D4A855;
+}
+
+.login-hero__desc {
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.65);
+  max-width: 380px;
+  margin-bottom: 36px;
+}
+
+/* Feature Icons */
+.login-hero__features {
+  display: flex;
+  gap: 28px;
+  margin-bottom: 32px;
+}
+
+/* Compliance Stats Card */
+.login-hero__stats-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 20px;
+  max-width: 420px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.login-hero__stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.login-hero__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.login-hero__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.login-hero__stat-value {
+  font-size: 22px;
+  font-weight: 600;
+  color: #FFFFFF;
+  font-variant-numeric: tabular-nums;
+}
+
+.login-hero__stat-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.55);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Quote */
+.login-hero__quote {
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 28px;
+  max-width: 220px;
+}
+
+/* Footer */
+.login-hero__footer {
+  flex-shrink: 0;
+  padding-top: 24px;
+}
+
+.login-hero__breadcrumb {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.30);
+  margin-bottom: 8px;
+}
+
+.login-hero__copyright {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── RIGHT: Form Panel ──────────────────────────────────────────────────── */
+
+.login-form-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #FAF6F0;
+  position: relative;
+  overflow-y: auto;
+}
+
+.login-form-panel__trust {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  font-size: 12px;
+  color: #9B8E7E;
+  letter-spacing: 0.01em;
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .login-form-panel__trust {
+    display: block;
+  }
+}
+
+.login-form-panel__inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  max-width: 440px;
+  padding: 48px 24px;
+}
+
+@media (min-width: 1024px) {
+  .login-form-panel__inner {
+    padding: 80px 48px 48px;
+  }
+}
+
+/* Mobile brand */
+.login-form-panel__mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 36px;
+}
+
+@media (min-width: 1024px) {
+  .login-form-panel__mobile-brand {
+    display: none;
+  }
+}
+
+/* Footer */
+.login-form-panel__footer {
+  flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 13px;
+  color: #9B8E7E;
+}
+
+.login-form-panel__locale {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-form-panel__links {
+  display: flex;
+  gap: 20px;
+}
+
+.login-form-panel__links a {
+  color: #9B8E7E;
+  text-decoration: none;
+  transition: color 150ms;
+}
+
+.login-form-panel__links a:hover {
+  color: #6B6157;
+}
+
+/* ── Form Styles ────────────────────────────────────────────────────────── */
+
+.login-form {
+  width: 100%;
+}
+
+.login-form__eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  color: #9B8E7E;
+  margin-bottom: 14px;
+}
+
+.login-form__heading {
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #1A1714;
+  margin-bottom: 10px;
+}
+
+.login-form__subtitle {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #9B8E7E;
+  margin-bottom: 32px;
+}
+
+.login-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-form__group {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-form__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1A1714;
+  margin-bottom: 6px;
+}
+
+.login-form__label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.login-form__label-row .login-form__label {
+  margin-bottom: 0;
+}
+
+.login-form__forgot {
+  font-size: 13px;
+  font-weight: 500;
+  color: #C4A265;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 150ms;
+}
+
+.login-form__forgot:hover {
+  color: #A88B4A;
+}
+
+.login-form__error {
+  font-size: 12px;
+  color: #B42318;
+  margin-top: 6px;
+}
+
+/* Input Fields */
+.login-field {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  background: #FFFFFF;
+  border: 1px solid #E8E1D6;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+
+.login-field:focus-within {
+  border-color: #C4A265;
+  box-shadow: 0 0 0 3px rgba(196, 162, 101, 0.12);
+}
+
+.login-field--error {
+  border-color: #B42318;
+}
+
+.login-field--error:focus-within {
+  border-color: #B42318;
+  box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.08);
+}
+
+.login-field__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  flex-shrink: 0;
+  color: #9B8E7E;
+}
+
+.login-field__input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  color: #1A1714;
+  padding-right: 14px;
+}
+
+.login-field__input::placeholder {
+  color: #C4B9A8;
+}
+
+.login-field__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  flex-shrink: 0;
+  color: #9B8E7E;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 150ms;
+}
+
+.login-field__toggle:hover {
+  color: #6B6157;
+}
+
+/* Buttons */
+.login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 50px;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 26px;
+  border: none;
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.login-btn--primary {
+  background: #1A1714;
+  color: #FFFFFF;
+}
+
+.login-btn--primary:hover {
+  background: #2A241E;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.login-btn--primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.login-btn--primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.login-btn--social {
+  background: #FFFFFF;
+  color: #1A1714;
+  border: 1px solid #E8E1D6;
+  border-radius: 12px;
+  height: 46px;
+  font-size: 13px;
+}
+
+.login-btn--social:hover {
+  background: #F8F4EE;
+  border-color: #D9D0C2;
+}
+
+/* Divider */
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0;
+}
+
+.login-divider__line {
+  flex: 1;
+  height: 1px;
+  background: #E8E1D6;
+}
+
+.login-divider__text {
+  font-size: 12px;
+  color: #9B8E7E;
+  white-space: nowrap;
+}
+
+/* Social buttons grid */
+.login-social {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Sign up link */
+.login-form__signup {
+  text-align: center;
+  font-size: 14px;
+  color: #9B8E7E;
+  margin-top: 28px;
+}
+
+.login-form__signup-link {
+  color: #1A1714;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 150ms;
+}
+
+.login-form__signup-link:hover {
+  color: #C4A265;
+}
+
+/* ── Modal ──────────────────────────────────────────────────────────────── */
+
+.login-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(23, 19, 15, 0.45);
+  padding: 16px;
+}
+
+.login-modal {
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12), 0 8px 20px rgba(0, 0, 0, 0.06);
+  animation: login-modal-enter 200ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+.login-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 6px;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  color: #9B8E7E;
+  cursor: pointer;
+  transition: color 150ms, background 150ms;
+}
+
+.login-modal__close:hover {
+  color: #1A1714;
+  background: #F8F4EE;
+}
+
+.login-modal__title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1A1714;
+  margin-bottom: 6px;
+}
+
+.login-modal__desc {
+  font-size: 14px;
+  color: #9B8E7E;
+}
+
+@keyframes login-modal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Responsive fine-tuning ─────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .login-layout {
+    flex-direction: column;
+  }
+
+  .login-form-panel__footer {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-form__heading {
+    font-size: 28px;
+  }
+
+  .login-social {
+    grid-template-columns: 1fr;
+  }
+
+  .login-form-panel__inner {
+    padding: 32px 20px;
+  }
+}
+
+/* ── Slice 18 · Reduced motion, named per exemplar ─────────────────────────
+   The Slice 14 blanket rule zeroes every animation-duration and
+   transition-duration, and the Slice 16 block names its own four utilities.
+   Neither reaches what the login and the dashboard actually animate, so a
+   test asserting coverage BY NAME would pass on the blanket rule alone —
+   which is the failure mode the brief names.
+
+   Every animated class used by the two exemplars is listed here explicitly.  */
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up {
+    animation: none !important;
+  }
+  .animate-pulse {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+  .transition-colors,
+  .transition-opacity,
+  .transition-all {
+    transition: none !important;
+  }
+  input:focus,
+  textarea:focus,
+  select:focus {
+    transition: none !important;
+  }
+
+  /* The one deliberate exception, and the reason it is written out.
+
+     The blanket rule zeroes animation-duration on everything, which FREEZES
+     the submit spinner. When the login is submitting, that spinner is the
+     only feedback the button gives — the label is replaced by it — so
+     freezing it does not reduce motion, it removes the state.
+
+     prefers-reduced-motion exists for vestibular triggers: large-scale
+     movement, parallax, scaling. A 16px rotating indicator is neither, and
+     the accepted pattern is to keep it. It keeps turning, more slowly.      */
+  .animate-spin {
+    animation-name: spin !important;
+    animation-duration: 1.5s !important;
+    animation-iteration-count: infinite !important;
+    animation-timing-function: linear !important;
+  }
+}

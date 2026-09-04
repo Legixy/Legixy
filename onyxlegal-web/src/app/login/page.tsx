@@ -4,8 +4,8 @@ import { AuthLayout } from "@/features/auth/components/AuthLayout"
 import { LoginForm } from "@/features/auth/components/LoginForm"
 
 export const metadata: Metadata = {
-  title: "Login | OnyxLegal",
-  description: "Login to your OnyxLegal account.",
+  title: "Log in | Legixy",
+  description: "Log in to your Legixy account.",
 }
 
 export default function LoginPage() {

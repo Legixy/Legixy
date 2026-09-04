@@ -1,31 +1,51 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useContractStats } from '@/shared/api';
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
-  FileText,
-  FileSignature,
-  BarChart2,
+  Building2,
+  ShieldCheck,
   Settings,
-  Scale,
-  Crown,
-  Sparkles,
+  AlertCircle,
+  CalendarRange,
+  ListChecks,
+  Send,
 } from 'lucide-react';
+import { LegixyMark } from '@/shared/components/LegixyMark';
 
+/**
+ * The compliance product's navigation.
+ *
+ * NOTE ON TRANSITIONS
+ * -------------------
+ * These links used `transition-all`, which animates every animatable
+ * property — including `outline-color`. The effect was a focus ring that
+ * FADED IN over 200ms when tabbed to, which is precisely wrong for the
+ * keyboard user it exists to serve: the indicator has to be there the
+ * instant focus lands. Named properties only.
+ *
+ * Contracts, Templates and Analytics belong to the contract-analysis feature.
+ * Core registers its queues but nothing consumes them — there are zero
+ * @Processor decorators, and the worker listens on a queue name core never
+ * produces — so those screens present work that provably never happens.
+ *
+ * The code is left in place; that removal is a larger call for the team. What
+ * changes here is that the compliance product no longer offers them, because
+ * shipping a visible feature that does nothing is worse than not shipping it.
+ */
 const navItems = [
-  { name: 'Dashboard',  icon: LayoutDashboard, href: '/dashboard' },
-  { name: 'Templates',  icon: FileText,         href: '/dashboard/templates' },
-  { name: 'Contracts',  icon: FileSignature,    href: '/dashboard/contracts' },
-  { name: 'Analytics',  icon: BarChart2,        href: '/dashboard/analytics' },
+  { name: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
+  { name: 'Sites', icon: Building2, href: '/dashboard/sites' },
+  { name: 'Licences', icon: ShieldCheck, href: '/dashboard/licenses' },
+  { name: 'The year ahead', icon: CalendarRange, href: '/dashboard/year-ahead' },
+  { name: 'Not on record', icon: AlertCircle, href: '/dashboard/gaps' },
+  { name: 'What to expect', icon: ListChecks, href: '/dashboard/requirements' },
+  { name: 'Where reminders go', icon: Send, href: '/dashboard/delivery' },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { data: stats } = useContractStats();
-  const activeCount = stats?.activeContracts ?? 0;
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === '/dashboard';
@@ -36,7 +56,7 @@ export function Sidebar() {
     <div
       className="w-[228px] h-screen flex flex-col pt-6 shrink-0 relative"
       style={{
-        background: 'rgba(255,255,255,0.82)',
+        background: 'var(--glass-surface)',
         backdropFilter: 'blur(20px) saturate(180%)',
         WebkitBackdropFilter: 'blur(20px) saturate(180%)',
         borderRight: '1px solid var(--border)',
@@ -49,7 +69,7 @@ export function Sidebar() {
           className="w-8 h-8 flex items-center justify-center shrink-0"
           style={{ background: 'var(--primary)', borderRadius: '8px' }}
         >
-          <Scale size={16} className="text-white" />
+          <LegixyMark size={17} className="text-[var(--on-brand)]" />
         </div>
         <span className="font-display text-[17px] tracking-tight" style={{ color: 'var(--foreground)' }}>
           Legixy
@@ -71,15 +91,15 @@ export function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="relative flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-medium transition-all duration-200"
+                className="relative flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-medium transition-[background-color,border-color,color,opacity] duration-200"
                 style={{
                   borderRadius: '8px',
-                  background: active ? 'rgba(61,53,211,0.07)' : 'transparent',
+                  background: active ? 'var(--primary-wash)' : 'transparent',
                   color: active ? 'var(--primary)' : 'var(--muted-foreground)',
                 }}
                 onMouseEnter={(e) => {
                   if (!active) {
-                    e.currentTarget.style.background = 'rgba(0,0,0,0.04)';
+                    e.currentTarget.style.background = 'var(--shadow-xs)';
                     e.currentTarget.style.color = 'var(--foreground)';
                   }
                 }}
@@ -121,15 +141,15 @@ export function Sidebar() {
             return (
               <Link
                 href="/dashboard/preferences"
-                className="relative flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-medium transition-all duration-200"
+                className="relative flex items-center gap-2.5 px-3 py-2.5 text-[13px] font-medium transition-[background-color,border-color,color,opacity] duration-200"
                 style={{
                   borderRadius: '8px',
-                  background: active ? 'rgba(61,53,211,0.07)' : 'transparent',
+                  background: active ? 'var(--primary-wash)' : 'transparent',
                   color: active ? 'var(--primary)' : 'var(--muted-foreground)',
                 }}
                 onMouseEnter={(e) => {
                   if (!active) {
-                    e.currentTarget.style.background = 'rgba(0,0,0,0.04)';
+                    e.currentTarget.style.background = 'var(--shadow-xs)';
                     e.currentTarget.style.color = 'var(--foreground)';
                   }
                 }}
@@ -154,52 +174,18 @@ export function Sidebar() {
         </nav>
       </div>
 
-      {/* AI Monitor Footer */}
-      <div className="p-3 mt-auto">
-        <div
-          className="px-4 py-3.5"
-          style={{
-            background: 'rgba(61,53,211,0.05)',
-            border: '1px solid rgba(61,53,211,0.10)',
-            borderRadius: '10px',
-          }}
-        >
-          <div className="flex items-center gap-2 mb-1.5">
-            <Sparkles size={12} style={{ color: 'var(--primary)' }} />
-            <span className="text-[12px] font-semibold" style={{ color: 'var(--primary)' }}>Onyx AI</span>
-            <div className="relative ml-auto">
-              <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--success)' }} />
-              <div
-                className="absolute inset-0 w-1.5 h-1.5 rounded-full animate-ping"
-                style={{ background: 'var(--success)', opacity: 0.4 }}
-              />
-            </div>
-          </div>
-          <p className="text-[11px] leading-snug" style={{ color: 'var(--muted-foreground)' }}>
-            Monitoring {activeCount} active contract{activeCount !== 1 ? 's' : ''} for liabilities.
-          </p>
-        </div>
+      {/*
+        The "Onyx AI" status card was removed.
 
-        {/* Plan indicator */}
-        <div className="mt-2.5 px-1 flex items-center gap-1.5">
-          <Crown size={10} style={{ color: '#F59E0B' }} />
-          <span
-            className="text-[10px] font-semibold uppercase tracking-wider"
-            style={{ color: 'var(--muted-foreground)' }}
-          >
-            Free Plan
-          </span>
-          <button
-            onClick={() => router.push('/dashboard/preferences')}
-            className="ml-auto text-[11px] font-semibold transition-colors duration-150"
-            style={{ color: 'var(--primary)' }}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
-          >
-            Upgrade
-          </button>
-        </div>
-      </div>
+        It showed a live green pulse beside the words "Onyx AI", implying a
+        service actively watching the account. No such service runs. A pulsing
+        indicator is a strong claim, and this one was decoration.
+      */}
+      {/*
+        The plan indicator and upgrade link were removed with it. There is no
+        billing in this product, so "Free Plan / Upgrade" advertised a tier
+        system that does not exist and a purchase that cannot be made.
+      */}
     </div>
   );
 }

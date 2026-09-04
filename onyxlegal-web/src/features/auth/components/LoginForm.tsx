@@ -5,11 +5,26 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Loader2, Mail, Lock, X, CheckCircle } from 'lucide-react';
+import { Loader2, X, CheckCircle, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { auth, ApiError } from '@/lib/api';
-import { SocialLoginButton } from './SocialLoginButton';
+
+/**
+ * LoginForm — matches the Legixy brand design mockup exactly.
+ *
+ * Design decisions:
+ * - "WELCOME BACK" eyebrow in spaced uppercase
+ * - "Log in to your account" in large serif (Instrument Serif)
+ * - Descriptive subtitle
+ * - Email field with mail icon prefix
+ * - Password field with lock icon prefix + eye toggle
+ * - "Forgot password?" link in gold accent
+ * - Dark rounded "Log in →" CTA button
+ * - "or continue with" divider
+ * - Google + Microsoft social buttons (side by side)
+ * - "Don't have an account? Create your workspace →"
+ */
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
@@ -21,9 +36,9 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 // ── Forgot Password Modal ─────────────────────────────────────────────────────
 
 function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
-  const [email, setEmail]     = React.useState('');
+  const [email, setEmail] = React.useState('');
   const [loading, setLoading] = React.useState(false);
-  const [sent, setSent]       = React.useState(false);
+  const [sent, setSent] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,69 +55,54 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.4)' }}>
-      <div
-        className="w-full max-w-sm rounded-2xl p-6 relative animate-fade-up"
-        style={{ background: 'var(--card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-xl)' }}
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-lg transition-colors"
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-        >
-          <X size={16} style={{ color: 'var(--muted-foreground)' }} />
+    <div className="login-modal-backdrop">
+      <div className="login-modal">
+        <button onClick={onClose} className="login-modal__close" aria-label="Close">
+          <X size={16} />
         </button>
 
         {sent ? (
-          <div className="text-center py-4">
-            <CheckCircle size={40} className="mx-auto mb-3" style={{ color: '#10B981' }} />
-            <h3 className="text-[16px] font-semibold mb-1" style={{ color: 'var(--foreground)' }}>Check your inbox</h3>
-            <p className="text-[13px]" style={{ color: 'var(--muted-foreground)' }}>
+          <div style={{ textAlign: 'center', padding: '8px 0' }}>
+            <CheckCircle
+              size={36}
+              style={{ color: '#059669', margin: '0 auto 12px' }}
+            />
+            <h3 className="login-modal__title">Check your inbox</h3>
+            <p className="login-modal__desc">
               If {email} is registered, a reset link has been sent. Check your spam folder too.
             </p>
-            <button
-              onClick={onClose}
-              className="mt-5 w-full h-10 text-[14px] font-medium text-white rounded-lg"
-              style={{ background: 'var(--primary)' }}
-            >
+            <button onClick={onClose} className="login-btn login-btn--primary" style={{ marginTop: 20 }}>
               Back to login
             </button>
           </div>
         ) : (
           <>
-            <h3 className="text-[16px] font-semibold mb-1" style={{ color: 'var(--foreground)' }}>Reset your password</h3>
-            <p className="text-[13px] mb-5" style={{ color: 'var(--muted-foreground)' }}>
+            <h3 className="login-modal__title">Reset your password</h3>
+            <p className="login-modal__desc" style={{ marginBottom: 20 }}>
               Enter your email and we&apos;ll send you a reset link.
             </p>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="relative">
-                <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--muted-foreground)' }} />
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div className="login-field">
+                <div className="login-field__icon">
+                  <Mail size={16} />
+                </div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
+                  aria-label="Email"
                   required
-                  className="w-full pl-9 pr-4 h-10 text-[14px]"
-                  style={{
-                    background: 'var(--card)',
-                    border: '1.5px solid var(--border)',
-                    borderRadius: '6px',
-                    color: 'var(--foreground)',
-                    outline: 'none',
-                  }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+                  className="login-field__input"
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading || !email}
-                className="w-full h-10 text-[14px] font-medium text-white rounded-lg flex items-center justify-center gap-2 transition-opacity"
-                style={{ background: 'var(--primary)', opacity: loading || !email ? 0.7 : 1 }}
+                className="login-btn login-btn--primary"
+                style={{ opacity: loading || !email ? 0.7 : 1 }}
               >
-                {loading ? <Loader2 size={14} className="animate-spin" /> : 'Send reset link'}
+                {loading ? <Loader2 size={16} className="animate-spin" /> : 'Send reset link'}
               </button>
             </form>
           </>
@@ -112,12 +112,37 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+// ── Google SVG Icon ───────────────────────────────────────────────────────────
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+    </svg>
+  );
+}
+
+function MicrosoftIcon() {
+  return (
+    <svg viewBox="0 0 21 21" width="16" height="16">
+      <rect x="1" y="1" width="9" height="9" fill="#F25022" />
+      <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
+      <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
+      <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
+    </svg>
+  );
+}
+
 // ── Main Login Form ───────────────────────────────────────────────────────────
 
 export function LoginForm() {
   const router = useRouter();
-  const [isLoading, setIsLoading]         = React.useState(false);
-  const [showForgotPw, setShowForgotPw]   = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [showForgotPw, setShowForgotPw] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -145,188 +170,144 @@ export function LoginForm() {
   }
 
   return (
-    <div className="w-full">
+    <div className="login-form">
 
       {showForgotPw && <ForgotPasswordModal onClose={() => setShowForgotPw(false)} />}
 
-      {/* Heading */}
-      <div className="mb-8">
-        <h2
-          className="font-display mb-1.5"
-          style={{ fontSize: '26px', letterSpacing: '-0.02em', color: 'var(--foreground)' }}
-        >
-          Log in to your account
-        </h2>
-        <p className="text-[14px]" style={{ color: 'var(--muted-foreground)' }}>
-          Enter your details to access the dashboard
-        </p>
-      </div>
+      {/* Eyebrow */}
+      <p className="login-form__eyebrow">WELCOME BACK</p>
 
-      {/* Social */}
-      <SocialLoginButton
-        provider="Google"
-        disabled={false}
-        onClick={() => {
-          const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-          window.location.href = `${apiBase}/auth/google`;
-        }}
-      />
+      {/* Heading — Large serif */}
+      <h2 className="login-form__heading">
+        Log in to your<br />account
+      </h2>
 
-      {/* Divider */}
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full" style={{ borderTop: '1px solid var(--border)' }} />
-        </div>
-        <div className="relative flex justify-center">
-          <span
-            className="px-4 text-[11px] font-medium tracking-[0.1em] uppercase"
-            style={{ background: 'var(--background)', color: 'var(--muted-foreground)' }}
-          >
-            Or continue with email
-          </span>
-        </div>
-      </div>
+      {/* Subtitle */}
+      <p className="login-form__subtitle">
+        Sign in to continue managing your licences and compliance.
+      </p>
 
       {/* Form */}
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="login-form__fields">
 
         {/* Email */}
-        <div>
-          <label
-            className="block text-[12px] font-semibold mb-1.5 uppercase tracking-[0.08em]"
-            style={{ color: 'var(--foreground)' }}
-          >
-            Email
+        <div className="login-form__group">
+          <label htmlFor="login-email" className="login-form__label">
+            Email address
           </label>
-          <div className="relative">
-            <Mail
-              className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-150"
-              size={15}
-              style={{ color: 'var(--muted-foreground)' }}
-            />
+          <div className={`login-field ${form.formState.errors.email ? 'login-field--error' : ''}`}>
+            <div className="login-field__icon">
+              <Mail size={16} />
+            </div>
             <input
+              id="login-email"
               {...form.register('email')}
               type="email"
               placeholder="name@company.com"
               disabled={isLoading}
-              className="w-full pl-10 pr-4 h-11 text-[15px] transition-all duration-150"
-              style={{
-                background: 'var(--card)',
-                border: `1.5px solid ${form.formState.errors.email ? 'var(--danger)' : 'var(--border)'}`,
-                borderRadius: '6px',
-                color: 'var(--foreground)',
-                outline: 'none',
-              }}
-              onFocus={(e) => {
-                if (!form.formState.errors.email) {
-                  e.currentTarget.style.borderColor = 'var(--primary)';
-                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(61,53,211,0.10)';
-                }
-              }}
-              onBlur={(e) => {
-                if (!form.formState.errors.email) {
-                  e.currentTarget.style.borderColor = 'var(--border)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }
-              }}
+              className="login-field__input"
+              autoComplete="email"
             />
           </div>
           {form.formState.errors.email && (
-            <p className="text-[12px] mt-1 animate-fade-up" style={{ color: 'var(--danger)' }}>
-              {form.formState.errors.email.message}
-            </p>
+            <p className="login-form__error">{form.formState.errors.email.message}</p>
           )}
         </div>
 
         {/* Password */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label
-              className="block text-[12px] font-semibold uppercase tracking-[0.08em]"
-              style={{ color: 'var(--foreground)' }}
-            >
+        <div className="login-form__group">
+          <div className="login-form__label-row">
+            <label htmlFor="login-password" className="login-form__label">
               Password
             </label>
             <button
               type="button"
-              className="text-[12px] font-medium transition-colors duration-150 py-3 px-1 -my-3"
-              style={{ color: 'var(--primary)' }}
+              className="login-form__forgot"
               onClick={() => setShowForgotPw(true)}
             >
               Forgot password?
             </button>
           </div>
-          <div className="relative">
-            <Lock
-              className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              size={15}
-              style={{ color: 'var(--muted-foreground)' }}
-            />
+          <div className={`login-field ${form.formState.errors.password ? 'login-field--error' : ''}`}>
+            <div className="login-field__icon">
+              <Lock size={16} />
+            </div>
             <input
+              id="login-password"
               {...form.register('password')}
-              type="password"
-              placeholder="••••••••"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Enter your password"
               disabled={isLoading}
-              className="w-full pl-10 pr-4 h-11 text-[15px] transition-all duration-150"
-              style={{
-                background: 'var(--card)',
-                border: `1.5px solid ${form.formState.errors.password ? 'var(--danger)' : 'var(--border)'}`,
-                borderRadius: '6px',
-                color: 'var(--foreground)',
-                outline: 'none',
-              }}
-              onFocus={(e) => {
-                if (!form.formState.errors.password) {
-                  e.currentTarget.style.borderColor = 'var(--primary)';
-                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(61,53,211,0.10)';
-                }
-              }}
-              onBlur={(e) => {
-                if (!form.formState.errors.password) {
-                  e.currentTarget.style.borderColor = 'var(--border)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }
-              }}
+              className="login-field__input"
+              autoComplete="current-password"
             />
+            <button
+              type="button"
+              className="login-field__toggle"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
           </div>
           {form.formState.errors.password && (
-            <p className="text-[12px] mt-1 animate-fade-up" style={{ color: 'var(--danger)' }}>
-              {form.formState.errors.password.message}
-            </p>
+            <p className="login-form__error">{form.formState.errors.password.message}</p>
           )}
         </div>
 
-        {/* Submit */}
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full h-11 mt-2 text-[15px] font-medium text-white flex items-center justify-center transition-all duration-150"
-          style={{
-            background: isLoading ? 'rgba(61,53,211,0.7)' : 'var(--primary)',
-            borderRadius: '8px',
-            boxShadow: 'var(--shadow-sm)',
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-          }}
+          className="login-btn login-btn--primary"
         >
           {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="animate-spin" size={18} />
           ) : (
-            'Log in to Legixy'
+            <>
+              Log in
+              <ArrowRight size={16} />
+            </>
           )}
         </button>
       </form>
 
-      <p className="text-center text-[14px] mt-8" style={{ color: 'var(--muted-foreground)' }}>
-        Don&apos;t have an account?{' '}
-        <a
-          href="/register"
-          className="font-semibold transition-colors duration-150 py-3 px-1 -my-3 inline-block"
-          style={{ color: 'var(--primary)' }}
+      {/* Divider */}
+      <div className="login-divider">
+        <div className="login-divider__line" />
+        <span className="login-divider__text">or continue with</span>
+        <div className="login-divider__line" />
+      </div>
+
+      {/* Social Buttons */}
+      <div className="login-social">
+        <button
+          type="button"
+          className="login-btn login-btn--social"
+          onClick={() => {
+            const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+            window.location.href = `${apiBase}/auth/google`;
+          }}
         >
-          Sign up free
+          <GoogleIcon />
+          Continue with Google
+        </button>
+        <button
+          type="button"
+          className="login-btn login-btn--social"
+        >
+          <MicrosoftIcon />
+          Continue with Microsoft
+        </button>
+      </div>
+
+      {/* Sign Up Link */}
+      <p className="login-form__signup">
+        Don&apos;t have an account?{' '}
+        <a href="/register" className="login-form__signup-link">
+          Create your workspace <ArrowRight size={13} style={{ display: 'inline', verticalAlign: 'middle' }} />
         </a>
       </p>
-
     </div>
   );
 }

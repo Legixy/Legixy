@@ -147,13 +147,13 @@ export default function ContractDetailPage() {
             {(() => {
               let parties = [];
               try {
-                parties = typeof contract.parties === 'string' 
-                  ? JSON.parse(contract.parties) 
+                parties = typeof contract.parties === 'string'
+                  ? JSON.parse(contract.parties)
                   : (contract.parties || []);
               } catch (e) {
                 parties = [];
               }
-              
+
               if (!parties.length) return null;
 
               return (
@@ -213,9 +213,8 @@ export default function ContractDetailPage() {
                 </div>
                 <div className="mt-3 h-2 bg-slate-200 rounded-full overflow-hidden">
                   <div
-                    className={`h-full ${
-                      contract.riskScore > 70 ? 'bg-red-500' : contract.riskScore > 40 ? 'bg-amber-500' : 'bg-emerald-500'
-                    }`}
+                    className={`h-full ${contract.riskScore > 70 ? 'bg-red-500' : contract.riskScore > 40 ? 'bg-amber-500' : 'bg-emerald-500'
+                      }`}
                     style={{ width: `${Math.min(contract.riskScore, 100)}%` }}
                   />
                 </div>

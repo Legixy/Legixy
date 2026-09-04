@@ -10,7 +10,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { Plan, UserRole } from 'generated/prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import * as nodemailer from 'nodemailer';
+import { MailerService } from '../../common/mailer/mailer.service';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -35,6 +35,9 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    // Shared transport. There is deliberately ONE outbound email path in this
+    // codebase — a second would drift in configuration and failure behaviour.
+    private readonly mailer: MailerService,
   ) {}
 
   /**
@@ -184,16 +187,11 @@ export class AuthService {
 
       const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
 
-      if (process.env.SMTP_HOST) {
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST,
-          port: Number(process.env.SMTP_PORT) || 587,
-          auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-        });
-        await transporter.sendMail({
-          from: process.env.SMTP_FROM || 'noreply@legixy.com',
+      if (this.mailer.isConfigured) {
+        await this.mailer.send({
           to: email,
           subject: 'Reset your Legixy password',
+          text: `Reset your password (link expires in 1 hour): ${resetUrl}`,
           html: `<p>Click the link below to reset your password (expires in 1 hour):</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
         });
         this.logger.log(`Password reset email sent to ${email}`);

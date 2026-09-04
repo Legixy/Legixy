@@ -11,14 +11,18 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "db:seed": "npx ts-node prisma/seed.ts"
+    "db:seed": "npx ts-node prisma/seed.ts",
+    "preflight": "ts-node -r tsconfig-paths/register src/config/preflight.ts",
+    "demo:reset": "ts-node -r tsconfig-paths/register prisma/demo-reset.ts",
+    "smtp:test": "ts-node -r tsconfig-paths/register src/config/smtp-test.ts",
+    "demo:check": "ts-node -r tsconfig-paths/register src/config/demo-check.ts"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.4",
@@ -45,6 +49,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "cookie-parser": "^1.4.7",
+    "exceljs": "^4.4.0",
     "helmet": "^8.1.0",
     "mammoth": "^1.12.0",
     "nestjs-pino": "^4.6.1",
@@ -103,6 +108,9 @@
     ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
+    "moduleNameMapper": {
+      "^generated/prisma/(.*)$": "<rootDir>/../generated/prisma/$1"
+    },
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
@@ -110,6 +118,7 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "//workers": "USE --runInBand FOR ANY DEFINITIVE RUN. Diagnosed in Slice 16, and it is not what Slice 12 or Slice 15 thought. Slice 12 blamed `nest start --watch` rewriting dist/generated/prisma mid-run (real, and fixed by stopping the watcher). Slice 15 blamed Postgres connection starvation (wrong: max_connections is 100 and a two-worker run uses about 10). The actual cause is that ReminderDispatchService.sweep() is GLOBAL \u2014 it iterates every tenant in the database, by design, because that is what the hourly job does. Two suites that both call sweep() against one test database therefore claim each other's reminders, and the compare-and-swap makes the loser skip exactly as intended. Nothing is broken; the suites are simply not parallel-safe with each other. Both callers are reminder-dispatch.integration.spec.ts and delivery-settings.integration.spec.ts. Reproduced 2 runs in 3 with -w 2; 0 in many with --runInBand."
   }
 }

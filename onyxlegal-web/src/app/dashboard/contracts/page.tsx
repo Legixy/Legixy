@@ -6,15 +6,15 @@ import { Plus, Search, FileSignature, AlertTriangle, Shield, Clock, Loader2, Ale
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-provider';
 import { useContracts, useContractStats } from '@/shared/api';
-import { SmartEmptyState } from '@/shared/components/SmartEmptyState';
+import { SmartEmptyState } from '@/features/contracts/components/SmartEmptyState';
 
 const statusFilters = ['All', 'Draft', 'In Review', 'Sent', 'Signed', 'Active', 'Expired'] as const;
 
 const statConfig = [
-  { key: 'totalContracts',  label: 'Total',    icon: FileSignature, color: 'var(--muted-foreground)' },
-  { key: 'highRiskClauses', label: 'High Risk', icon: AlertTriangle, color: 'var(--danger)'          },
-  { key: 'activeContracts', label: 'Active',    icon: Shield,        color: 'var(--success)'         },
-  { key: 'draftContracts',  label: 'Drafts',    icon: Clock,         color: 'var(--muted-foreground)' },
+  { key: 'totalContracts', label: 'Total', icon: FileSignature, color: 'var(--muted-foreground)' },
+  { key: 'highRiskClauses', label: 'High Risk', icon: AlertTriangle, color: 'var(--danger)' },
+  { key: 'activeContracts', label: 'Active', icon: Shield, color: 'var(--success)' },
+  { key: 'draftContracts', label: 'Drafts', icon: Clock, color: 'var(--muted-foreground)' },
 ] as const;
 
 export default function ContractsPage() {
@@ -194,9 +194,9 @@ export default function ContractsPage() {
             };
             const riskMap: 'high' | 'medium' | 'low' | 'none' =
               contract.riskScore == null ? 'none'
-              : contract.riskScore > 70 ? 'high'
-              : contract.riskScore > 40 ? 'medium'
-              : 'low';
+                : contract.riskScore > 70 ? 'high'
+                  : contract.riskScore > 40 ? 'medium'
+                    : 'low';
             return (
               <ContractIntelligentCard
                 key={contract.id}

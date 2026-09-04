@@ -5,6 +5,31 @@ const _API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 const API_URL = (() => { try { const u = new URL(_API_URL); return u.origin; } catch { return _API_URL; } })();
 
 const nextConfig: NextConfig = {
+  /**
+   * The contract-analysis feature is not part of this product.
+   *
+   * Core registers its queues but declares zero @Processor handlers, and the
+   * worker listens on `contract-analysis-adhoc` — a queue name core never
+   * produces. Jobs enqueued by that feature are consumed by nobody, so every
+   * screen it offers describes work that provably never happens.
+   *
+   * Removing it from navigation was not enough: typing the URL still rendered
+   * "let OnyxAI analyze it for risks and compliance", which is untrue twice
+   * over. Redirecting here makes the surface unreachable without deleting a
+   * line of the feature's code — that call belongs to the team, and undoing
+   * this is removing one array.
+   */
+  async redirects() {
+    return [
+      { source: '/dashboard/contracts', destination: '/dashboard', permanent: false },
+      { source: '/dashboard/contracts/:path*', destination: '/dashboard', permanent: false },
+      { source: '/dashboard/analytics', destination: '/dashboard', permanent: false },
+      { source: '/dashboard/analytics/:path*', destination: '/dashboard', permanent: false },
+      { source: '/dashboard/templates', destination: '/dashboard', permanent: false },
+      { source: '/dashboard/templates/:path*', destination: '/dashboard', permanent: false },
+    ];
+  },
+
   async headers() {
     return [
       {

@@ -1,23 +1,24 @@
 'use client';
 
-import { Search, Bell, X, ChevronDown, Sparkles, LogOut, Menu } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, Menu } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-provider';
-import { useUnreadCount } from '@/shared/api/notifications';
-import { NotificationsPanel } from '@/features/notifications/components/NotificationsPanel';
+import { useUnreadReminderCount } from '@/features/compliance/api/compliance';
+import { NOTIFICATION_COPY } from '@/features/compliance/lib/notification-copy';
+import { ReminderNotificationsPanel } from '@/features/compliance/components/ReminderNotificationsPanel';
 
-const quickLinks: { label: string; badge: string; bgColor: string; fgColor: string }[] = [];
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
-  const [query, setQuery]           = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [menuOpen, setMenuOpen]     = useState(false);
-  const [notifOpen, setNotifOpen]   = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const router = useRouter();
   const { user, logout } = useAuth();
 
-  const { data: countData } = useUnreadCount();
+  // Compliance reminders, not contract-analysis notifications. The old
+  // surface pushed a row per user, so a licence with no owner had nobody to
+  // notify — exactly the case that must stay visible.
+  const { data: countData } = useUnreadReminderCount();
   const unreadCount = countData?.unreadCount ?? 0;
 
   const initials = user?.name
@@ -40,7 +41,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
     <header
       className="h-[56px] flex items-center justify-between px-8 sticky top-0 z-20 w-full"
       style={{
-        background: 'rgba(248,249,252,0.88)',
+        background: 'var(--glass-header)',
         backdropFilter: 'blur(12px) saturate(180%)',
         WebkitBackdropFilter: 'blur(12px) saturate(180%)',
         borderBottom: '1px solid var(--border)',
@@ -59,111 +60,18 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         </button>
       )}
 
-      {/* AI Search Bar */}
-      <div className="flex-1 max-w-lg relative">
-        <div className="relative">
-          <Search
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-            size={14}
-            style={{ color: 'var(--muted-foreground)' }}
-          />
-          <input
-            id="global-search"
-            type="text"
-            value={query}
-            onChange={(e) => { setQuery(e.target.value); setSearchOpen(e.target.value.length > 0); }}
-            onFocus={(e) => {
-              setSearchOpen(true);
-              e.currentTarget.style.borderColor = 'var(--primary)';
-              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(61,53,211,0.08)';
-            }}
-            onBlur={(e) => {
-              setTimeout(() => setSearchOpen(false), 150);
-              e.currentTarget.style.borderColor = 'var(--border)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-            placeholder="Ask AI or search contracts…"
-            className="w-full h-9 pl-10 pr-14 text-[13px] transition-all duration-150"
-            style={{
-              background: 'var(--card)',
-              border: '1px solid var(--border)',
-              borderRadius: '6px',
-              color: 'var(--foreground)',
-              outline: 'none',
-            }}
-          />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden md:flex items-center">
-            {query ? (
-              <button onClick={() => { setQuery(''); setSearchOpen(false); }}>
-                <X size={13} style={{ color: 'var(--muted-foreground)' }} />
-              </button>
-            ) : (
-              <kbd
-                className="inline-flex items-center justify-center font-mono text-[10px] h-5 px-1.5"
-                style={{
-                  background: 'var(--secondary)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '4px',
-                  color: 'var(--muted-foreground)',
-                }}
-              >
-                ⌘K
-              </kbd>
-            )}
-          </div>
-        </div>
+      {/*
+        The global search box was removed.
 
-        {/* Search Dropdown */}
-        {searchOpen && (
-          <div
-            className="absolute top-11 left-0 right-0 overflow-hidden z-50 animate-fade-up"
-            style={{
-              background: 'var(--card)',
-              borderRadius: '10px',
-              border: '1px solid var(--border)',
-              boxShadow: 'var(--shadow-xl)',
-            }}
-          >
-            <p
-              className="px-4 pt-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.14em]"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
-              Quick Results
-            </p>
-            {quickLinks
-              .filter((l) => !query || l.label.toLowerCase().includes(query.toLowerCase()))
-              .map((link) => (
-                <button
-                  key={link.label}
-                  onMouseDown={() => { setSearchOpen(false); setQuery(''); }}
-                  className="w-full flex items-center justify-between gap-4 px-4 py-2.5 text-left transition-colors duration-100"
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                >
-                  <span className="text-[13px] font-medium" style={{ color: 'var(--foreground)' }}>{link.label}</span>
-                  <span
-                    className="text-[10px] font-semibold px-2 py-0.5 shrink-0"
-                    style={{ background: link.bgColor, color: link.fgColor, borderRadius: '4px' }}
-                  >
-                    {link.badge}
-                  </span>
-                </button>
-              ))}
-            {query && (
-              <div className="px-4 py-3" style={{ borderTop: '1px solid var(--border)' }}>
-                <button
-                  onMouseDown={() => { setSearchOpen(false); setQuery(''); }}
-                  className="text-[13px] font-semibold flex items-center gap-2 transition-colors duration-150"
-                  style={{ color: 'var(--primary)' }}
-                >
-                  <Sparkles size={12} />
-                  Ask Onyx AI about &ldquo;{query}&rdquo;
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+        It advertised "Ask AI or search contracts…" and offered to "Ask Onyx AI
+        about …", but its results array was literally empty: it opened a
+        dropdown headed "Quick Results" that could never contain a result, and
+        no AI existed behind it. A control that does nothing while promising
+        two capabilities the product does not have is worse than no control.
+
+        A real licence search already exists on /dashboard/licenses.
+      */}
+      <div className="flex-1" />
 
       {/* Global Actions */}
       <div className="flex items-center gap-1 ml-4">
@@ -172,16 +80,17 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         <div className="relative">
           <button
             onClick={() => setNotifOpen((v) => !v)}
-            className="relative p-2 transition-all duration-150"
+            className="relative p-2 transition-[background-color,border-color,color,opacity] duration-150"
             style={{ borderRadius: '8px' }}
             onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-            aria-label="Notifications"
+            aria-label={NOTIFICATION_COPY.bellLabel(unreadCount)}
+            aria-expanded={notifOpen}
           >
             <Bell size={17} style={{ color: 'var(--muted-foreground)' }} />
             {unreadCount > 0 && (
               <span
-                className="absolute top-1 right-1 min-w-[16px] h-4 flex items-center justify-center rounded-full text-[9px] font-black text-white px-0.5"
+                className="absolute top-1 right-1 min-w-[16px] h-4 flex items-center justify-center rounded-full text-[9px] font-black text-[var(--on-brand)] px-0.5"
                 style={{ background: 'var(--danger)', outline: '1.5px solid var(--background)' }}
               >
                 {unreadCount > 9 ? '9+' : unreadCount}
@@ -189,20 +98,22 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
             )}
           </button>
 
-          {notifOpen && <NotificationsPanel onClose={() => setNotifOpen(false)} />}
+          {notifOpen && (
+            <ReminderNotificationsPanel onClose={() => setNotifOpen(false)} />
+          )}
         </div>
 
-        {/* Help */}
-        <button
-          onClick={() => window.open('https://legixy.com/docs', '_blank')}
-          className="px-3 py-1.5 text-[13px] font-medium transition-all duration-150"
-          style={{ borderRadius: '8px', color: 'var(--muted-foreground)' }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; e.currentTarget.style.color = 'var(--foreground)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--muted-foreground)'; }}
-        >
-          Help
-        </button>
+        {/*
+          The Help button was removed in Slice 19.
 
+          It opened https://legixy.com/docs in a new tab. No domain has been
+          registered — DEPLOYMENT.md lists that as a human task — and the name
+          resolves to a parking page owned by someone else, so /docs is
+          unreachable. In front of a client that is worse than nothing: a
+          stranger's for-sale page, opened by the product.
+
+          It comes back when there is documentation to point at.
+        */}
         {/* Divider */}
         <div className="w-px h-5 mx-1" style={{ background: 'var(--border)' }} />
 
@@ -210,13 +121,13 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         <div className="relative">
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex items-center gap-2 pl-1 pr-2 py-1 transition-all duration-150"
+            className="flex items-center gap-2 pl-1 pr-2 py-1 transition-[background-color,border-color,color,opacity] duration-150"
             style={{ borderRadius: '8px' }}
             onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--secondary)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
           >
             <div
-              className="w-7 h-7 flex items-center justify-center text-white text-[11px] font-semibold"
+              className="w-7 h-7 flex items-center justify-center text-[var(--on-brand)] text-[11px] font-semibold"
               style={{ background: 'var(--primary)', borderRadius: '50%' }}
             >
               {initials}
@@ -250,8 +161,8 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
                 <button
                   onClick={() => { setMenuOpen(false); logout(); router.push('/login'); }}
                   className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] transition-colors duration-150"
-                  style={{ color: 'var(--danger)' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(220,38,38,0.05)'; }}
+                  style={{ color: 'var(--status-expired-fg)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'color-mix(in srgb, var(--status-expired-fg) 5%, transparent)'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                 >
                   <LogOut size={13} />

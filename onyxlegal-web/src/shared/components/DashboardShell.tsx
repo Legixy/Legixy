@@ -14,7 +14,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {mobileOpen && (
         <div
           className="fixed inset-0 z-30 md:hidden"
-          style={{ background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(2px)' }}
+          style={{ background: 'var(--backdrop)', backdropFilter: 'blur(2px)' }}
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />

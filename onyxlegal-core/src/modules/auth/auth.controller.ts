@@ -10,6 +10,7 @@ import { Public } from './public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from './jwt.strategy';
 import { GoogleProfile } from './google.strategy';
+import { googleSignInConfigured } from '../../config/environment';
 
 @Controller('auth')
 export class AuthController {
@@ -83,6 +84,34 @@ export class AuthController {
   @HttpCode(200)
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto.token, dto.password);
+  }
+
+  /**
+   * GET /api/v1/auth/providers — which sign-in methods actually work.
+   *
+   * THE FIFTH DEAD AFFORDANCE
+   * -------------------------
+   * The login screen has offered "Continue with Google" since Slice 1.
+   * GoogleStrategy falls back to the literal string
+   * 'GOOGLE_CLIENT_ID_NOT_SET' when the variable is absent, so clicking it
+   * sent the user to Google's OAuth endpoint with an invalid client and an
+   * error page came back. GOOGLE_CLIENT_ID has never been configured.
+   *
+   * That is the same class this project has now fixed five times: an
+   * interface offering something the system cannot do. The button is not
+   * removed — Google sign-in is a real feature the moment credentials exist —
+   * it is hidden until it works.
+   *
+   * Public, and deliberately so: it reveals only which sign-in methods a
+   * login page is about to render, which the login page reveals anyway.
+   */
+  @Public()
+  @Get('providers')
+  providers() {
+    return {
+      password: true,
+      google: googleSignInConfigured(),
+    };
   }
 
   /**

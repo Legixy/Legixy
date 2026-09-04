@@ -1,0 +1,88 @@
+# Legixy — single-instance deployment.
+#
+# Brings up Core, Web, PostgreSQL and Redis. Deliberately single-instance:
+# see DEPLOYMENT.md section 6 before adding a second Core.
+#
+# The worker is ABSENT ON PURPOSE. It has no migrations and its schema knows
+# none of the compliance models; a `db push` from it drops eight tables.
+# See DEPLOYMENT.md section 2.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-legixy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-legixy}
+      TZ: Asia/Riyadh
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-legixy}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    # Persistence on: an unsaved queue loses the repeatable job registration
+    # on restart. The claim still protects correctness, but the sweep would
+    # stop happening until something re-added it.
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  core:
+    build:
+      context: ./onyxlegal-core
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-legixy}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-legixy}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET (32+ chars)}
+      DOCUMENT_ENCRYPTION_KEY: ${DOCUMENT_ENCRYPTION_KEY:?set DOCUMENT_ENCRYPTION_KEY (32+ chars)}
+      # Declared, not enforced. Read DEPLOYMENT.md section 1 before changing.
+      DATA_REGION: ${DATA_REGION:?set DATA_REGION}
+      ALLOW_OFFSHORE_CLIENT_DOCUMENTS: ${ALLOW_OFFSHORE_CLIENT_DOCUMENTS:-false}
+      DOCUMENT_STORAGE_PATH: /data/documents
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-noreply@legixy.com}
+    volumes:
+      # Losing this volume makes every uploaded certificate unreadable while
+      # the database still lists it as present.
+      - document-blobs:/data/documents
+    ports:
+      - '3001:3001'
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./onyxlegal-web
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api/v1}
+    depends_on:
+      - core
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
+  document-blobs:

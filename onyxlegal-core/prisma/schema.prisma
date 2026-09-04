@@ -25,9 +25,9 @@ enum UserRole {
 
 enum Plan {
   FREE
-  STARTER    // ₹999/mo
-  GROWTH     // ₹2499/mo
-  BUSINESS   // ₹4999/mo
+  STARTER // ₹999/mo
+  GROWTH // ₹2499/mo
+  BUSINESS // ₹4999/mo
 }
 
 enum ContractStatus {
@@ -74,10 +74,10 @@ enum AnalysisStatus {
 }
 
 enum AnalysisType {
-  QUICK_SCAN        // Stage 1: clause extraction
-  RISK_DETECTION    // Stage 2: risk scoring
-  DEEP_ANALYSIS     // Stage 3: legal reasoning (GPT-4o)
-  FIX_GENERATION    // Stage 4: suggested fixes
+  QUICK_SCAN // Stage 1: clause extraction
+  RISK_DETECTION // Stage 2: risk scoring
+  DEEP_ANALYSIS // Stage 3: legal reasoning (GPT-4o)
+  FIX_GENERATION // Stage 4: suggested fixes
 }
 
 enum NotificationType {
@@ -106,16 +106,41 @@ enum TemplateCategory {
 
 /// Organization — multi-tenancy root
 model Tenant {
-  id        String   @id @default(cuid())
-  name      String
-  plan      Plan     @default(FREE)
-  domain    String?  @unique  // e.g. "acme.com" for SSO future
+  id     String  @id @default(cuid())
+  name   String
+  plan   Plan    @default(FREE)
+  domain String? @unique // e.g. "acme.com" for SSO future
+
+  /// IANA timezone. Every compliance date calculation (expiry status,
+  /// reminder due dates) resolves "today" in this zone — never in server-local
+  /// or UTC time. Stored per-tenant so the logic is never hardcoded to one market.
+  timeZone String @default("Asia/Riyadh")
 
   // AI token budget control
-  aiTokensUsed  Int  @default(0)   // tokens consumed this billing cycle
-  aiTokenLimit  Int  @default(5000) // limit per billing cycle
+  aiTokensUsed Int @default(0) // tokens consumed this billing cycle
+  aiTokenLimit Int @default(5000) // limit per billing cycle
 
   billingCycleStart DateTime @default(now())
+
+  /// An address that sees every reminder.
+  ///
+  /// ONE FIELD, TWO EFFECTS, ON PURPOSE
+  /// ----------------------------------
+  /// Set it and (a) it is copied on every reminder that goes out, and (b) a
+  /// licence with NO owner delivers here instead of going UNDELIVERABLE.
+  ///
+  /// Those look like two features and are one person: the owner or compliance
+  /// manager who has to know everything. Modelling them as two columns would
+  /// let someone configure "catch the orphans" without "copy me on the rest",
+  /// which is not a state anybody has asked for and is not what the client
+  /// asked for — his requirement is that nothing expires without HIM knowing,
+  /// and most licences have an owner who is not him.
+  ///
+  /// Null means the behaviour that shipped in Slice 5: an unassigned
+  /// licence's reminder is UNDELIVERABLE and revives when an owner is set.
+  /// It never REPLACES ownership — a licence with a copy address and no owner
+  /// is still unassigned, still prompted, still counted in concentration.
+  reminderCopyEmail String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -123,23 +148,29 @@ model Tenant {
   // Relations
   users     User[]
   contracts Contract[]
-  templates Template[]  // custom templates only
+  templates Template[] // custom templates only
+
+  // Compliance domain
+  sites             Site[]
+  licenses          License[]
+  complianceAudits  ComplianceAuditLog[]
+  licenseRequirements TenantLicenseRequirement[]
 
   @@map("tenants")
 }
 
 /// User — authenticated individual
 model User {
-  id          String   @id @default(cuid())
-  supabaseId  String?  @unique  // links to Supabase Auth user (null for local auth)
-  tenantId    String
-  email       String
-  name        String?
-  avatarUrl   String?
-  role        UserRole @default(MEMBER)
-  password              String?   // bcrypt hash — set only for local-auth users
-  passwordResetToken    String?   @unique
-  passwordResetExpiry   DateTime?
+  id                  String    @id @default(cuid())
+  supabaseId          String?   @unique // links to Supabase Auth user (null for local auth)
+  tenantId            String
+  email               String
+  name                String?
+  avatarUrl           String?
+  role                UserRole  @default(MEMBER)
+  password            String? // bcrypt hash — set only for local-auth users
+  passwordResetToken  String?   @unique
+  passwordResetExpiry DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -147,7 +178,13 @@ model User {
   // Relations
   tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   contracts     Contract[]     @relation("CreatedBy")
-  notifications Notification[]
+  notifications     Notification[]
+  ownedLicenses     License[]         @relation("LicenseOwner")
+  uploadedDocuments LicenseDocument[] @relation("DocumentUploader")
+  reminderReads     ReminderRead[]
+  renewalsStarted   LicenseRenewal[] @relation("RenewalStarter")
+  renewalsSubmitted LicenseRenewal[] @relation("RenewalSubmitter")
+  renewalsCompleted LicenseRenewal[] @relation("RenewalCompleter")
 
   @@unique([tenantId, email])
   @@index([supabaseId])
@@ -161,14 +198,14 @@ model User {
 /// Template — system or custom contract templates
 model Template {
   id          String           @id @default(cuid())
-  tenantId    String?          // null = system template (available to all)
+  tenantId    String? // null = system template (available to all)
   category    TemplateCategory
   name        String
   description String?
-  riskScore   Int              @default(95)  // AI-assessed template safety score
+  riskScore   Int              @default(95) // AI-assessed template safety score
 
   // Structured clause blocks (JSON array of clause definitions)
-  clauseBlocks Json  @default("[]")
+  clauseBlocks Json @default("[]")
 
   // Template metadata
   isSystem    Boolean @default(false)
@@ -189,42 +226,42 @@ model Template {
 
 /// Contract — the core business entity
 model Contract {
-  id         String         @id @default(cuid())
-  tenantId   String
-  templateId String?
+  id          String  @id @default(cuid())
+  tenantId    String
+  templateId  String?
   createdById String?
 
-  title      String
-  status     ContractStatus @default(DRAFT)
-  riskScore  Int?           // 0-100, calculated by AI
+  title     String
+  status    ContractStatus @default(DRAFT)
+  riskScore Int? // 0-100, calculated by AI
 
   // Parties involved
-  parties    Json  @default("[]")  // [{name, email, role: "client"|"vendor"|"employee"}]
+  parties Json @default("[]") // [{name, email, role: "client"|"vendor"|"employee"}]
 
   // Full contract content (rich text / HTML)
-  content    String? @db.Text
+  content String? @db.Text
 
   // Financial metadata (calculated by AI)
-  contractValue    Decimal?  @db.Decimal(12, 2)
-  currency         String    @default("INR")
-  monthlyImpact    Decimal?  @db.Decimal(12, 2)  // ₹ risk per month
+  contractValue Decimal? @db.Decimal(12, 2)
+  currency      String   @default("INR")
+  monthlyImpact Decimal? @db.Decimal(12, 2) // ₹ risk per month
 
   // Lifecycle dates
-  effectiveDate    DateTime?
-  expirationDate   DateTime?
-  signedAt         DateTime?
-  lastReviewedAt   DateTime?
+  effectiveDate  DateTime?
+  expirationDate DateTime?
+  signedAt       DateTime?
+  lastReviewedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  tenant     Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  template   Template?          @relation(fields: [templateId], references: [id], onDelete: SetNull)
-  createdBy  User?              @relation("CreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  versions   ContractVersion[]
-  clauses    Clause[]
-  analyses   AIAnalysis[]
+  tenant    Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  template  Template?         @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  createdBy User?             @relation("CreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  versions  ContractVersion[]
+  clauses   Clause[]
+  analyses  AIAnalysis[]
 
   @@index([tenantId, status])
   @@index([tenantId, createdAt(sort: Desc)])
@@ -233,10 +270,10 @@ model Contract {
 
 /// ContractVersion — immutable version history
 model ContractVersion {
-  id         String @id @default(cuid())
+  id         String  @id @default(cuid())
   contractId String
-  version    Int    // 1, 2, 3...
-  content    String @db.Text
+  version    Int // 1, 2, 3...
+  content    String  @db.Text
   changeNote String?
   changedBy  String // userId
 
@@ -255,21 +292,21 @@ model ContractVersion {
 
 /// Clause — individual clause extracted from a contract
 model Clause {
-  id         String    @id @default(cuid())
+  id         String     @id @default(cuid())
   contractId String
   type       ClauseType
-  section    String?   // e.g. "Section 4.2"
+  section    String? // e.g. "Section 4.2"
 
-  originalText  String @db.Text
-  suggestedText String? @db.Text  // AI-suggested improvement
+  originalText  String    @db.Text
+  suggestedText String?   @db.Text // AI-suggested improvement
   riskLevel     RiskLevel @default(SAFE)
-  riskReason    String?   // Human-readable risk explanation
+  riskReason    String? // Human-readable risk explanation
 
   // Financial impact of this clause
   estimatedImpact Decimal? @db.Decimal(12, 2)
-  impactPeriod    String?  // "monthly", "annually", "one-time"
+  impactPeriod    String? // "monthly", "annually", "one-time"
 
-  isAccepted Boolean @default(false)  // user accepted AI suggestion
+  isAccepted Boolean @default(false) // user accepted AI suggestion
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -290,13 +327,13 @@ model AIAnalysis {
   status     AnalysisStatus @default(QUEUED)
 
   // Cost tracking
-  tokensUsed    Int    @default(0)
-  modelUsed     String? // "gpt-4o-mini" or "gpt-4o"
-  processingMs  Int?    // execution time in ms
+  tokensUsed   Int     @default(0)
+  modelUsed    String? // "gpt-4o-mini" or "gpt-4o"
+  processingMs Int? // execution time in ms
 
   // Error handling
   errorMessage String?
-  retryCount   Int @default(0)
+  retryCount   Int     @default(0)
 
   startedAt   DateTime?
   completedAt DateTime?
@@ -316,11 +353,11 @@ model RiskFinding {
   id         String    @id @default(cuid())
   analysisId String
   severity   RiskLevel
-  title      String    // "Uncapped Liability"
-  clause     String    @db.Text  // the problematic clause text
-  impact     String    // "Exposes company to unlimited financial liability"
-  suggestion String    @db.Text  // AI-suggested fix
-  legalRef   String?   // "Indian Contract Act, Section 27"
+  title      String // "Uncapped Liability"
+  clause     String    @db.Text // the problematic clause text
+  impact     String // "Exposes company to unlimited financial liability"
+  suggestion String    @db.Text // AI-suggested fix
+  legalRef   String? // "Indian Contract Act, Section 27"
 
   // Financial impact
   estimatedRisk Decimal? @db.Decimal(12, 2)
@@ -340,15 +377,15 @@ model RiskFinding {
 
 /// Notification — in-app alerts
 model Notification {
-  id       String           @id @default(cuid())
-  userId   String
-  type     NotificationType
-  title    String
-  body     String
-  read     Boolean @default(false)
+  id     String           @id @default(cuid())
+  userId String
+  type   NotificationType
+  title  String
+  body   String
+  read   Boolean          @default(false)
 
   // Deep link
-  actionUrl String?  // "/dashboard/contracts/clxyz123"
+  actionUrl String? // "/dashboard/contracts/clxyz123"
 
   createdAt DateTime @default(now())
 
@@ -358,4 +395,565 @@ model Notification {
   @@index([userId, read])
   @@index([userId, createdAt(sort: Desc)])
   @@map("notifications")
+}
+
+// ============================================================================
+// COMPLIANCE DOMAIN — Sites & Licenses
+//
+// Product question this domain answers:
+//   "Which licences belong to which location, when do they expire,
+//    and who is responsible for renewing them?"
+//
+// Design notes (see also modules/compliance/domain):
+//  · Expiry status is NEVER stored. It is derived from expiryDate + today
+//    in the tenant's timezone. A stored status is only as fresh as the last
+//    job run; a missed run would make the UI lie about the one thing this
+//    product promises. `lifecycle` below is a separate, human-controlled axis.
+//  · issueDate / expiryDate are DATE, not timestamp. A licence expiry is a
+//    calendar date, not an instant. See plain-date.ts.
+// ============================================================================
+
+enum SiteStatus {
+  ACTIVE
+  INACTIVE
+}
+
+/// Human-controlled lifecycle. Orthogonal to expiry status:
+/// an ARCHIVED licence may still be unexpired, and an EXPIRED
+/// licence is usually still ACTIVE (it needs renewing, not hiding).
+enum LicenseLifecycle {
+  ACTIVE
+  ARCHIVED
+}
+
+/// Site — a physical location (branch, showroom, warehouse) within a tenant.
+/// Deliberately minimal: its purpose is to answer "which licences belong
+/// to which location". Contact details live on the responsible User.
+model Site {
+  id       String @id @default(cuid())
+  tenantId String
+
+  name    String
+  code    String? // client's own branch/site reference
+  city    String?
+  address String?
+  status  SiteStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  licenses License[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId, status])
+  @@map("sites")
+}
+
+/// License — a licence, permit, or registration with an expiry date.
+///
+/// siteId is NULLABLE and that is load-bearing:
+///   siteId != null  → SITE-LEVEL    (e.g. a municipality licence for one branch)
+///   siteId == null  → COMPANY-LEVEL (e.g. a commercial registration for the entity)
+/// A separate `scope` enum was rejected: it would be a second source of
+/// truth for the same fact, and the two would eventually disagree.
+model License {
+  id          String  @id @default(cuid())
+  tenantId    String
+  siteId      String? // NULL = company-level. See note above.
+  ownerUserId String? // person accountable for renewing this licence
+
+  /// Structured type from the catalogue. Nullable: pre-taxonomy rows must
+  /// survive the migration, and a licence may legitimately not match a
+  /// catalogued type.
+  licenseTypeId String?
+
+  name          String // "Municipality Licence"
+  licenseType   String? // legacy free text, retained until every row is mapped
+  authority     String? // issuing body, e.g. "Riyadh Municipality"
+  licenseNumber String? // intentionally NOT unique — see docs/decision in service
+
+  /// Calendar dates, not instants. "expires on 2026-10-31" means the licence
+  /// is valid through the whole of that day in the tenant's timezone.
+  issueDate  DateTime? @db.Date
+  expiryDate DateTime? @db.Date // nullable: some registrations never expire
+
+  /// DISPLAY ONLY. Some Saudi documents carry a Hijri date on the certificate.
+  /// Stored as the printed string so it can be shown beside the Gregorian date.
+  ///
+  /// `expiryDate` remains the SINGLE source of truth for status and every
+  /// reminder computation. Nothing schedules from this field, and no conversion
+  /// logic exists — see the slice report for the deliberate deferral.
+  hijriExpiry String?
+
+  lifecycle LicenseLifecycle @default(ACTIVE)
+  notes     String?          @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  /// Restrict, not Cascade: deleting a site must never silently destroy
+  /// its compliance history. The caller must reassign or archive first.
+  site      Site?             @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  owner     User?             @relation("LicenseOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  /// Restrict: deactivating a type must never orphan the licences using it.
+  type      LicenseType?      @relation(fields: [licenseTypeId], references: [id], onDelete: Restrict)
+  reminders LicenseReminder[]
+  documents LicenseDocument[]
+  renewals  LicenseRenewal[]
+
+  @@index([tenantId, expiryDate]) // drives every expiry-bucket query
+  @@index([tenantId, siteId])
+  @@index([tenantId, lifecycle])
+  @@index([tenantId, ownerUserId])
+  @@index([tenantId, licenseNumber])
+  @@index([tenantId, licenseTypeId])
+  @@map("licenses")
+}
+
+/// Minimal audit trail for the compliance domain.
+/// Scoped to this domain on purpose — the repository has no general audit
+/// framework, and inventing one here would be out of scope.
+model ComplianceAuditLog {
+  id          String  @id @default(cuid())
+  tenantId    String
+  actorUserId String? // null for system-originated changes
+
+  action     String // "license.created" | "license.expiry_changed" | ...
+  entityType String // "license" | "site"
+  entityId   String
+  /// Changed fields only, as { field: { from, to } }. Never full row dumps.
+  changes    Json?
+
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([tenantId, entityType, entityId])
+  @@map("compliance_audit_log")
+}
+
+/// Lifecycle of a single reminder obligation.
+///
+/// Deliberately minimal. There is no delivery layer yet, so no channel, no
+/// recipient snapshot and no attempt counter — those belong to the slice that
+/// actually sends something.
+enum ReminderStatus {
+  /// The obligation stands and is awaiting its due date, or awaiting a send
+  /// window. Sendable.
+  PENDING
+
+  /// Actually delivered to a person. `sentAt` and `channel` record how.
+  SENT
+
+  /// Could not be delivered because the licence has no owner, so there is no
+  /// address to send to. NEVER treated as sent — the obligation is unmet, and
+  /// the licence surfaces it so a human can assign an owner.
+  UNDELIVERABLE
+
+  /// Delivery was attempted and failed repeatedly until retries were exhausted.
+  /// Terminal and visible; `lastError` says why.
+  FAILED
+
+  /// Superseded: the expiry date moved, or the licence was archived.
+  CANCELLED
+
+  /// The due date had already passed when the obligation was created, so this
+  /// window can never be honoured. Recorded rather than dropped so the timeline
+  /// can explain the gap. Never fired retroactively.
+  SKIPPED
+}
+
+/// How a reminder was delivered.
+///
+/// EMAIL only for now. WhatsApp is the client's preferred channel but depends
+/// on Meta Business API approval, an external dependency with an unpredictable
+/// lead time. Adding it is a new enum value plus a new ChannelSender — the
+/// scheduler does not change.
+enum ReminderChannel {
+  EMAIL
+}
+
+/// LicenseReminder — one "chase this licence on this date" obligation.
+///
+/// This slice PERSISTS obligations. It does not schedule or deliver them.
+///
+/// IDEMPOTENCY
+/// -----------
+/// `@@unique([licenseId, offsetDays, dueOn])` is the guarantee, enforced by
+/// Postgres rather than by application logic. Generation is an upsert against
+/// this key, so running it ten times produces exactly one row per obligation.
+///
+/// `dueOn` is part of the key on purpose: it is derived from the licence's
+/// expiry date, so changing the expiry naturally yields a different obligation
+/// rather than mutating an existing one. That is what lets delivered history
+/// survive a date change.
+///
+/// NO RECIPIENT COLUMN
+/// -------------------
+/// The recipient is the licence's owner, resolved at delivery time. Copying
+/// `ownerUserId` here would go stale the moment ownership changed, and would
+/// make the reminder disagree with the licence it belongs to.
+/// Per-user read state for a reminder shown in the in-app notification list.
+///
+/// WHY A SEPARATE TABLE AND NOT A Notification ROW
+/// -----------------------------------------------
+/// The in-app list is a VIEW over reminders that are already due, not a copy
+/// of them. Writing a notification row per user per reminder would duplicate
+/// state that can drift from the reminder it describes, and — worse — a
+/// licence with no owner would have nobody to write a row for, which is
+/// exactly the case that must stay visible.
+///
+/// So the reminder stays the single source of truth about what is due, and
+/// this table records only the one fact it cannot: whether a particular
+/// person has looked at it.
+model ReminderRead {
+  id         String   @id @default(cuid())
+  userId     String
+  reminderId String
+  readAt     DateTime @default(now())
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reminder LicenseReminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+
+  /// One read mark per person per reminder. Reading twice is not two events.
+  @@unique([userId, reminderId])
+  @@index([userId])
+  @@map("reminder_reads")
+}
+
+/// Where a renewal has got to.
+///
+/// NAMING IS LOAD-BEARING HERE. `AWAITING_AUTHORITY` deliberately does not say
+/// "SUBMITTED": this system submits nothing to anybody. A person went to the
+/// authority's portal, filed it themselves, and then told us. Every label and
+/// message derived from this enum has to keep that distinction, because a
+/// client who believes the system filed for them will stop filing.
+enum RenewalStatus {
+  /// Gathering what the authority asks for.
+  PREPARING
+  /// Everything needed is on file; a person can now take it to the portal.
+  READY
+  /// A person filed it and told us. Nothing here is talking to an authority.
+  AWAITING_AUTHORITY
+  /// The new expiry has been entered and written to the licence.
+  COMPLETED
+  /// Abandoned, rejected, or otherwise stopped. Carries a reason.
+  CLOSED
+}
+
+/// A renewal being worked through, from gathering documents to a new expiry.
+///
+/// WHY THIS EXISTS
+/// ---------------
+/// Without it the loop never closes: a reminder fires, someone renews at the
+/// portal, and the register still holds the old date. Reminders keep firing
+/// against a date that has already passed until they lapse to SKIPPED, and no
+/// reminders exist for the real expiry at all. The system goes quietly wrong
+/// in precisely the way it was built to prevent.
+model LicenseRenewal {
+  id        String @id @default(cuid())
+  /// Denormalised from the licence so an isolation check is one indexed column.
+  tenantId  String
+  licenseId String
+
+  status RenewalStatus @default(PREPARING)
+
+  startedAt   DateTime @default(now())
+  startedById String?
+
+  /// The expiry as it stood when this renewal began.
+  ///
+  /// Captured at the start rather than read back later, because the whole
+  /// point is to be able to say what the date changed FROM. Once the licence
+  /// is updated that original value is gone from the licence itself.
+  previousExpiry DateTime? @db.Date
+
+  /// The new expiry, ENTERED BY A PERSON at completion. Never computed:
+  /// defaultCycleMonths only proposes, and an auto-set expiry would be an
+  /// invented fact in the one field the product exists to get right.
+  newExpiry        DateTime? @db.Date
+  newLicenseNumber String?
+
+  /// When a person told us they filed it. Not when anything was submitted by
+  /// this system, which never submits anything.
+  submittedAt   DateTime?
+  submittedById String?
+
+  completedAt   DateTime?
+  completedById String?
+
+  /// Why a renewal was closed without completing. Required when CLOSED.
+  outcome String?
+  notes   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  license     License @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  startedBy   User?   @relation("RenewalStarter", fields: [startedById], references: [id], onDelete: SetNull)
+  submittedBy User?   @relation("RenewalSubmitter", fields: [submittedById], references: [id], onDelete: SetNull)
+  completedBy User?   @relation("RenewalCompleter", fields: [completedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status])
+  /// Drives "is there already one running for this licence?"
+  @@index([licenseId, status])
+  @@map("license_renewals")
+}
+
+model LicenseReminder {
+  id        String @id @default(cuid())
+  /// Denormalised from the licence so an isolation check is a single indexed
+  /// column rather than a join.
+  tenantId  String
+  licenseId String
+
+  /// Days before expiry. One of REMINDER_OFFSET_DAYS (90, 60, 30, 14, 7).
+  offsetDays Int
+  /// expiryDate − offsetDays. A calendar date, like every other date here.
+  dueOn      DateTime       @db.Date
+  status     ReminderStatus @default(PENDING)
+
+  // ── Delivery ────────────────────────────────────────────────────────────
+  // These were deliberately omitted in Slice 3 because nothing could write
+  // them. The scheduler now does.
+
+  /// When delivery actually happened. Distinct from `dueOn`, which is when it
+  /// became due — a reminder deferred over a weekend has a later sentAt.
+  sentAt   DateTime?
+  channel  ReminderChannel?
+
+  attemptCount Int     @default(0)
+  /// Truncated failure reason. Never a stack trace.
+  lastError    String?
+
+  // ── Claim ───────────────────────────────────────────────────────────────
+  // A time-boxed lock rather than a SENDING status: a status alone strands
+  // rows forever if the process dies mid-send, whereas an expired lock is
+  // reclaimable with no manual intervention.
+  lockedUntil DateTime?
+  /// Sweep run identifier holding the claim. Debug aid: answers "who has it".
+  lockedBy    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  license License @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  /// Who has read this reminder in the in-app list. See ReminderRead.
+  reads   ReminderRead[]
+
+  @@unique([licenseId, offsetDays, dueOn])
+  @@index([tenantId, licenseId])
+  /// The query the future scheduler will run: "what is due and still pending?"
+  @@index([status, dueOn])
+  @@map("license_reminders")
+}
+
+// ============================================================================
+// COMPLIANCE TAXONOMY — what a licence IS, not just what it is called
+// ============================================================================
+
+/// Where a licence lives in the organisation.
+///
+/// This is the distinction that fixes the counting bug: an ENTITY licence
+/// belongs to the company and has no site, so it can never appear in a
+/// per-site rollup and must be counted separately rather than lost.
+enum LicenseScope {
+  /// Belongs to the legal entity — Commercial Registration, GOSI, Qiwa.
+  ENTITY
+  /// Exists per physical location — Balady municipal licence, Civil Defence.
+  SITE
+}
+
+/// Authority — the government body that issues a licence.
+///
+/// GLOBAL REFERENCE DATA, deliberately without a tenantId. Balady is the same
+/// institution for every tenant; per-tenant copies would drift and would force
+/// every licence write to validate that its authority belonged to its tenant.
+///
+/// These rows hold no tenant information, so global readability leaks nothing,
+/// and there is no write endpoint in this slice. If custom authorities are ever
+/// required, add `tenantId String?` with null = system — the pattern `Template`
+/// already uses in this schema.
+/// How a renewal actually reaches this authority.
+///
+/// The product cannot claim uniform behaviour: some authorities run partner
+/// API programmes, others have none. Modelling the difference means the UI can
+/// never promise a capability that does not exist for a given licence.
+///
+/// There is deliberately NO `API_ACTIVE` value. No integration is active, no
+/// credentials exist, so nothing would ever write it.
+enum SubmissionRoute {
+  /// No public partner programme. A person completes the submission.
+  PREPARE_ONLY
+  /// A partner API programme exists, but no subscription is active here.
+  /// A person still submits today.
+  API_ELIGIBLE
+  /// Integration terms not yet confirmed. A person submits; route under review.
+  UNKNOWN
+}
+
+model Authority {
+  id        String  @id @default(cuid())
+  name      String  @unique
+  nameAr    String
+  portalUrl String?
+  notes     String?
+
+  /// Set from documented public evidence only — see the seed for per-authority
+  /// reasoning. Defaults to PREPARE_ONLY: assume a human submits until proven
+  /// otherwise, never the reverse.
+  submissionRoute SubmissionRoute @default(PREPARE_ONLY)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  licenseTypes LicenseType[]
+
+  @@map("authorities")
+}
+
+/// LicenseType — the catalogue entry a licence is an instance of.
+///
+/// Also global reference data, for the same reason as Authority: "Balady
+/// Municipal Licence" means the same thing in every tenant. What varies per
+/// tenant is which types they are *required* to hold — see
+/// TenantLicenseRequirement.
+model LicenseType {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  nameAr      String
+  authorityId String
+  scope       LicenseScope
+
+  /// Typical validity in months. Nullable — not every type has a fixed cycle.
+  defaultCycleMonths Int?
+
+  /// Checklist of documents a renewal requires, as
+  /// [{ code, label, labelAr }].
+  ///
+  /// JSON rather than a related table: Slice 5 renders this as a checklist,
+  /// and there is no document storage in this system for a related table to
+  /// key against. Mirrors the existing `Template.clauseBlocks` precedent.
+  /// When documents are stored, this becomes a table with a FK per requirement.
+  requiredDocuments Json @default("[]")
+
+  /// Indicative government fee, in SAR.
+  typicalFee Decimal? @db.Decimal(10, 2)
+
+  /// Soft retirement. Deactivating hides a type from *new* selection and from
+  /// gap detection; it never hides or orphans licences already using it.
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authority    Authority                   @relation(fields: [authorityId], references: [id], onDelete: Restrict)
+  licenses     License[]
+  requiredBy   TenantLicenseRequirement[]
+
+  @@index([scope, isActive])
+  @@map("license_types")
+}
+
+/// TenantLicenseRequirement — "our organisation is expected to hold this type".
+///
+/// This is what defines a coverage GAP. Without it, gap detection would have to
+/// assume every active type applies to every tenant, which would report a
+/// factory licence as missing at a furniture showroom — false gaps that would
+/// destroy trust in the feature on first sight.
+///
+/// Read-only in this slice: seeded, with no management UI. Disclosed as such.
+model TenantLicenseRequirement {
+  id            String @id @default(cuid())
+  tenantId      String
+  licenseTypeId String
+
+  createdAt DateTime @default(now())
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  licenseType LicenseType @relation(fields: [licenseTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, licenseTypeId])
+  @@index([tenantId])
+  @@map("tenant_license_requirements")
+}
+
+/// LicenseDocument — a file supporting a licence.
+///
+/// PERSONAL DATA
+/// -------------
+/// These files carry national ID numbers, iqama numbers, GOSI records and
+/// commercial registration certificates. That is personal data under Saudi
+/// PDPL. Consequences visible in this model:
+///   · `storageKey` is opaque and tenant-prefixed — never a user filename
+///   · the bytes are encrypted at rest; this row holds only metadata
+///   · every read and write is written to ComplianceAuditLog
+///   · `deletedAt` is a soft delete — compliance evidence must be recoverable
+///
+/// DOCUMENT EXPIRY IS NOT LICENCE EXPIRY
+/// -------------------------------------
+/// A lease can expire while the municipal licence it supports is still valid,
+/// and vice versa. `expiresOn` here is independent of `License.expiryDate` and
+/// feeds only the renewal checklist — never licence status, and never a
+/// reminder. Conflating them would misreport the licence.
+model LicenseDocument {
+  id        String @id @default(cuid())
+  /// Denormalised from the licence so an isolation check is one indexed column.
+  tenantId  String
+  licenseId String
+
+  /// Matches a `code` in LicenseType.requiredDocuments. Null for an ad-hoc
+  /// upload that satisfies no catalogued requirement.
+  documentCode String?
+
+  /// Sanitised at the boundary. Display only — never used to build a path.
+  filename  String
+  /// Sniffed from magic bytes, not taken from the client header.
+  mimeType  String
+  sizeBytes Int
+  /// Opaque, tenant-prefixed: tenants/{tenantId}/licenses/{licenseId}/{uuid}
+  storageKey String @unique
+
+  /// Which encryption key sealed this file.
+  ///
+  /// A short, non-secret fingerprint of the key — never the key itself, and
+  /// not reversible into it. Written on every upload and checked on every
+  /// decrypt, so a document encrypted under a retired key is identified as
+  /// such instead of failing with an unexplained authentication error.
+  ///
+  /// Without this, introducing a real key makes every existing document
+  /// silently undecryptable with no way to tell which key it used. Adding the
+  /// column before real client files exist is nearly free; adding it after is
+  /// a data-recovery problem.
+  encryptionKeyId String?
+
+  /// Calendar dates, like every other date in this domain.
+  issuedOn  DateTime? @db.Date
+  expiresOn DateTime? @db.Date
+
+  uploadedById String?
+  uploadedAt   DateTime @default(now())
+
+  /// Soft delete. A removed compliance document stays recoverable — deleting
+  /// evidence outright is the wrong default for a regulated business.
+  deletedAt DateTime?
+
+  /// When the encrypted bytes were purged from storage after the retention
+  /// window elapsed. The row survives as an audit tombstone; the file does
+  /// not. Read by the purge to skip rows already done, and rendered nowhere.
+  purgedAt DateTime?
+
+  license    License @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  uploadedBy User?   @relation("DocumentUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, licenseId])
+  @@index([licenseId, documentCode])
+  /// Drives the retention sweep: find soft-deleted rows not yet purged.
+  @@index([deletedAt, purgedAt])
+  @@map("license_documents")
 }

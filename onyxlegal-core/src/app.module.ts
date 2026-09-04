@@ -17,6 +17,11 @@ import { AiOrchestratorModule } from './modules/ai-orchestrator/ai-orchestrator.
 import { AIModule } from './features/ai/ai.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ComplianceModule } from './modules/compliance/compliance.module';
+import { UsersModule } from './modules/users/users.module';
+import { MailerModule } from './common/mailer/mailer.module';
+import { HealthModule } from './modules/health/health.module';
+import { logLevel, REDACT_PATHS } from './config/logging';
 
 // Conditionally register BullMQ only if Redis is configured
 const bullModuleImport = BullModule.forRootAsync({
@@ -43,12 +48,18 @@ const bullModuleImport = BullModule.forRootAsync({
     }),
 
     // ── Structured Logging ────────────────────────────────
+    // Redaction is configured here rather than at any call site, because a
+    // call site can be forgotten. See config/logging.ts for what and why.
     LoggerModule.forRoot({
       pinoHttp: {
-        transport: {
-          target: 'pino-pretty',
-          options: { singleLine: true, colorize: true },
-        },
+        level: logLevel(),
+        redact: { paths: REDACT_PATHS, censor: '[redacted]' },
+        // Pretty output on a laptop; raw JSON in a deployment, where a log
+        // shipper needs to parse it and nobody is reading it by eye.
+        transport:
+          (process.env.NODE_ENV ?? 'development') === 'development'
+            ? { target: 'pino-pretty', options: { singleLine: true, colorize: true } }
+            : undefined,
       },
     }),
 
@@ -58,6 +69,9 @@ const bullModuleImport = BullModule.forRootAsync({
     // ── Database ──────────────────────────────────────────
     DatabaseModule,
 
+    // ── Outbound email (single shared transport) ──────────
+    MailerModule,
+
     // ── Features ──────────────────────────────────────────
     AuthModule,
     ContractsModule,
@@ -66,6 +80,11 @@ const bullModuleImport = BullModule.forRootAsync({
     AIModule,
     AnalyticsModule,
     NotificationsModule,
+
+    // ── Compliance (sites & licences) ─────────────────────
+    ComplianceModule,
+    UsersModule,
+    HealthModule,
   ],
   providers: [
     // Global JWT auth guard — every route requires auth unless @Public()

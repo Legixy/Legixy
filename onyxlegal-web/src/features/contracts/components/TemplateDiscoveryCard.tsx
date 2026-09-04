@@ -19,8 +19,8 @@ interface Props {
 
 const iconMap = {
   briefcase: { icon: Briefcase, color: 'text-slate-500' },
-  shield:    { icon: Shield,    color: 'text-slate-500' },
-  document:  { icon: FileText,  color: 'text-slate-500' },
+  shield: { icon: Shield, color: 'text-slate-500' },
+  document: { icon: FileText, color: 'text-slate-500' },
 };
 
 const defaultClauses = {

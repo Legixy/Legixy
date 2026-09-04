@@ -4,8 +4,8 @@ import { AuthLayout } from "@/features/auth/components/AuthLayout"
 import { RegisterForm } from "@/features/auth/components/RegisterForm"
 
 export const metadata: Metadata = {
-  title: "Sign Up | OnyxLegal",
-  description: "Create your OnyxLegal account.",
+  title: "Sign up | Legixy",
+  description: "Create your Legixy account.",
 }
 
 export default function RegisterPage() {

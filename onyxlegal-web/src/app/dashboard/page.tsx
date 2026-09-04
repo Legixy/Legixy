@@ -1,192 +1,657 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import {
+  AlertCircle,
+  ArrowRight,
+  Bell,
+  Building2,
+  CalendarClock,
+  CircleAlert,
+  ShieldCheck,
+  UserX,
+} from 'lucide-react';
 import { useAuth } from '@/lib/auth-provider';
-import { useDashboardMetrics, useContractStats } from '@/shared/api';
-import { Sparkles, FileSignature, AlertTriangle, Shield, TrendingDown, Clock, Zap, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { AiCommandCenter } from '@/features/ai/components/AiCommandCenter';
-import { AiActivityFeed } from '@/features/ai/components/AiActivityFeed';
-import { AiRecommendedActions } from '@/features/ai/components/AiRecommendedActions';
-import { AiAlerts } from '@/features/ai/components/AiAlerts';
+import {
+  useComplianceDashboard,
+  useCoverage,
+} from '@/features/compliance/api/compliance';
+import { ErrorState } from '@/features/compliance/components/ErrorState';
+import { DASHBOARD_COPY } from '@/features/compliance/lib/dashboard-copy';
+import {
+  formatPlainDate,
+  pluralLicences,
+  reminderOffsetLabel,
+  TONE_STYLES,
+  type StatusTone,
+} from '@/features/compliance/lib/format';
+import type { CoverageState, DashboardOverview } from '@/lib/api';
 
+/**
+ * The compliance dashboard.
+ *
+ * This replaced a contract-analysis dashboard that claimed an AI had analysed
+ * the portfolio, reported financial exposure in Indian rupees, and showed zero
+ * items expiring within 30 days while two licences were.
+ *
+ * Every figure here is a count returned by /compliance/dashboard, which counts
+ * rows. Nothing is inferred, nothing is scored, and there is no number on this
+ * page that the database cannot account for.
+ *
+ * All copy lives in lib/dashboard-copy so honesty.spec.ts can read it.
+ */
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const { data, isLoading, isError, error, refetch } = useComplianceDashboard();
+  // The dashboard payload carries a count; the REASON comes from here.
+  const coverage = useCoverage();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) router.replace('/login');
-  }, [isLoading, isAuthenticated, router]);
-
-  const { data: metrics, isLoading: metricsLoading, error: metricsError } = useDashboardMetrics();
-  const { data: stats } = useContractStats();
+    if (!authLoading && !isAuthenticated) router.push('/login');
+  }, [authLoading, isAuthenticated, router]);
 
   const firstName = user?.name?.split(' ')[0] || 'there';
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'var(--primary)' }} />
-      </div>
-    );
-  }
+  return (
+    <div className="flex w-full flex-col">
+      <header className="mb-7">
+        <h1
+          className="font-display text-3xl tracking-tight"
+          style={{ color: 'var(--foreground)' }}
+        >
+          {DASHBOARD_COPY.greeting(firstName)}
+        </h1>
+        <p className="mt-1.5 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+          {DASHBOARD_COPY.subtitle}
+        </p>
+      </header>
+
+      {isLoading ? (
+        <DashboardSkeleton />
+      ) : isError || !data ? (
+        <ErrorState
+          error={error}
+          resource="dashboard"
+          onRetry={() => void refetch()}
+        />
+      ) : data.licences.total === 0 ? (
+        <EmptyDashboard />
+      ) : (
+        <DashboardBody
+          data={data}
+          coverageState={coverage.data?.state ?? 'NOT_CONFIGURED'}
+          requirementCount={coverage.data?.requirementCount ?? 0}
+        />
+      )}
+    </div>
+  );
+}
+
+function DashboardBody({
+  data,
+  coverageState,
+  requirementCount,
+}: {
+  data: DashboardOverview;
+  coverageState: CoverageState;
+  requirementCount: number;
+}) {
+  const { licences, ownership, reminders, sites, coverageGaps } = data;
 
   return (
-    <div className="w-full flex flex-col animate-fade-up">
+    <>
+      <section aria-labelledby="portfolio-heading">
+        <SectionHeading id="portfolio-heading">
+          {DASHBOARD_COPY.portfolioHeading}
+        </SectionHeading>
 
-      {/* ── Welcome Header ─────────────────────────────────── */}
-      <div className="flex justify-between items-start mb-10">
-        <div>
-          <h1 className="font-display text-3xl text-slate-900 tracking-tight">
-            Welcome back, {firstName}
-          </h1>
-          <p className="text-muted-foreground mt-1.5 text-[15px] leading-relaxed">
-            {metricsLoading ? 'Loading insights…' : 'OnyxAI has analyzed your legal operations and prioritized your next steps.'}
-          </p>
-        </div>
-        <Button
-          onClick={() => router.push('/dashboard/contracts/create')}
-          className="gap-2 h-10 shrink-0 text-sm font-medium px-5"
+        {/* ONE instrument, four divisions — not four cards.
+            Four separately bordered, separately tinted cards put a coloured
+            box round every number and made the row the loudest thing on the
+            page. The dividers here are the grid gap showing the container
+            through, so four borders became one and the tint is gone: tone now
+            lives on the icon and the figure, which is where the meaning is.
+            Icon + colour + text still holds, so nothing is carried by colour
+            alone. */}
+        <div
+          className="grid grid-cols-2 lg:grid-cols-4 overflow-hidden"
           style={{
-            background: 'var(--primary)',
-            color: 'var(--primary-foreground)',
-            borderRadius: '8px',
-            boxShadow: 'var(--shadow-sm)',
+            gap: 'var(--hairline)',
+            background: 'var(--border)',
+            border: 'var(--hairline) solid var(--border)',
+            borderRadius: 'var(--stat-radius)',
           }}
         >
-          <Plus size={15} />
-          New Contract
-        </Button>
-      </div>
+          <Metric
+            label={DASHBOARD_COPY.totalLabel}
+            hint={DASHBOARD_COPY.totalHint}
+            value={licences.total}
+            tone="neutral"
+            icon={ShieldCheck}
+          />
+          <Metric
+            label={DASHBOARD_COPY.expiredLabel}
+            hint={DASHBOARD_COPY.expiredHint}
+            value={licences.expired}
+            tone={licences.expired > 0 ? 'critical' : 'neutral'}
+            icon={CircleAlert}
+            href="/dashboard/licenses?expiryStatus=EXPIRED"
+          />
+          <Metric
+            label={DASHBOARD_COPY.criticalLabel}
+            hint={DASHBOARD_COPY.criticalHint}
+            value={licences.critical}
+            tone={licences.critical > 0 ? 'warning' : 'neutral'}
+            icon={AlertCircle}
+            href="/dashboard/licenses?expiryStatus=CRITICAL"
+          />
+          <Metric
+            label={DASHBOARD_COPY.expiringSoonLabel}
+            hint={DASHBOARD_COPY.expiringSoonHint}
+            value={licences.expiringSoon}
+            tone={licences.expiringSoon > 0 ? 'info' : 'neutral'}
+            icon={CalendarClock}
+            href="/dashboard/licenses?expiryStatus=EXPIRING_SOON"
+          />
+        </div>
 
-      {/* ── AI COMMAND CENTER ────────────────────────────────── */}
-      <div className="mb-8">
-        <AiCommandCenter />
-      </div>
-
-      {/* ── AI ALERTS ────────────────────────────────────────── */}
-      <div className="mb-8">
-        <AiAlerts />
-      </div>
-
-      {/* ── AI RECOMMENDED ACTIONS ───────────────────────────── */}
-      <div className="mb-8">
-        <AiRecommendedActions />
-      </div>
-
-      {/* ── AI Impact Metrics ─────────────────────────────────── */}
-      <div className="mb-5">
-        <p className="text-[11px] font-semibold tracking-[0.14em] uppercase flex items-center gap-1.5" style={{ color: 'var(--muted-foreground)' }}>
-          <Sparkles size={11} />
-          AI Impact Overview
+        {/* Reconciles this page's total with the sites page's smaller one. */}
+        <p className="mt-2.5 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+          {DASHBOARD_COPY.splitNote(licences.atSites, licences.entityWide)}
         </p>
-      </div>
 
-      {metricsLoading ? (
-        <div className="flex items-center gap-2 py-8 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-          <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--primary)' }} />
-          Loading metrics…
-        </div>
-      ) : metricsError ? (
-        <div className="flex items-center gap-2 py-6 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-          <AlertTriangle size={14} style={{ color: 'var(--warning)' }} />
-          Could not load metrics — backend may be starting up.
-        </div>
-      ) : (
-        <div className="grid grid-cols-4 gap-4 mb-10">
-          {[
-            { label: 'Cost Saved', value: metrics?.costSavedFormatted || '₹0', sub: 'through AI automation', icon: TrendingDown, color: 'var(--success)' },
-            { label: 'Risk Reduced', value: `${metrics?.riskReduced || 0}%`, sub: 'identified & mitigated', icon: AlertTriangle, color: 'var(--danger)' },
-            { label: 'Time Saved', value: `${metrics?.timeSavedHours || 0}h`, sub: 'legal review hours', icon: Clock, color: 'var(--muted-foreground)' },
-            { label: 'AI Usage', value: `${metrics?.aiUsage ? Math.round((metrics.aiUsage.tokensUsed / metrics.aiUsage.tokenLimit) * 100) : 0}%`, sub: 'of monthly tokens', icon: Zap, color: 'var(--primary)' },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className="card-hover bg-white border p-5"
-              style={{ borderColor: 'var(--border)', borderRadius: '12px', boxShadow: 'var(--shadow-sm)' }}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.1em]" style={{ color: 'var(--muted-foreground)' }}>{stat.label}</p>
-                <stat.icon size={14} style={{ color: stat.color }} />
-              </div>
-              <p className="text-2xl font-semibold" style={{ color: 'var(--foreground)', letterSpacing: '-0.02em' }}>{stat.value}</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>{stat.sub}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ── Contracts Overview ────────────────────────────────── */}
-      <div className="mb-5">
-        <p className="text-[11px] font-semibold tracking-[0.14em] uppercase flex items-center gap-1.5" style={{ color: 'var(--muted-foreground)' }}>
-          <FileSignature size={11} />
-          Contracts Overview
-        </p>
-      </div>
-      <div className="grid grid-cols-4 gap-4 mb-10">
-        {[
-          { label: 'Total Contracts', value: metrics?.totalContracts || 0, icon: FileSignature, color: 'var(--muted-foreground)' },
-          { label: 'Active', value: metrics?.activeContracts || 0, icon: Shield, color: 'var(--success)' },
-          { label: 'High Risk', value: metrics?.highRiskClauses || 0, icon: AlertTriangle, color: 'var(--danger)' },
-          { label: 'Resolved', value: metrics?.resolvedClauses || 0, icon: Sparkles, color: 'var(--teal)' },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-white border px-4 py-4 flex items-center gap-3"
-            style={{ borderColor: 'var(--border)', borderRadius: '12px', boxShadow: 'var(--shadow-xs)' }}
+        {licences.needsAttention === 0 ? (
+          <p
+            className="mt-2 text-sm font-medium"
+            style={{ color: 'var(--status-current-fg)' }}
           >
-            <stat.icon size={16} style={{ color: stat.color, flexShrink: 0 }} />
-            <div>
-              <p className="text-xl font-semibold leading-none" style={{ color: 'var(--foreground)', letterSpacing: '-0.02em' }}>{stat.value}</p>
-              <p className="text-[11px] mt-0.5 font-medium" style={{ color: 'var(--muted-foreground)' }}>{stat.label}</p>
+            {DASHBOARD_COPY.allClear(licences.total)}
+          </p>
+        ) : null}
+      </section>
+
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* ── Coverage gaps ──────────────────────────────────────────── */}
+        <section aria-labelledby="gaps-heading">
+          <SectionHeading id="gaps-heading">
+            {DASHBOARD_COPY.gapsHeading}
+          </SectionHeading>
+          {/*
+            Three states, not two. Zero gaps because nothing was declared is a
+            different fact from zero gaps because everything declared is
+            covered, and rendering them the same told a brand-new tenant that
+            every licence they are expected to hold was on record.
+          */}
+          <Panel
+            tone={
+              coverageState === 'HAS_GAPS'
+                ? 'warning'
+                : coverageState === 'ALL_SATISFIED'
+                  ? 'positive'
+                  : 'neutral'
+            }
+          >
+            <p className="text-sm" style={{ color: 'var(--foreground)' }}>
+              {coverageState === 'NOT_CONFIGURED'
+                ? DASHBOARD_COPY.gapsNotConfigured
+                : coverageState === 'ALL_SATISFIED'
+                  ? DASHBOARD_COPY.gapsAllSatisfied(requirementCount)
+                  : DASHBOARD_COPY.gapsCount(coverageGaps)}
+            </p>
+            <p
+              className="mt-1.5 text-xs leading-relaxed"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
+              {coverageState === 'NOT_CONFIGURED'
+                ? DASHBOARD_COPY.gapsNotConfiguredHint
+                : DASHBOARD_COPY.gapsHint}
+            </p>
+            {coverageState !== 'ALL_SATISFIED' ? (
+              <Link
+                href={
+                  coverageState === 'NOT_CONFIGURED'
+                    ? '/dashboard/requirements'
+                    : '/dashboard/gaps'
+                }
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-70"
+                style={{ color: 'var(--primary)' }}
+              >
+                {coverageState === 'NOT_CONFIGURED'
+                  ? DASHBOARD_COPY.gapsConfigure
+                  : DASHBOARD_COPY.gapsCta}
+                <ArrowRight size={13} aria-hidden="true" />
+              </Link>
+            ) : null}
+          </Panel>
+        </section>
+
+        {/* ── Ownership ──────────────────────────────────────────────── */}
+        <section aria-labelledby="ownership-heading">
+          <SectionHeading id="ownership-heading">
+            {DASHBOARD_COPY.ownershipHeading}
+          </SectionHeading>
+          <Panel>
+            {ownership.top.length === 0 ? (
+              <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                {DASHBOARD_COPY.ownershipNone}
+              </p>
+            ) : (
+              <>
+                <ul className="space-y-2">
+                  {ownership.top.map((owner) => (
+                    <li
+                      key={owner.ownerUserId ?? 'none'}
+                      className="flex items-baseline justify-between gap-3 text-sm"
+                    >
+                      <span style={{ color: 'var(--foreground)' }}>
+                        {owner.ownerName}
+                      </span>
+                      <span
+                        className="shrink-0 tabular-nums"
+                        style={{ color: 'var(--muted-foreground)' }}
+                      >
+                        {pluralLicences(owner.licenseCount)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/*
+                  Never let the list imply it is complete. Slice 5 found a
+                  panel showing 3 of 4 owners beside a sentence that read as
+                  though it showed all of them.
+                */}
+                {ownership.otherOwners > 0 ? (
+                  <p
+                    className="mt-2 text-xs"
+                    style={{ color: 'var(--muted-foreground)' }}
+                  >
+                    {DASHBOARD_COPY.otherOwners(
+                      ownership.otherOwners,
+                      ownership.otherLicenceCount,
+                    )}
+                  </p>
+                ) : null}
+
+                {ownership.assigned > 0 && ownership.top[0] ? (
+                  <p
+                    className="mt-3 border-t pt-3 text-xs leading-relaxed"
+                    style={{
+                      borderColor: 'var(--border)',
+                      color: 'var(--muted-foreground)',
+                    }}
+                  >
+                    {DASHBOARD_COPY.concentration(
+                      ownership.top[0].ownerName ?? 'The top holder',
+                      Math.round(
+                        (ownership.top[0].licenseCount / ownership.assigned) *
+                          100,
+                      ),
+                    )}
+                  </p>
+                ) : null}
+              </>
+            )}
+
+            {ownership.unassigned > 0 ? (
+              <p
+                className="mt-3 flex items-start gap-2 rounded-lg px-3 py-2 text-xs leading-relaxed"
+                style={{
+                  background: TONE_STYLES.warning.bg,
+                  color: TONE_STYLES.warning.fg,
+                }}
+              >
+                <UserX size={13} className="mt-0.5 shrink-0" aria-hidden="true" />
+                {DASHBOARD_COPY.unassignedWarning(ownership.unassigned)}
+              </p>
+            ) : null}
+          </Panel>
+        </section>
+      </div>
+
+      {/* ── Upcoming reminders ───────────────────────────────────────── */}
+      <section className="mt-8" aria-labelledby="reminders-heading">
+        <SectionHeading id="reminders-heading">
+          {DASHBOARD_COPY.remindersHeading}
+        </SectionHeading>
+        <Panel>
+          {reminders.upcoming.length === 0 ? (
+            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+              {DASHBOARD_COPY.remindersNone}
+            </p>
+          ) : (
+            <ul className="divide-y" style={{ borderColor: 'var(--border)' }}>
+              {reminders.upcoming.map((reminder) => (
+                <li
+                  key={reminder.id}
+                  className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5 first:pt-0 last:pb-0"
+                >
+                  <Bell
+                    size={13}
+                    className="shrink-0"
+                    style={{ color: 'var(--muted-foreground)' }}
+                    aria-hidden="true"
+                  />
+                  <Link
+                    href={`/dashboard/licenses/${reminder.licenseId}`}
+                    className="min-w-0 flex-1 truncate text-sm transition-opacity hover:opacity-70"
+                    style={{ color: 'var(--foreground)' }}
+                  >
+                    {reminder.licenseName}
+                    {reminder.siteName ? (
+                      <span style={{ color: 'var(--muted-foreground)' }}>
+                        {' · '}
+                        {reminder.siteName}
+                      </span>
+                    ) : null}
+                  </Link>
+                  <span
+                    className="shrink-0 text-xs"
+                    style={{
+                      color: reminder.ownerName
+                        ? 'var(--muted-foreground)'
+                        : TONE_STYLES.warning.fg,
+                    }}
+                  >
+                    {reminder.ownerName ?? DASHBOARD_COPY.reminderNoRecipient}
+                  </span>
+                  <span
+                    className="shrink-0 text-xs tabular-nums"
+                    style={{ color: 'var(--muted-foreground)' }}
+                    title={reminderOffsetLabel(reminder.offsetDays)}
+                  >
+                    {formatPlainDate(reminder.dueOn)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+      </section>
+
+      {/* ── Sites ────────────────────────────────────────────────────── */}
+      <section className="mt-8" aria-labelledby="sites-heading">
+        <SectionHeading id="sites-heading">
+          {DASHBOARD_COPY.sitesHeading}
+        </SectionHeading>
+        <Panel>
+          <p
+            className="flex items-center gap-2 text-sm"
+            style={{ color: 'var(--foreground)' }}
+          >
+            <Building2 size={14} aria-hidden="true" />
+            {sites.total === 0
+              ? DASHBOARD_COPY.sitesNone
+              : DASHBOARD_COPY.sitesSummary(sites.total, sites.withLicences)}
+          </p>
+          {sites.total > 0 ? (
+            <Link
+              href="/dashboard/sites"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-70"
+              style={{ color: 'var(--primary)' }}
+            >
+              {DASHBOARD_COPY.sitesCta}
+              <ArrowRight size={13} aria-hidden="true" />
+            </Link>
+          ) : null}
+        </Panel>
+      </section>
+    </>
+  );
+}
+
+function SectionHeading({
+  id,
+  children,
+}: {
+  id: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <h2
+      id={id}
+      className="mb-3 font-semibold uppercase"
+      style={{
+        fontSize: 'var(--text-2xs)',
+        letterSpacing: 'var(--tracking-wide)',
+        color: 'var(--muted-foreground)',
+      }}
+    >
+      {children}
+    </h2>
+  );
+}
+
+function Panel({
+  children,
+  tone,
+}: {
+  children: React.ReactNode;
+  tone?: StatusTone;
+}) {
+  const style = tone ? TONE_STYLES[tone] : null;
+  return (
+    <div
+      className="rounded-xl border p-4"
+      style={{
+        borderColor: style?.border ?? 'var(--border)',
+        background: style?.bg ?? 'var(--surface)',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Metric({
+  label,
+  hint,
+  value,
+  tone,
+  icon: Icon,
+  href,
+}: {
+  label: string;
+  hint: string;
+  value: number;
+  tone: StatusTone;
+  icon: typeof ShieldCheck;
+  href?: string;
+}) {
+  const style = TONE_STYLES[tone];
+  const body = (
+    <div
+      className="h-full transition-colors"
+      style={{ background: 'var(--surface)', padding: 'var(--stat-pad)' }}
+    >
+      <div className="flex items-center" style={{ gap: 'var(--space-1)' }}>
+        <Icon size={13} style={{ color: style.fg }} aria-hidden="true" />
+        <p
+          className="font-semibold uppercase"
+          style={{
+            fontSize: 'var(--text-2xs)',
+            letterSpacing: 'var(--tracking-wide)',
+            color: 'var(--muted-foreground)',
+          }}
+        >
+          {label}
+        </p>
+      </div>
+      <p
+        className="font-semibold tabular-nums"
+        style={{
+          marginTop: 'var(--space-2)',
+          fontSize: 'var(--text-3xl)',
+          color: style.fg,
+          letterSpacing: 'var(--tracking-tight)',
+        }}
+      >
+        {value}
+      </p>
+      <p style={{ marginTop: 'var(--space-1)', fontSize: 'var(--text-xs)', color: 'var(--muted-foreground)' }}>
+        {hint}
+      </p>
+    </div>
+  );
+
+  // Only link when there is something to look at.
+  return href && value > 0 ? (
+    <Link href={href} className="block hover:opacity-80">
+      {body}
+    </Link>
+  ) : (
+    body
+  );
+}
+
+/**
+ * The first-run path.
+ *
+ * Numbered steps in dependency order, with import as the primary action —
+ * a real customer has dozens of licences across many sites, and the previous
+ * empty state offered only "Add a licence", one at a time.
+ *
+ * Deliberately NOT a wizard: nothing persists, nothing tracks completion,
+ * nothing blocks. Someone who already has sites can go straight to step two.
+ */
+function EmptyDashboard() {
+  const steps = [
+    {
+      title: DASHBOARD_COPY.step1Title,
+      body: DASHBOARD_COPY.step1Body,
+      cta: DASHBOARD_COPY.step1Cta,
+      href: '/dashboard/sites/new',
+      primary: false,
+    },
+    {
+      title: DASHBOARD_COPY.step2Title,
+      body: DASHBOARD_COPY.step2Body,
+      cta: DASHBOARD_COPY.step2Cta,
+      href: '/dashboard/licenses/import',
+      primary: true,
+      alt: { label: DASHBOARD_COPY.step2Alt, href: '/dashboard/licenses/new' },
+    },
+    {
+      title: DASHBOARD_COPY.step3Title,
+      body: DASHBOARD_COPY.step3Body,
+      cta: DASHBOARD_COPY.step3Cta,
+      href: '/dashboard/requirements',
+      primary: false,
+    },
+  ];
+
+  return (
+    <section aria-labelledby="first-run-heading">
+      {/* Quiet sans, not the serif. This screen's display moment is the h1
+          greeting above; setting this heading in the same serif put two
+          display lines on one screen arguing for the same attention. */}
+      <h2
+        id="first-run-heading"
+        className="font-semibold"
+        style={{
+          fontSize: 'var(--text-xl)',
+          letterSpacing: 'var(--tracking-tight)',
+          color: 'var(--foreground)',
+        }}
+      >
+        {DASHBOARD_COPY.emptyTitle}
+      </h2>
+      <p
+        className="mt-1.5 max-w-prose text-sm leading-relaxed"
+        style={{ color: 'var(--muted-foreground)' }}
+      >
+        {DASHBOARD_COPY.emptyBody}
+      </p>
+
+      <ol className="mt-5 flex flex-col gap-3">
+        {steps.map((step, index) => (
+          <li
+            key={step.title}
+            className="flex flex-wrap items-start gap-4 rounded-xl border bg-[var(--surface)] p-4"
+            style={{ borderColor: 'var(--border)' }}
+          >
+            <span
+              className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums"
+              style={{
+                background: 'var(--secondary)',
+                color: 'var(--muted-foreground)',
+              }}
+              aria-hidden="true"
+            >
+              {index + 1}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p
+                className="text-sm font-medium"
+                style={{ color: 'var(--foreground)' }}
+              >
+                {step.title}
+              </p>
+              <p
+                className="mt-1 max-w-prose text-sm leading-relaxed"
+                style={{ color: 'var(--muted-foreground)' }}
+              >
+                {step.body}
+              </p>
             </div>
-          </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-3">
+              <Link href={step.href}>
+                <Button variant={step.primary ? 'default' : 'outline'} size="lg">
+                  {step.cta}
+                </Button>
+              </Link>
+              {step.alt ? (
+                <Link
+                  href={step.alt.href}
+                  className="text-sm underline-offset-2 hover:underline"
+                  style={{ color: 'var(--muted-foreground)' }}
+                >
+                  {step.alt.label}
+                </Link>
+              ) : null}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <div aria-busy="true" aria-label={DASHBOARD_COPY.loading}>
+      {/* Mirrors the loaded shape: one container, four divisions. A
+          skeleton that is four separate boxes and resolves into one panel
+          tells the eye the content moved when it did not. */}
+      <div
+        className="grid grid-cols-2 lg:grid-cols-4 overflow-hidden animate-pulse"
+        style={{
+          gap: 'var(--hairline)',
+          background: 'var(--border)',
+          border: 'var(--hairline) solid var(--border)',
+          borderRadius: 'var(--stat-radius)',
+        }}
+      >
+        {[0, 1, 2, 3].map((i) => (
+          <div
+            key={i}
+            style={{ height: 'var(--stat-h)', background: 'var(--secondary)' }}
+          />
         ))}
       </div>
-
-      {/* ── Quick Actions ─────────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-5 mb-10">
-        <div
-          className="card-hover bg-white border p-7 cursor-pointer"
-          style={{ borderColor: 'var(--border)', borderRadius: '12px', boxShadow: 'var(--shadow-sm)' }}
-          onClick={() => router.push('/dashboard/contracts/create')}
-        >
-          <Plus size={18} className="mb-4" style={{ color: 'var(--primary)' }} />
-          <h3 className="text-[15px] font-semibold mb-1" style={{ color: 'var(--foreground)' }}>Create New Contract</h3>
-          <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Start a fresh contract or upload an existing one</p>
-        </div>
-
-        <div
-          className="card-hover bg-white border p-7 cursor-pointer"
-          style={{ borderColor: 'var(--border)', borderRadius: '12px', boxShadow: 'var(--shadow-sm)' }}
-          onClick={() => router.push('/dashboard/analytics')}
-        >
-          <TrendingDown size={18} className="mb-4" style={{ color: 'var(--muted-foreground)' }} />
-          <h3 className="text-[15px] font-semibold mb-1" style={{ color: 'var(--foreground)' }}>View Analytics</h3>
-          <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Deep dive into contracts, risks, and AI impact</p>
-        </div>
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {[0, 1].map((i) => (
+          <div
+            key={i}
+            className="h-32 animate-pulse rounded-xl border"
+            style={{ borderColor: 'var(--border)', background: 'var(--secondary)' }}
+          />
+        ))}
       </div>
-
-      {/* ── Analyses This Month ───────────────────────────────── */}
-      <div
-        className="bg-white border px-6 py-5 flex items-center justify-between mb-10"
-        style={{ borderColor: 'var(--border)', borderRadius: '12px', borderLeft: '3px solid var(--primary)', boxShadow: 'var(--shadow-xs)' }}
-      >
-        <div>
-          <p className="text-[15px] font-semibold" style={{ color: 'var(--foreground)' }}>Analyses This Month</p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
-            You&apos;re using OnyxAI effectively. Keep analyzing to maximize risk mitigation.
-          </p>
-        </div>
-        <span className="text-3xl font-semibold" style={{ color: 'var(--primary)', letterSpacing: '-0.03em' }}>
-          {metrics?.analysesThisMonth || 0}
-        </span>
-      </div>
-
-      {/* ── AI ACTIVITY FEED ──────────────────────────────────── */}
-      <AiActivityFeed />
-
     </div>
   );
 }
