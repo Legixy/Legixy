@@ -874,6 +874,21 @@ select:focus:not(:focus-visible) {
      This is why it cannot just be --foreground.                             */
   --on-brand:        #FFFFFF;
 
+  /* ── Brand, from Slice 18's login redesign ───────────────────────────────
+     These ARE Slice 18's design decisions and are unchanged in value. Only
+     their expression moved: they were written inline on the auth surface,
+     which rule 10 forbids and which meant a palette change could never reach
+     them. Defining them here is what makes them a system rather than a set
+     of numbers in one component.                                            */
+  --brand-gold:        #D4A855;
+  --brand-gold-mid:    #C49A4A;
+  --brand-gold-deep:   #B08840;
+  --brand-ink:         #1A1714;
+  --brand-ok:          #34D399;
+  --brand-warn:        #FBBF24;
+  --brand-risk:        #F87171;
+  --brand-muted-scrim: rgba(155, 142, 126, 0.5);
+
   /* The auth panel is a dark brand surface in both themes. Its scrims are
      white at fixed alphas, so they are defined once here rather than eight
      times inline.                                                           */
@@ -1067,16 +1082,63 @@ select:focus:not(:focus-visible) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   LOGIN PAGE — Brand Design Mockup Implementation
+   LOGIN PAGE — Immersive Brand Design (Full-bleed skyline)
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Layout ─────────────────────────────────────────────────────────────── */
+/* ── Root Layout ────────────────────────────────────────────────────────── */
 
 .login-layout {
+  position: relative;
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
-  background: #FAF6F0;
+  background: #17130F;
+  overflow: hidden;
+}
+
+/* ── FULL-BLEED Background Image ────────────────────────────────────────── */
+
+.login-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.login-bg__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* Multi-layer gradient: dark on left, lighter fade to right */
+  background:
+    /* Top-to-bottom: dark top for logo readability, lighter in middle for image, dark bottom for footer */
+    linear-gradient(180deg,
+      rgba(23, 19, 15, 0.88) 0%,
+      rgba(23, 19, 15, 0.55) 30%,
+      rgba(23, 19, 15, 0.25) 50%,
+      rgba(23, 19, 15, 0.20) 65%,
+      rgba(23, 19, 15, 0.65) 100%
+    ),
+    /* Left-to-right: dark on left for content, lighter in center for image, medium-dark on right for form readability */
+    linear-gradient(90deg,
+      rgba(23, 19, 15, 0.82) 0%,
+      rgba(23, 19, 15, 0.60) 28%,
+      rgba(23, 19, 15, 0.15) 45%,
+      rgba(23, 19, 15, 0.10) 52%,
+      rgba(23, 19, 15, 0.40) 62%,
+      rgba(23, 19, 15, 0.60) 75%,
+      rgba(23, 19, 15, 0.70) 100%
+    );
+}
+
+/* ── CONTENT Layer ──────────────────────────────────────────────────────── */
+
+.login-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  min-height: 0;
 }
 
 /* ── LEFT: Hero Panel ───────────────────────────────────────────────────── */
@@ -1085,50 +1147,15 @@ select:focus:not(:focus-visible) {
   display: none;
   position: relative;
   flex-shrink: 0;
-  overflow: hidden;
-  background: #17130F;
 }
 
 @media (min-width: 1024px) {
   .login-hero {
     display: flex;
-    width: 55%;
+    width: 48%;
   }
 }
 
-@media (min-width: 1280px) {
-  .login-hero {
-    width: 55%;
-  }
-}
-
-/* Background image layer */
-.login-hero__bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-}
-
-.login-hero__overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    linear-gradient(180deg,
-      rgba(23, 19, 15, 0.92) 0%,
-      rgba(23, 19, 15, 0.70) 35%,
-      rgba(23, 19, 15, 0.40) 55%,
-      rgba(23, 19, 15, 0.30) 70%,
-      rgba(23, 19, 15, 0.75) 100%
-    ),
-    linear-gradient(90deg,
-      rgba(23, 19, 15, 0.85) 0%,
-      rgba(23, 19, 15, 0.20) 50%,
-      rgba(23, 19, 15, 0.10) 100%
-    );
-}
-
-/* Content layer */
 .login-hero__content {
   position: relative;
   z-index: 2;
@@ -1136,8 +1163,6 @@ select:focus:not(:focus-visible) {
   flex-direction: column;
   width: 100%;
   padding: 44px 48px 32px;
-  min-height: 100vh;
-  min-height: 100dvh;
 }
 
 /* Top: Brand */
@@ -1221,8 +1246,8 @@ select:focus:not(:focus-visible) {
   border-radius: 14px;
   padding: 20px;
   max-width: 420px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .login-hero__stats-header {
@@ -1260,45 +1285,55 @@ select:focus:not(:focus-visible) {
   gap: 4px;
 }
 
-/* Quote */
-.login-hero__quote {
+/* ── CENTER: Floating quote over the skyline ────────────────────────────── */
+
+.login-center-quote {
+  display: none;
+  position: absolute;
+  z-index: 3;
+  left: 42%;
+  bottom: 100px;
+}
+
+@media (min-width: 1024px) {
+  .login-center-quote {
+    display: block;
+  }
+}
+
+@media (min-width: 1280px) {
+  .login-center-quote {
+    left: 44%;
+    bottom: 110px;
+  }
+}
+
+.login-center-quote__text {
   font-family: var(--font-instrument-serif), Georgia, serif;
   font-style: italic;
   font-size: 16px;
   line-height: 1.5;
-  color: rgba(255, 255, 255, 0.55);
-  margin-top: 28px;
-  max-width: 220px;
+  color: rgba(255, 255, 255, 0.65);
 }
 
-/* Footer */
-.login-hero__footer {
-  flex-shrink: 0;
-  padding-top: 24px;
-}
-
-.login-hero__breadcrumb {
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: rgba(255, 255, 255, 0.30);
-  margin-bottom: 8px;
-}
-
-.login-hero__copyright {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.35);
-}
-
-/* ── RIGHT: Form Panel ──────────────────────────────────────────────────── */
+/* ── RIGHT: Form Panel (Fully Transparent — Skyline Visible) ────────────── */
 
 .login-form-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #FAF6F0;
   position: relative;
   overflow-y: auto;
+  /* Fully transparent — skyline shows through */
+  background: transparent;
+}
+
+@media (min-width: 1024px) {
+  .login-form-panel {
+    max-width: 52%;
+    background: transparent;
+  }
 }
 
 .login-form-panel__trust {
@@ -1306,7 +1341,7 @@ select:focus:not(:focus-visible) {
   top: 24px;
   right: 32px;
   font-size: 12px;
-  color: #9B8E7E;
+  color: rgba(255, 255, 255, 0.55);
   letter-spacing: 0.01em;
   display: none;
 }
@@ -1329,7 +1364,7 @@ select:focus:not(:focus-visible) {
 
 @media (min-width: 1024px) {
   .login-form-panel__inner {
-    padding: 80px 48px 48px;
+    padding: 60px 56px 48px;
   }
 }
 
@@ -1347,37 +1382,79 @@ select:focus:not(:focus-visible) {
   }
 }
 
-/* Footer */
-.login-form-panel__footer {
-  flex-shrink: 0;
-  width: 100%;
+/* Gold star watermark — decorative element in bottom-right */
+.login-watermark {
+  position: absolute;
+  bottom: 48px;
+  right: 32px;
+  pointer-events: none;
+  opacity: 0.6;
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .login-watermark {
+    display: block;
+  }
+}
+
+/* ── FULL-WIDTH FOOTER ──────────────────────────────────────────────────── */
+
+.login-footer {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 32px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  width: 100%;
+  padding: 18px 48px;
+  flex-shrink: 0;
+}
+
+.login-footer__left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.login-footer__breadcrumb {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.30);
+}
+
+.login-footer__copyright {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.login-footer__right {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.login-footer__locale {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
   color: #9B8E7E;
 }
 
-.login-form-panel__locale {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.login-form-panel__links {
+.login-footer__links {
   display: flex;
   gap: 20px;
+  font-size: 13px;
 }
 
-.login-form-panel__links a {
+.login-footer__links a {
   color: #9B8E7E;
   text-decoration: none;
-  transition: color 150ms;
+  transition: color var(--motion-fast) var(--motion-ease);
 }
 
-.login-form-panel__links a:hover {
+.login-footer__links a:hover {
   color: #6B6157;
 }
 
@@ -1391,24 +1468,24 @@ select:focus:not(:focus-visible) {
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.22em;
-  color: #9B8E7E;
+  color: rgba(255, 255, 255, 0.55);
   margin-bottom: 14px;
 }
 
 .login-form__heading {
   font-family: var(--font-instrument-serif), Georgia, serif;
   font-weight: 400;
-  font-size: 36px;
-  line-height: 1.15;
+  font-size: 40px;
+  line-height: 1.12;
   letter-spacing: -0.02em;
-  color: #1A1714;
-  margin-bottom: 10px;
+  color: #FFFFFF;
+  margin-bottom: 12px;
 }
 
 .login-form__subtitle {
   font-size: 14px;
   line-height: 1.5;
-  color: #9B8E7E;
+  color: rgba(255, 255, 255, 0.55);
   margin-bottom: 32px;
 }
 
@@ -1426,7 +1503,7 @@ select:focus:not(:focus-visible) {
 .login-form__label {
   font-size: 13px;
   font-weight: 500;
-  color: #1A1714;
+  color: rgba(255, 255, 255, 0.85);
   margin-bottom: 6px;
 }
 
@@ -1449,7 +1526,7 @@ select:focus:not(:focus-visible) {
   border: none;
   cursor: pointer;
   padding: 0;
-  transition: color 150ms;
+  transition: color var(--motion-fast) var(--motion-ease);
 }
 
 .login-form__forgot:hover {
@@ -1458,34 +1535,38 @@ select:focus:not(:focus-visible) {
 
 .login-form__error {
   font-size: 12px;
-  color: #B42318;
+  color: #FCA5A5;
   margin-top: 6px;
 }
 
-/* Input Fields */
+/* Input Fields — Dark glass on dark background */
 .login-field {
   display: flex;
   align-items: center;
   height: 48px;
-  background: #FFFFFF;
-  border: 1px solid #E8E1D6;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
   overflow: hidden;
-  transition: border-color 150ms, box-shadow 150ms;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition:
+    border-color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease);
 }
 
 .login-field:focus-within {
   border-color: #C4A265;
-  box-shadow: 0 0 0 3px rgba(196, 162, 101, 0.12);
+  box-shadow: 0 0 0 3px rgba(196, 162, 101, 0.15);
 }
 
 .login-field--error {
-  border-color: #B42318;
+  border-color: #F87171;
 }
 
 .login-field--error:focus-within {
-  border-color: #B42318;
-  box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.08);
+  border-color: #F87171;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.12);
 }
 
 .login-field__icon {
@@ -1494,7 +1575,7 @@ select:focus:not(:focus-visible) {
   justify-content: center;
   width: 44px;
   flex-shrink: 0;
-  color: #9B8E7E;
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .login-field__input {
@@ -1504,12 +1585,12 @@ select:focus:not(:focus-visible) {
   outline: none;
   background: transparent;
   font-size: 15px;
-  color: #1A1714;
+  color: #FFFFFF;
   padding-right: 14px;
 }
 
 .login-field__input::placeholder {
-  color: #C4B9A8;
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .login-field__toggle {
@@ -1518,15 +1599,15 @@ select:focus:not(:focus-visible) {
   justify-content: center;
   width: 44px;
   flex-shrink: 0;
-  color: #9B8E7E;
+  color: rgba(255, 255, 255, 0.45);
   background: none;
   border: none;
   cursor: pointer;
-  transition: color 150ms;
+  transition: color var(--motion-fast) var(--motion-ease);
 }
 
 .login-field__toggle:hover {
-  color: #6B6157;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 /* Buttons */
@@ -1542,18 +1623,26 @@ select:focus:not(:focus-visible) {
   border-radius: 26px;
   border: none;
   cursor: pointer;
-  transition: all 200ms cubic-bezier(0.2, 0, 0, 1);
+  /* Named properties, not `all`. Slice 17 removed every `transition: all`
+     in the product: it animates layout properties nobody intended, and a
+     width or margin changing for an unrelated reason gets animated too. */
+  transition:
+    background-color var(--motion-slow) var(--motion-ease),
+    border-color var(--motion-slow) var(--motion-ease),
+    color var(--motion-slow) var(--motion-ease),
+    box-shadow var(--motion-slow) var(--motion-ease),
+    opacity var(--motion-slow) var(--motion-ease);
 }
 
 .login-btn--primary {
-  background: #1A1714;
-  color: #FFFFFF;
+  background: #C4A265;
+  color: #1A1714;
 }
 
 .login-btn--primary:hover {
-  background: #2A241E;
+  background: #D4B275;
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(196, 162, 101, 0.3);
 }
 
 .login-btn--primary:active {
@@ -1569,17 +1658,19 @@ select:focus:not(:focus-visible) {
 }
 
 .login-btn--social {
-  background: #FFFFFF;
-  color: #1A1714;
-  border: 1px solid #E8E1D6;
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
   height: 46px;
   font-size: 13px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .login-btn--social:hover {
-  background: #F8F4EE;
-  border-color: #D9D0C2;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 /* Divider */
@@ -1593,12 +1684,12 @@ select:focus:not(:focus-visible) {
 .login-divider__line {
   flex: 1;
   height: 1px;
-  background: #E8E1D6;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .login-divider__text {
   font-size: 12px;
-  color: #9B8E7E;
+  color: rgba(255, 255, 255, 0.45);
   white-space: nowrap;
 }
 
@@ -1613,15 +1704,15 @@ select:focus:not(:focus-visible) {
 .login-form__signup {
   text-align: center;
   font-size: 14px;
-  color: #9B8E7E;
+  color: rgba(255, 255, 255, 0.50);
   margin-top: 28px;
 }
 
 .login-form__signup-link {
-  color: #1A1714;
+  color: #FFFFFF;
   font-weight: 500;
   text-decoration: none;
-  transition: color 150ms;
+  transition: color var(--motion-fast) var(--motion-ease);
 }
 
 .login-form__signup-link:hover {
@@ -1649,7 +1740,7 @@ select:focus:not(:focus-visible) {
   border-radius: 16px;
   padding: 28px;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12), 0 8px 20px rgba(0, 0, 0, 0.06);
-  animation: login-modal-enter 200ms cubic-bezier(0.2, 0, 0, 1) both;
+  animation: login-modal-enter var(--motion-normal) var(--motion-ease) both;
 }
 
 .login-modal__close {
@@ -1662,7 +1753,9 @@ select:focus:not(:focus-visible) {
   border: none;
   color: #9B8E7E;
   cursor: pointer;
-  transition: color 150ms, background 150ms;
+  transition:
+    color var(--motion-fast) var(--motion-ease),
+    background-color var(--motion-fast) var(--motion-ease);
 }
 
 .login-modal__close:hover {
@@ -1693,17 +1786,32 @@ select:focus:not(:focus-visible) {
   }
 }
 
-/* ── Responsive fine-tuning ─────────────────────────────────────────────── */
+/* ── Responsive ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 1023px) {
-  .login-layout {
+  .login-content {
     flex-direction: column;
   }
 
-  .login-form-panel__footer {
+  .login-form-panel {
+    background: transparent;
+  }
+
+  .login-footer {
+    background: rgba(23, 19, 15, 0.90);
     flex-direction: column;
     gap: 12px;
+    padding: 16px 24px;
     text-align: center;
+  }
+
+  .login-footer__left {
+    align-items: center;
+  }
+
+  .login-footer__right {
+    flex-direction: column;
+    gap: 12px;
   }
 }
 
@@ -1720,7 +1828,6 @@ select:focus:not(:focus-visible) {
     padding: 32px 20px;
   }
 }
-
 /* ── Slice 18 · Reduced motion, named per exemplar ─────────────────────────
    The Slice 14 blanket rule zeroes every animation-duration and
    transition-duration, and the Slice 16 block names its own four utilities.

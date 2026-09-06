@@ -26,7 +26,14 @@ export type ComplianceEntityType =
    * told before a licence lapses, so it belongs in the same log as the
    * licence changes themselves rather than in a general settings history.
    */
-  | 'tenant';
+  | 'tenant'
+  /**
+   * A person joining or leaving a workspace, and the invitation that put them
+   * there. Who can see the register — and who reminders resolve to — is the
+   * same class of fact as who owns a licence, so it belongs in the same log.
+   */
+  | 'invitation'
+  | 'user';
 
 /** Changed fields only, as { field: { from, to } }. Never full row dumps. */
 export type FieldChanges = Record<string, { from: unknown; to: unknown }>;

@@ -157,6 +157,7 @@ model Tenant {
   licenseRequirements TenantLicenseRequirement[]
 
   @@map("tenants")
+  invitations TenantInvitation[]
 }
 
 /// User — authenticated individual
@@ -517,6 +518,52 @@ model License {
 /// Minimal audit trail for the compliance domain.
 /// Scoped to this domain on purpose — the repository has no general audit
 /// framework, and inventing one here would be out of scope.
+/// An invitation for one person to join one tenant.
+///
+/// WHY THIS EXISTS
+/// ---------------
+/// Every registration path in auth.service.ts creates a NEW tenant with the
+/// registering user as its OWNER. There was no way to put a second person in a
+/// workspace, which made the product's best figure — "Faisal holds 75% of
+/// assigned licences" — unreachable for any real customer: they had one user,
+/// permanently, and every reminder went to the account that signed up.
+///
+/// TOKEN HANDLING
+/// --------------
+/// Only a SHA-256 hash of the token is stored. The plaintext exists in the
+/// invitation link and nowhere else, so a database read cannot be replayed into
+/// a workspace. `User.passwordResetToken` stores its token raw; this does not
+/// copy that.
+///
+/// STATE IS DERIVED, NOT STORED
+/// ----------------------------
+/// pending / accepted / revoked / expired are computed from the three
+/// timestamps, the same way expiry status is computed from a date rather than
+/// written down. There is no status column to fall out of step.
+model TenantInvitation {
+  id        String @id @default(cuid())
+  tenantId  String
+  /// Lower-cased at write time; the address the invitation was sent to.
+  email     String
+  /// SHA-256 of the plaintext token. Never the token itself.
+  tokenHash String @unique
+
+  /// Who invited them. Null if that person has since been removed.
+  invitedByUserId String?
+
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  revokedAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([tenantId, email])
+  @@map("tenant_invitations")
+}
+
 model ComplianceAuditLog {
   id          String  @id @default(cuid())
   tenantId    String

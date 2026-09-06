@@ -23,8 +23,61 @@ try {
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
+/**
+ * THIS FIXTURE IS QUARANTINED. It does not run without an explicit opt-in.
+ *
+ * WHY
+ * ---
+ * This is the pre-pivot CONTRACT-ANALYSIS fixture, and it is untrue about the
+ * product that ships today in every direction the honesty guarantees name:
+ *
+ *   · `socialProof: 'Used by 850+ Indian startups'` — a customer count nobody
+ *     counted, the same class Slice 8 removed from the landing page
+ *   · five contracts, every one `currency: 'INR'`, with rupee amounts
+ *   · Delaware governing law and Mumbai jurisdiction
+ *   · fabricated AI-analysis rows — riskReason, suggestedText, impact — that
+ *     assert judgments this product swears it never makes
+ *
+ * Every honesty guarantee in this product scans SOURCE. These strings reach a
+ * screen as DATA, so no guarantee covered them, and running this seed would
+ * write all of it into the same database the compliance product reads.
+ *
+ * It is not deleted because the contract feature still compiles against these
+ * fixtures. It is quarantined instead: the flag is the mitigation, and
+ * honesty-shipped-data.spec.ts asserts the quarantine holds, which is what
+ * makes the exemption safe rather than merely convenient.
+ *
+ * To run it deliberately:
+ *   ALLOW_PREPIVOT_CONTRACT_FIXTURE=true npm run db:seed
+ */
+const FIXTURE_OPT_IN = 'ALLOW_PREPIVOT_CONTRACT_FIXTURE';
+
+function refuseUnlessOptedIn(): void {
+  if (process.env[FIXTURE_OPT_IN] === 'true') {
+    console.warn(
+      `\n⚠️  ${FIXTURE_OPT_IN}=true — writing the PRE-PIVOT CONTRACT fixture.\n` +
+        '   This data is untrue about the product that ships today.\n' +
+        '   It is for the legacy contract feature only. Never run it against\n' +
+        '   a demo or customer database.\n',
+    );
+    return;
+  }
+  console.error(
+    `\n✗ Refused. prisma/seed.ts is the pre-pivot CONTRACT-ANALYSIS fixture.\n\n` +
+      '  It writes invented social proof, rupee amounts, foreign governing law\n' +
+      '  and fabricated AI analysis into the database the compliance product\n' +
+      '  reads. None of it is true about Legixy.\n\n' +
+      '  You almost certainly want the compliance data instead:\n' +
+      '      npm run demo:reset      # the demo tenant\n\n' +
+      `  If you genuinely need the legacy fixture, opt in explicitly:\n` +
+      `      ${FIXTURE_OPT_IN}=true npm run db:seed\n`,
+  );
+  process.exit(1);
+}
+
 async function main() {
-  console.log('🌱 Seeding OnyxLegal database...\n');
+  refuseUnlessOptedIn();
+  console.log('🌱 Seeding the legacy contract fixture...\n');
 
   // ── 1. Tenant ────────────────────────────────────────────
   const tenant = await prisma.tenant.upsert({
@@ -32,7 +85,7 @@ async function main() {
     update: {},
     create: {
       id: 'seed-tenant-001',
-      name: 'OnyxLegal HQ',
+      name: 'Vantage Retail Group',
       plan: Plan.GROWTH,
       aiTokensUsed: 1240,
       aiTokenLimit: 10000,
@@ -131,10 +184,10 @@ async function main() {
         status: ContractStatus.IN_REVIEW,
         riskScore: 72,
         parties: JSON.stringify([
-          { name: 'OnyxLegal HQ', email: 'legal@onyxlegal.com', role: 'client' },
+          { name: 'Vantage Retail Group', email: 'legal@vantageretail.example', role: 'client' },
           { name: 'CloudMatrix Inc.', email: 'contracts@cloudmatrix.io', role: 'vendor' },
         ]),
-        content: `VENDOR SERVICE AGREEMENT\n\nThis Vendor Service Agreement ("Agreement") is entered into as of January 15, 2026.\n\nBETWEEN:\nOnyxLegal HQ ("Client")\nAND\nCloudMatrix Inc. ("Vendor")\n\n1. SERVICES\nVendor shall provide cloud infrastructure and managed hosting services as described in Schedule A.\n\n2. TERM\nThis Agreement shall commence on the Effective Date and continue for a period of 24 months, automatically renewing for successive 12-month periods unless either party provides written notice of non-renewal at least 90 days prior to expiration.\n\n3. COMPENSATION\nClient shall pay Vendor ₹1,50,000 per month for the services described herein. Payment is due within 30 days of invoice.\n\n4. LIABILITY\nNeither party limits its liability under this Agreement. Each party shall be liable for all direct, indirect, consequential, and incidental damages arising from breach.\n\n5. INTELLECTUAL PROPERTY\nAll intellectual property created during the performance of services shall be owned by the Vendor.\n\n6. CONFIDENTIALITY\nBoth parties agree to maintain confidentiality of proprietary information for a period of 5 years following termination.\n\n7. GOVERNING LAW\nThis Agreement shall be governed by the laws of the State of Delaware, United States.\n\n8. DISPUTE RESOLUTION\nAny disputes shall be resolved through binding arbitration in New York City under AAA rules.`,
+        content: `VENDOR SERVICE AGREEMENT\n\nThis Vendor Service Agreement ("Agreement") is entered into as of January 15, 2026.\n\nBETWEEN:\nVantage Retail Group ("Client")\nAND\nCloudMatrix Inc. ("Vendor")\n\n1. SERVICES\nVendor shall provide cloud infrastructure and managed hosting services as described in Schedule A.\n\n2. TERM\nThis Agreement shall commence on the Effective Date and continue for a period of 24 months, automatically renewing for successive 12-month periods unless either party provides written notice of non-renewal at least 90 days prior to expiration.\n\n3. COMPENSATION\nClient shall pay Vendor ₹1,50,000 per month for the services described herein. Payment is due within 30 days of invoice.\n\n4. LIABILITY\nNeither party limits its liability under this Agreement. Each party shall be liable for all direct, indirect, consequential, and incidental damages arising from breach.\n\n5. INTELLECTUAL PROPERTY\nAll intellectual property created during the performance of services shall be owned by the Vendor.\n\n6. CONFIDENTIALITY\nBoth parties agree to maintain confidentiality of proprietary information for a period of 5 years following termination.\n\n7. GOVERNING LAW\nThis Agreement shall be governed by the laws of the State of Delaware, United States.\n\n8. DISPUTE RESOLUTION\nAny disputes shall be resolved through binding arbitration in New York City under AAA rules.`,
         contractValue: 3600000,
         currency: 'INR',
         monthlyImpact: 150000,
@@ -155,10 +208,10 @@ async function main() {
         status: ContractStatus.ACTIVE,
         riskScore: 35,
         parties: JSON.stringify([
-          { name: 'OnyxLegal HQ', role: 'discloser' },
+          { name: 'Vantage Retail Group', role: 'discloser' },
           { name: 'Zenith Partners LLP', email: 'legal@zenithpartners.in', role: 'recipient' },
         ]),
-        content: `MUTUAL NON-DISCLOSURE AGREEMENT\n\nThis Agreement is entered into between OnyxLegal HQ and Zenith Partners LLP.\n\n1. PURPOSE: To protect confidential information shared during potential partnership discussions.\n\n2. CONFIDENTIAL INFORMATION: Includes business plans, financial data, customer lists, and technical specifications.\n\n3. OBLIGATIONS: Both parties shall maintain strict confidentiality and limit disclosure to authorized personnel only.\n\n4. TERM: This NDA shall remain in effect for 2 years from the date of execution.\n\n5. GOVERNING LAW: This Agreement shall be governed by the laws of India, subject to the jurisdiction of Mumbai courts.`,
+        content: `MUTUAL NON-DISCLOSURE AGREEMENT\n\nThis Agreement is entered into between Vantage Retail Group and Zenith Partners LLP.\n\n1. PURPOSE: To protect confidential information shared during potential partnership discussions.\n\n2. CONFIDENTIAL INFORMATION: Includes business plans, financial data, customer lists, and technical specifications.\n\n3. OBLIGATIONS: Both parties shall maintain strict confidentiality and limit disclosure to authorized personnel only.\n\n4. TERM: This NDA shall remain in effect for 2 years from the date of execution.\n\n5. GOVERNING LAW: This Agreement shall be governed by the laws of India, subject to the jurisdiction of Mumbai courts.`,
         contractValue: 0,
         currency: 'INR',
         effectiveDate: new Date('2026-02-01'),
@@ -179,10 +232,10 @@ async function main() {
         status: ContractStatus.SIGNED,
         riskScore: 15,
         parties: JSON.stringify([
-          { name: 'OnyxLegal HQ', role: 'employer' },
+          { name: 'Vantage Retail Group', role: 'employer' },
           { name: 'Rahul Verma', email: 'rahul.verma@gmail.com', role: 'employee' },
         ]),
-        content: `EMPLOYMENT OFFER LETTER\n\nDear Rahul Verma,\n\nWe are pleased to offer you the position of Senior Software Engineer at OnyxLegal HQ.\n\nCTC: ₹28,00,000 per annum\nJoining Date: March 1, 2026\nProbation: 6 months\nNotice Period: 2 months\n\nBenefits include health insurance, ESOP pool, and flexible working.`,
+        content: `EMPLOYMENT OFFER LETTER\n\nDear Rahul Verma,\n\nWe are pleased to offer you the position of Senior Software Engineer at Vantage Retail Group.\n\nCTC: ₹28,00,000 per annum\nJoining Date: March 1, 2026\nProbation: 6 months\nNotice Period: 2 months\n\nBenefits include health insurance, ESOP pool, and flexible working.`,
         contractValue: 2800000,
         currency: 'INR',
         monthlyImpact: 233333,
@@ -202,7 +255,7 @@ async function main() {
         status: ContractStatus.DRAFT,
         riskScore: 88,
         parties: JSON.stringify([
-          { name: 'OnyxLegal HQ', role: 'licensee' },
+          { name: 'Vantage Retail Group', role: 'licensee' },
           { name: 'TechNova Solutions Pvt Ltd', email: 'legal@technova.in', role: 'licensor' },
         ]),
         content: `ENTERPRISE SOFTWARE LICENSE AGREEMENT\n\nThis Agreement governs the use of TechNova proprietary software.\n\n1. LICENSE: Non-exclusive, non-transferable license for internal use only.\n2. FEES: ₹50,00,000 annual license fee, payable upfront.\n3. LIABILITY: Licensor's total liability shall not exceed the fees paid in the preceding 12 months. HOWEVER, this cap does not apply to IP infringement claims.\n4. AUTO-RENEWAL: License automatically renews annually with a 15% price escalation unless cancelled 180 days prior.\n5. DATA: All data processed through the software remains property of TechNova.\n6. TERMINATION: TechNova may terminate with 30 days notice. Licensee requires 180 days notice and payment of early termination fee equal to remaining contract value.`,
@@ -226,7 +279,7 @@ async function main() {
         status: ContractStatus.SIGNED,
         riskScore: 12,
         parties: JSON.stringify([
-          { name: 'OnyxLegal HQ', role: 'client' },
+          { name: 'Vantage Retail Group', role: 'client' },
           { name: 'Acme Consulting Group', role: 'consultant' },
         ]),
         content: 'Standard mutual NDA with balanced terms.',
@@ -448,7 +501,7 @@ async function main() {
   console.log(`✅ Notifications: 4 seeded`);
 
   console.log('\n🎉 Seed complete! Database is ready.\n');
-  console.log('   Tenant:    OnyxLegal HQ (GROWTH plan)');
+  console.log('   Tenant:    Vantage Retail Group (GROWTH plan)');
   console.log('   Users:     Abdul Kadir (OWNER), Priya Sharma (MEMBER)');
   console.log('   Templates: 3 system templates');
   console.log('   Contracts: 5 (risk scores: 88, 72, 35, 15, 12)');

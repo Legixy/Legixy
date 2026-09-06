@@ -9,6 +9,8 @@ import {
 } from '@/features/compliance/api/compliance';
 import { ErrorState } from '@/features/compliance/components/ErrorState';
 import { DELIVERY_COPY } from '@/features/compliance/lib/delivery-copy';
+import { INVITE_COPY } from '@/features/compliance/lib/invite-copy';
+import { InviteSection } from '@/features/compliance/components/InviteSection';
 import { TONE_STYLES } from '@/features/compliance/lib/format';
 import { ACTION_STYLE, PageHeader } from '@/shared/components/PageHeader';
 
@@ -261,6 +263,13 @@ export default function DeliveryPage() {
             >
               {DELIVERY_COPY.addressFixed}
             </p>
+          </Card>
+
+          {/* ── Add someone ─────────────────────────────────────────────── */}
+          <Card>
+            <Legend>{INVITE_COPY.heading}</Legend>
+            <p style={bodyStyle}>{INVITE_COPY.body}</p>
+            <InviteSection />
           </Card>
 
           {/* ── Unassigned ──────────────────────────────────────────────── */}

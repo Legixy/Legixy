@@ -41,7 +41,7 @@ const navItems = [
   { name: 'The year ahead', icon: CalendarRange, href: '/dashboard/year-ahead' },
   { name: 'Not on record', icon: AlertCircle, href: '/dashboard/gaps' },
   { name: 'What to expect', icon: ListChecks, href: '/dashboard/requirements' },
-  { name: 'Where reminders go', icon: Send, href: '/dashboard/delivery' },
+  { name: 'People and reminders', icon: Send, href: '/dashboard/delivery' },
 ];
 
 export function Sidebar() {
@@ -67,9 +67,16 @@ export function Sidebar() {
       <div className="px-5 mb-8 flex items-center gap-2.5">
         <div
           className="w-8 h-8 flex items-center justify-center shrink-0"
-          style={{ background: 'var(--primary)', borderRadius: '8px' }}
+          style={{ background: 'var(--brand-ink)', borderRadius: '8px' }}
         >
-          <LegixyMark size={17} className="text-[var(--on-brand)]" />
+          {/*
+            Ink and gold, the same pair the login uses, because this chip and
+            the login hero are the same thing: the product saying its own name.
+            Indigo stays the ACTION colour — buttons, links, focus — and never
+            doubles as identity. Gold measures 2.20:1 on this light surface and
+            8.10:1 on ink, so the tile is what makes it legible here.
+          */}
+          <LegixyMark size={17} className="text-[var(--brand-gold)]" />
         </div>
         <span className="font-display text-[17px] tracking-tight" style={{ color: 'var(--foreground)' }}>
           Legixy

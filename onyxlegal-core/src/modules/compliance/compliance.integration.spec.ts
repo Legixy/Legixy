@@ -1730,7 +1730,20 @@ describe('Compliance domain (integration)', () => {
       }
     });
 
-    it('reports HAS_GAPS once a requirement has no matching licence', async () => {
+    /**
+     * UPDATED IN SLICE 25, and the change is a correction rather than a
+     * concession.
+     *
+     * This asserted HAS_GAPS for a requirement declared on a workspace with
+     * NOTHING in it, which is the defect Slice 25 removed: a customer who
+     * ticked a box and had not yet had the chance to enter anything was told
+     * they were missing something. The test's INTENT — declaring a
+     * requirement must never produce a false all-clear — is unchanged and
+     * still asserted here. Only the name of the non-all-clear state moved,
+     * because before NOTHING_ENTERED existed HAS_GAPS was the only way to
+     * express it.
+     */
+    it('reports NOTHING_ENTERED for a requirement on an empty register', async () => {
       const { tenantId, userId } = await emptyTenant();
       try {
         const type = await prisma.licenseType.findFirst({
@@ -1740,9 +1753,11 @@ describe('Compliance domain (integration)', () => {
         await coverage.setRequirement(tenantId, userId, type!.id, true);
 
         const coverageState = await coverage.findCoverage(tenantId);
-        expect(coverageState.state).toBe('HAS_GAPS');
+        expect(coverageState.state).toBe('NOTHING_ENTERED');
+        // Never an all-clear, which is what this test has always guarded.
+        expect(coverageState.state).not.toBe('ALL_SATISFIED');
+        // And the declaration is not hidden — they told us, and should see it.
         expect(coverageState.requirementCount).toBe(1);
-        expect(coverageState.gaps).toHaveLength(1);
       } finally {
         await prisma.tenant.delete({ where: { id: tenantId } });
       }

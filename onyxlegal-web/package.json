@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
+    "verify:motion": "node scripts/verify-reduced-motion.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

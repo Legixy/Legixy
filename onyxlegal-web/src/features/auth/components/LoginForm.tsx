@@ -62,10 +62,10 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
         </button>
 
         {sent ? (
-          <div style={{ textAlign: 'center', padding: '8px 0' }}>
+          <div style={{ textAlign: 'center', padding: 'var(--space-2) 0' }}>
             <CheckCircle
               size={36}
-              style={{ color: '#059669', margin: '0 auto 12px' }}
+              style={{ color: 'var(--status-current-fg)', margin: '0 auto var(--space-3)' }}
             />
             <h3 className="login-modal__title">Check your inbox</h3>
             <p className="login-modal__desc">
@@ -117,6 +117,14 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18">
+      {/*
+        BRAND-EXEMPT. Google's four logo colours and Microsoft's four are
+        trademarks, and both marks must render in their own colours,
+        unaltered, in either theme. Tokenising them would let a palette
+        change deface a third party's mark. Same exemption Slice 14
+        granted Google in SocialLoginButton.tsx — a token is for a value
+        WE choose, and these are not ours.
+      */}
       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
       <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
@@ -125,16 +133,6 @@ function GoogleIcon() {
   );
 }
 
-function MicrosoftIcon() {
-  return (
-    <svg viewBox="0 0 21 21" width="16" height="16">
-      <rect x="1" y="1" width="9" height="9" fill="#F25022" />
-      <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
-      <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
-      <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
-    </svg>
-  );
-}
 
 // ── Main Login Form ───────────────────────────────────────────────────────────
 
@@ -143,6 +141,23 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [showForgotPw, setShowForgotPw] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
+
+  /**
+   * Which sign-in methods actually work, from the server.
+   *
+   * Defaults to FALSE and only becomes true on a positive answer: if the
+   * probe fails we render no provider button rather than one that might not
+   * work, which is the exact bug being fixed.
+   */
+  const [googleEnabled, setGoogleEnabled] = React.useState(false);
+
+  React.useEffect(() => {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+    fetch(`${apiBase}/auth/providers`, { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setGoogleEnabled(Boolean(d?.google)))
+      .catch(() => setGoogleEnabled(false));
+  }, []);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -272,34 +287,45 @@ export function LoginForm() {
         </button>
       </form>
 
-      {/* Divider */}
-      <div className="login-divider">
-        <div className="login-divider__line" />
-        <span className="login-divider__text">or continue with</span>
-        <div className="login-divider__line" />
-      </div>
+      {/*
+        PROVIDERS RENDER ONLY WHEN THEY WORK.
 
-      {/* Social Buttons */}
-      <div className="login-social">
-        <button
-          type="button"
-          className="login-btn login-btn--social"
-          onClick={() => {
-            const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
-            window.location.href = `${apiBase}/auth/google`;
-          }}
-        >
-          <GoogleIcon />
-          Continue with Google
-        </button>
-        <button
-          type="button"
-          className="login-btn login-btn--social"
-        >
-          <MicrosoftIcon />
-          Continue with Microsoft
-        </button>
-      </div>
+        Google was fully wired and broken from Slice 1 until Slice 15 found
+        it: GoogleStrategy falls back to the literal 'GOOGLE_CLIENT_ID_NOT_SET'
+        and sends people to an OAuth error page. Slice 16 made the button
+        conditional on /auth/providers; the login redesign reinstated it
+        unconditionally. It reports `google: false` on this deployment.
+
+        Microsoft never existed at all. There is no strategy, no route and no
+        entry in /auth/providers — the button had no onClick, so it did
+        nothing when pressed. It is removed rather than made conditional,
+        because there is nothing to condition on.
+
+        The divider goes with them: "or continue with" makes no sense when
+        email is the only way in.
+      */}
+      {googleEnabled ? (
+        <>
+          <div className="login-divider">
+            <div className="login-divider__line" />
+            <span className="login-divider__text">or continue with</span>
+            <div className="login-divider__line" />
+          </div>
+          <div className="login-social">
+            <button
+              type="button"
+              className="login-btn login-btn--social"
+              onClick={() => {
+                const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+                window.location.href = `${apiBase}/auth/google`;
+              }}
+            >
+              <GoogleIcon />
+              Continue with Google
+            </button>
+          </div>
+        </>
+      ) : null}
 
       {/* Sign Up Link */}
       <p className="login-form__signup">

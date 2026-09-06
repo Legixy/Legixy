@@ -127,6 +127,9 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get licenseRenewal() {
     return this.client.licenseRenewal;
   }
+  get tenantInvitation() {
+    return this.client.tenantInvitation;
+  }
 
   // ── Raw query & transaction support ─────────────────────
   get $transaction() {

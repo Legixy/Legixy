@@ -375,6 +375,115 @@ describe('honesty guarantee — global', () => {
   });
 
 
+  describe('a compliance score, in any form', () => {
+    /**
+     * The Slice 21 case, verbatim.
+     *
+     * The login carried "100% ● Compliance rate" beside three invented
+     * figures while this scan was green. `features/auth` had been inside the
+     * scan's boundary since Slice 8 — the boundary was right and the rule was
+     * incomplete. Every compliance pattern matched a SENTENCE; none matched a
+     * metric.
+     */
+    it('catches the string that actually shipped', () => {
+      const violations = findHonestyViolations('100% Compliance rate');
+      expect(violations.length).toBeGreaterThan(0);
+      expect(violations.map((v) => v.rule)).toContain('no compliance-state claim');
+    });
+
+    it('catches a score however it is phrased', () => {
+      for (const bad of [
+        'Compliance rate',
+        'Compliance score',
+        'Compliance rating',
+        '92% compliant',
+        'Compliance: 87%',
+        'Compliance health',
+      ]) {
+        expect({ bad, caught: findHonestyViolations(bad).length > 0 }).toEqual({
+          bad,
+          caught: true,
+        });
+      }
+    });
+
+    /**
+     * SLICE 22 — the third form.
+     *
+     * "Compliance today, Greater opportunities tomorrow." was live on the
+     * login, over the skyline, while this scan passed and while `features/auth`
+     * had been inside its boundary for fourteen slices. The boundary was right
+     * twice over; the rule was incomplete twice over.
+     *
+     * Sentence form was covered. Score form was covered by Slice 21. Compliance
+     * offered as an OUTCOME THE PRODUCT DELIVERS was not, and that is the
+     * register marketing copy is written in.
+     */
+    it('catches the promise that actually shipped, verbatim', () => {
+      const violations = findHonestyViolations(
+        'Compliance today, Greater opportunities tomorrow.',
+      );
+      expect(violations.length).toBeGreaterThan(0);
+      expect(violations.map((v) => v.rule)).toContain('no compliance-state claim');
+    });
+
+    it('catches compliance offered as an outcome, however phrased', () => {
+      for (const bad of [
+        'Compliance today, Greater opportunities tomorrow.',
+        'A more compliant tomorrow',
+        'Stay compliant',
+        'Compliance guaranteed',
+        'Become compliant in minutes',
+        'Compliance made simple',
+        'Get compliant with Legixy',
+      ]) {
+        expect({ bad, caught: findHonestyViolations(bad).length > 0 }).toEqual({
+          bad,
+          caught: true,
+        });
+      }
+    });
+
+    /**
+     * The other direction, for the new patterns specifically. "Compliance" is
+     * the domain this product operates in and it must remain sayable. These
+     * four are live strings on the auth surface and every one must pass.
+     */
+    it('leaves compliance-as-a-domain-noun alone', () => {
+      for (const honest of [
+        'Licence and compliance tracking for businesses operating in Saudi Arabia.',
+        'Sign in to continue managing your licences and compliance.',
+        'COMPLIANCE',
+        'Every expiry date on record, and a reminder before each one.',
+      ]) {
+        expect({ honest, flagged: findHonestyViolations(honest).length > 0 }).toEqual({
+          honest,
+          flagged: false,
+        });
+      }
+    });
+
+    /**
+     * Non-vacuous in the other direction. A rule that flagged every "%" would
+     * catch the ownership-concentration line — which is the product's single
+     * most valuable sentence and is a fact about a register, not a verdict on
+     * a business.
+     */
+    it('leaves honest percentages and the word "compliance" alone', () => {
+      for (const honest of [
+        'Faisal Al-Harbi holds 75% of assigned licences.',
+        'Licence and compliance tracking for businesses operating in Saudi Arabia.',
+        'Here is where your licences stand today.',
+        '3 of 15 licences need attention across 4 sites.',
+      ]) {
+        expect({ honest, flagged: findHonestyViolations(honest).length > 0 }).toEqual({
+          honest,
+          flagged: false,
+        });
+      }
+    });
+  });
+
   describe('the licences list specifically', () => {
     it('every string on the screen passes all six rules', () => {
       expect(allLicensesCopy().flatMap(findHonestyViolations)).toEqual([]);

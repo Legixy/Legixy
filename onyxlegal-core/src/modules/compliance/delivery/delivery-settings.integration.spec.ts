@@ -70,6 +70,20 @@ describe('where reminders go (integration)', () => {
   /** Due today, so a sweep picks it up. */
   const dueToday = () => addDays(todayIn('Asia/Riyadh'), 7);
 
+  /**
+   * A fixed instant INSIDE the send window (09:00–17:00 Riyadh).
+   *
+   * These tests called `sweep()` with no argument until Slice 19, so they
+   * used the real clock and passed only when the suite happened to run
+   * during business hours. Run at 21:57 they all failed with reminders left
+   * PENDING, which looks exactly like a delivery regression and is not one.
+   *
+   * `reminder-dispatch.integration.spec.ts` has pinned its clock since
+   * Slice 5; this suite should have done the same from the start.
+   * 08:00 UTC is 11:00 in Riyadh.
+   */
+  const INSIDE_WINDOW = new Date(Date.UTC(2026, 8, 7, 8, 0, 0));
+
   beforeAll(async () => {
     const config = {
       get: (key: string, fallback?: string) =>
@@ -142,7 +156,7 @@ describe('where reminders go (integration)', () => {
     const licenceId = await unassignedLicenceDueToday('Orphan with a copy address');
     await settings.setCopyEmail(tenantId, userId, 'compliance@example.test');
 
-    await dispatch.sweep();
+    await dispatch.sweep(INSIDE_WINDOW);
 
     expect(sender.sent).toHaveLength(1);
     expect(sender.sent[0].recipientEmail).toBe('compliance@example.test');
@@ -161,7 +175,7 @@ describe('where reminders go (integration)', () => {
   it('leaves Slice 5 behaviour untouched when no copy address is set', async () => {
     const licenceId = await unassignedLicenceDueToday('Orphan with no copy address');
 
-    await dispatch.sweep();
+    await dispatch.sweep(INSIDE_WINDOW);
 
     expect(sender.sent).toHaveLength(0);
     const row = await prisma.licenseReminder.findFirst({
@@ -206,7 +220,7 @@ describe('where reminders go (integration)', () => {
     });
     await settings.setCopyEmail(tenantId, userId, 'compliance@example.test');
 
-    await dispatch.sweep();
+    await dispatch.sweep(INSIDE_WINDOW);
 
     expect(sender.sent).toHaveLength(1);
     expect(sender.sent[0].recipientEmail).toBe(`owner-${suffix}@example.test`);
@@ -222,7 +236,7 @@ describe('where reminders go (integration)', () => {
     await unassignedLicenceDueToday('Orphan three');
     await settings.setCopyEmail(tenantId, userId, 'compliance@example.test');
 
-    await dispatch.sweep();
+    await dispatch.sweep(INSIDE_WINDOW);
 
     expect(sender.sent).toHaveLength(1);
     expect(sender.sent[0].lines).toHaveLength(3);

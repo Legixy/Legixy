@@ -48,6 +48,11 @@ import {
   YearAhead,
   SiteCreateInput,
   sites,
+  invitations,
+  people,
+  type PendingInvitation,
+  type InvitationCreated,
+  type PersonWithHoldings,
 } from '@/lib/api';
 
 export const complianceKeys = {
@@ -115,6 +120,99 @@ export function useDeliverySettings() {
   return useQuery<DeliverySettings, ApiError>({
     queryKey: [...complianceKeys.all, 'delivery'] as const,
     queryFn: () => delivery.get(),
+  });
+}
+
+/**
+ * The people in the workspace, and what each is accountable for.
+ *
+ * Deliberately the same list the delivery screen already renders: a second
+ * screen listing the same humans would be the duplication this project has
+ * corrected twice.
+ */
+export function usePeople() {
+  return useQuery<PersonWithHoldings[], ApiError>({
+    queryKey: [...complianceKeys.all, 'people'],
+    queryFn: () => people.holdings(),
+  });
+}
+
+export function usePendingInvitations() {
+  return useQuery<PendingInvitation[], ApiError>({
+    queryKey: [...complianceKeys.all, 'invitations'],
+    queryFn: () => invitations.list(),
+  });
+}
+
+export function useInvite() {
+  const queryClient = useQueryClient();
+
+  return useMutation<InvitationCreated, ApiError, string>({
+    mutationFn: (email) => invitations.create(email),
+    onSuccess: (created) => {
+      void queryClient.invalidateQueries({
+        queryKey: [...complianceKeys.all, 'invitations'],
+      });
+      /*
+        Never "Invitation sent" when nothing was sent. SMTP is unconfigured in
+        this deployment, and a toast claiming delivery would be the exact
+        failure this product removes everywhere else. The screen shows the
+        link either way; the wording follows what actually happened.
+      */
+      toast.success(
+        created.delivered
+          ? `Invitation emailed to ${created.email}`
+          : `Invitation created for ${created.email}`,
+        {
+          description: created.delivered
+            ? undefined
+            : 'No email channel is configured, so nothing was sent. Copy the link below and pass it on.',
+        },
+      );
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Could not create that invitation');
+    },
+  });
+}
+
+export function useRevokeInvitation() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, ApiError, string>({
+    mutationFn: (id) => invitations.revoke(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: [...complianceKeys.all, 'invitations'],
+      });
+      toast.success('Invitation withdrawn');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Could not withdraw that invitation');
+    },
+  });
+}
+
+export function useRemovePerson() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    { removed: string; licencesMoved: number },
+    ApiError,
+    { id: string; transferToUserId?: string | null; acceptUnassigned?: boolean }
+  >({
+    mutationFn: ({ id, ...options }) => people.remove(id, options),
+    onSuccess: (result) => {
+      void queryClient.invalidateQueries({ queryKey: complianceKeys.all });
+      toast.success(
+        result.licencesMoved > 0
+          ? `Removed. ${result.licencesMoved} licence${result.licencesMoved === 1 ? '' : 's'} moved.`
+          : 'Removed.',
+      );
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Could not remove that person');
+    },
   });
 }
 

@@ -139,6 +139,21 @@ export const WRONG_MARKET_PATTERNS: RegExp[] = [
   /\bacross India\b/i,
   /\bIndia\s*\(default\)/i,
   /\bTrusted by\s+\d+/i,
+  /*
+    SLICE 23. "Used by 850+ Indian startups" ships in the pre-pivot fixture and
+    IS caught — but by the market pattern above, on the word "Indian", not on
+    the invented count. So the guard works for the wrong reason: localise that
+    string to "Used by 850+ Saudi businesses" and it passes silently, and a
+    Saudi-market version is now the more likely mistake, not the less.
+
+    A count nobody counted is untrue regardless of which country it names.
+
+    The organisation noun is load-bearing, not decoration. The first draft of
+    this pattern stopped at the number and immediately flagged "used by 1 row"
+    — the importer telling you how many rows a date format appears in. Social
+    proof counts ORGANISATIONS; the importer counts rows.
+  */
+  /\b(used|trusted|loved|chosen|backed)\s+by\s+[\d,]+\+?\s+(?:[A-Za-z][\w-]*\s+){0,2}(startups?|customers?|companies|businesses|users?|teams?|clients?|organi[sz]ations?|founders?|firms?|brands?)\b/i,
   /\b\d+\+?\s+(startups?|customers?|companies)\s+(trust|use|rely)/i,
 ];
 
@@ -186,6 +201,52 @@ export const COMPLIANCE_CLAIM_PATTERNS: RegExp[] = [
   /\bnothing is missing\b/i,
   /\bno(thing)? (licences?|permits?)? ?(are|is)? ?missing\b/i,
   /\bfully compliant\b/i,
+
+  /*
+    A PROMISE, not a sentence and not a score.
+
+    Slice 22 found "Compliance today, Greater opportunities tomorrow." live on
+    the login, floating over the skyline, while this scan was passing and while
+    `features/auth` had been inside its boundary for fourteen slices.
+
+    Every pattern below catches a claim about the customer's CURRENT state, and
+    the score patterns catch one phrased as a metric. Neither form covers
+    compliance offered as an OUTCOME THE PRODUCT DELIVERS — "compliance today",
+    "a more compliant tomorrow", "stay compliant". That is the register of
+    marketing copy, which is exactly where this product's claims have to be
+    most careful, because DEMO.md answers "Will it tell me if I'm compliant?"
+    with "No, and it deliberately never says so."
+
+    These must NOT fire on compliance as a domain noun — "licence and
+    compliance tracking", "managing your licences and compliance" — which is
+    what the product legitimately is. The guard tests pin both directions.
+  */
+  /\bcompliance\s+(today|tomorrow|guaranteed|assured|achieved|delivered)\b/i,
+  /\b(more|stays?|staying|stay|become|becoming|achieve|achieving|get)\s+compliant\b/i,
+  /\bcompliance\s+(made\s+)?(simple|easy|effortless|solved|sorted)\b/i,
+
+  /*
+    A SCORE, not a sentence.
+
+    Slice 21 found "100% ● Compliance rate" on the login, beside three
+    invented figures, while the honesty scan was passing. The auth surface was
+    ALREADY in the scan's boundary — `features/auth` and `app/login` have been
+    listed since Slice 8. The boundary was right; the rule was incomplete.
+
+    Every pattern above catches a compliance claim phrased as a SENTENCE.
+    None caught one phrased as a metric: a percentage with a label. That is
+    the form a dashboard widget takes, and it is the more dangerous form,
+    because a number reads as measured rather than asserted.
+
+    Slice 8 refused to build a compliance score and wrote down why: it treats
+    "everything we track is current" as "you are compliant", which the
+    coverage-gaps feature exists to contradict. No system can know the second
+    from the first.
+  */
+  /\bcompliance (rate|score|rating|level|percentage|index)\b/i,
+  /\b\d{1,3}\s*%\s*(compliant|compliance|complete|covered)\b/i,
+  /\b(compliant|compliance)\s*[:\-—]?\s*\d{1,3}\s*%/i,
+  /\bcompliance\s+health\b/i,
   /\ball your licences are (in order|up to date|covered)\b/i,
   /\beverything (is |you need is )?(covered|in order|up to date)\b/i,
   /\bcompletely up to date\b/i,

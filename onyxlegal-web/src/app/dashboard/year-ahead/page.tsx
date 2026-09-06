@@ -401,7 +401,15 @@ function shortMonth(month: string): string {
 function dominantTone(
   statuses: { length: number } & Iterable<Parameters<typeof statusPresentation>[0]>,
 ) {
-  const order = ['critical', 'warning', 'info', 'positive', 'neutral'] as const;
+  /*
+    Most urgent first, so a month reads by its worst entry.
+
+    `soon` was missing when it was introduced in Slice 19, and a month holding
+    only EXPIRING_SOON licences fell through to `neutral` — November rendered
+    grey on the chart instead of yellow. The order IS the ramp: expired,
+    action needed, expiring soon, current.
+  */
+  const order = ['critical', 'warning', 'soon', 'info', 'positive', 'neutral'] as const;
   const present = new Set(
     [...statuses].map((status) => statusPresentation(status).tone),
   );

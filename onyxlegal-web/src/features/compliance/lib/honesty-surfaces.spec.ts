@@ -31,6 +31,13 @@ const SURFACES = [
   'app/layout.tsx',
   'app/login',
   'app/register',
+  /*
+    Accepting an invitation is a signed-out surface too, and the first thing a
+    NEW COLLEAGUE ever sees of this product. Slice 22's lesson was that a
+    boundary which stops at the screens you happen to remember is the failure
+    mode — this was added with the feature, not after it.
+  */
+  'app/invite',
   'features/auth',
   'app/dashboard/page.tsx',
   'app/dashboard/sites',
@@ -75,9 +82,25 @@ function visibleText(source: string): string[] {
   const doubles = [...withoutComments.matchAll(/"([^"\\\n]{4,})"/g)].map(
     (m) => m[1],
   );
-  // JSX text between tags, e.g. >Some visible label<
-  const jsxText = [...withoutComments.matchAll(/>\s*([A-Za-z][^<>{}\n]{3,})</g)]
-    .map((m) => m[1].trim());
+  /*
+    JSX text between tags.
+
+    THIS MISSED MULTI-LINE TEXT UNTIL SLICE 24, WHICH IS MOST OF IT.
+
+    The character class used to be `[^<>{}\n]` — excluding newlines — so it
+    only matched text whose opening tag, content and closing tag were on ONE
+    line. Prettier puts JSX text on its own line whenever the element has more
+    than a trivial attribute list, which is the majority of this codebase. A
+    heading reading "Join your team and stay compliant" was extracted as
+    nothing at all, and the surface scan passed on it.
+
+    Found by planting that exact string as a negative control and watching the
+    guard NOT fail. Newlines are allowed now and the result is whitespace-
+    collapsed; `<` and `>` are still excluded, so a match can never cross a
+    tag boundary.
+  */
+  const jsxText = [...withoutComments.matchAll(/>\s*([A-Za-z][^<>{}]{3,}?)\s*</g)]
+    .map((m) => m[1].replace(/\s+/g, ' ').trim());
 
   return [...strings, ...doubles, ...jsxText];
 }

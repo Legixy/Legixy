@@ -633,6 +633,58 @@ export const delivery = {
     }),
 };
 
+export interface PendingInvitation {
+  id: string;
+  email: string;
+  expiresAt: string;
+  createdAt: string;
+  state: 'pending' | 'accepted' | 'revoked' | 'expired';
+}
+
+export interface InvitationCreated {
+  id: string;
+  email: string;
+  expiresAt: string;
+  /** Always returned, so the inviter can pass it on when nothing was sent. */
+  link: string;
+  delivered: boolean;
+}
+
+export interface PersonWithHoldings {
+  id: string;
+  name: string | null;
+  email: string;
+  role: string;
+  joinedAt: string;
+  licenceCount: number;
+}
+
+export const invitations = {
+  list: () => request<PendingInvitation[]>('/invitations'),
+
+  create: (email: string) =>
+    request<InvitationCreated>('/invitations', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  revoke: (id: string) =>
+    request<void>(`/invitations/${id}`, { method: 'DELETE' }),
+};
+
+export const people = {
+  holdings: () => request<PersonWithHoldings[]>('/users/holdings'),
+
+  remove: (
+    id: string,
+    options: { transferToUserId?: string | null; acceptUnassigned?: boolean },
+  ) =>
+    request<{ removed: string; licencesMoved: number }>(`/users/${id}`, {
+      method: 'DELETE',
+      body: JSON.stringify(options),
+    }),
+};
+
 export const licenses = {
   list: (filters?: LicenseFilters) =>
     request<Paginated<License>>(`/licenses${toQuery(filters ?? {})}`),
@@ -795,7 +847,11 @@ export interface CatalogueLicenseType {
  * covered", and rendering those identically told a new tenant they were fully
  * covered when nothing was known about their business.
  */
-export type CoverageState = 'NOT_CONFIGURED' | 'ALL_SATISFIED' | 'HAS_GAPS';
+export type CoverageState =
+  | 'NOT_CONFIGURED'
+  | 'NOTHING_ENTERED'
+  | 'ALL_SATISFIED'
+  | 'HAS_GAPS';
 
 export interface CoverageOverview {
   requirementCount: number;

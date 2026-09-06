@@ -86,6 +86,32 @@ export const DASHBOARD_COPY = {
     n === 1
       ? 'The 1 licence type you told us to expect is on record.'
       : `All ${n} licence types you told us to expect are on record.`,
+  /**
+   * DECLARED, BUT THE REGISTER IS EMPTY.
+   *
+   * Slice 25. A customer who ticked two boxes on "What to expect" and had not
+   * yet entered anything was told two expected licences had no record at all.
+   * True by the letter and the wrong thing to say: at that moment everything
+   * is missing by definition, and the product's sharpest feature was firing at
+   * someone who had done nothing wrong.
+   *
+   * It is deliberately NOT an all-clear and deliberately NOT guarded, because
+   * it makes no claim at all — it restates the declaration and says the
+   * register is empty. The shape follows the year-ahead's line, which has said
+   * this correctly since Slice 16: "an empty year here means nothing has been
+   * entered, not that nothing is due."
+   */
+  gapsNothingEnteredTitle: 'Nothing is on record yet',
+  gapsNothingEntered: (n: number) =>
+    n === 1
+      ? 'You told us to expect 1 licence type. Nothing has been entered yet, ' +
+        'so there is nothing to compare it against.'
+      : `You told us to expect ${n} licence types. Nothing has been entered ` +
+        'yet, so there is nothing to compare them against.',
+  gapsNothingEnteredCta: 'Add a licence',
+  gapsNothingEnteredHint:
+    'Add a licence and this page will show which of them are still missing.',
+
   gapsCount: (n: number) =>
     n === 1
       ? '1 expected licence has no record at all.'
@@ -119,7 +145,7 @@ export const DASHBOARD_COPY = {
   reminderNoRecipient: 'No one assigned',
 
   // ── Sites ────────────────────────────────────────────────────────────────
-  sitesHeading: 'Your locations',
+  sitesHeading: 'Your sites',
   sitesSummary: (total: number, withLicences: number) =>
     `${total} ${total === 1 ? 'site' : 'sites'}, ${withLicences} with licences on record.`,
   sitesCta: 'View all sites',
@@ -143,6 +169,19 @@ export const DASHBOARD_COPY = {
    * wizard: nothing here persists, tracks completion, or blocks a step. The
    * order is advice, and every step is reachable at any time.
    */
+  /**
+   * What is already true, shown on the step that is already satisfied.
+   *
+   * These state a COUNT, never a judgment: "4 sites added" is a fact about
+   * the register. "You're all set" would be a claim about the business.
+   */
+  step1Done: (n: number) =>
+    n === 1 ? '1 site added.' : `${n} sites added.`,
+  step3Done: (n: number) =>
+    n === 1
+      ? '1 licence type declared.'
+      : `${n} licence types declared.`,
+
   emptyTitle: 'Let’s get your licences in',
   emptyBody:
     'Three steps. The order matters a little — sites first, because a licence '

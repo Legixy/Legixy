@@ -52,7 +52,11 @@ export interface OwnerLoad {
  * because nothing was declared is the opposite of zero gaps because everything
  * declared is covered.
  */
-export type CoverageState = 'NOT_CONFIGURED' | 'ALL_SATISFIED' | 'HAS_GAPS';
+export type CoverageState =
+  | 'NOT_CONFIGURED'
+  | 'NOTHING_ENTERED'
+  | 'ALL_SATISFIED'
+  | 'HAS_GAPS';
 
 export interface CoverageOverview {
   /** How many licence types the tenant declared they are expected to hold. */
@@ -89,15 +93,60 @@ export class CoverageService {
    * So the state is named rather than inferred from a count:
    *
    *   NOT_CONFIGURED  nothing has been declared; we cannot say what is missing
+   *   NOTHING_ENTERED declared, but the register is empty — nothing to compare
    *   ALL_SATISFIED   everything declared has a record — scoped to that number
    *   HAS_GAPS        some declared types have no record
+   *
+   * WHY NOTHING_ENTERED EXISTS (Slice 25)
+   * -------------------------------------
+   * The first three states all reason about the DECLARATION. None of them ever
+   * asked whether the REGISTER is empty, and that single omission produced two
+   * opposite failures on a workspace where nothing had been entered yet:
+   *
+   *   · Declare an ENTITY-scoped type with no licences → HAS_GAPS. A customer
+   *     who ticked two boxes and had not yet had the chance to enter anything
+   *     was told they were missing two things. True by the letter, and the
+   *     wrong thing to say: at that moment EVERYTHING is missing by definition.
+   *
+   *   · Declare a SITE-scoped type with no sites → ALL_SATISFIED, because
+   *     `findGaps` loops over sites and a loop over zero sites pushes nothing.
+   *     That is a VACUOUS ALL-CLEAR on a completely empty workspace — the
+   *     precise failure Slice 12 removed and the Slice 17 population registry
+   *     exists to prevent. It survived because the guard was built around
+   *     `requirementCount === 0`, not around the register being empty.
+   *
+   * The second is the more dangerous of the two and was found by measuring
+   * rather than from the report. One condition closes both, because both are
+   * the same missing question: is there anything to compare a declaration to?
+   *
+   * This is a fourth VALUE in the existing union, not a fourth pattern. The
+   * union answers one question — why is the gap figure what it is — and this
+   * is another answer to it. The wording follows the year-ahead's, which has
+   * said the same thing correctly since Slice 16: "an empty year here means
+   * nothing has been entered, not that nothing is due."
    */
   async findCoverage(tenantId: string): Promise<CoverageOverview> {
-    const [requirementCount, gaps] = await Promise.all([
+    const [requirementCount, gaps, recordCount] = await Promise.all([
       this.prisma.tenantLicenseRequirement.count({
         where: { tenantId, licenseType: { isActive: true } },
       }),
       this.findGaps(tenantId),
+      /*
+        EVERY licence, whatever its lifecycle — deliberately NOT filtered to
+        ACTIVE, which is what this counted first.
+
+        The question is "has this workspace ever entered anything", not "does
+        it hold anything now". Somebody who entered a licence and archived it
+        has had the chance and made a decision; telling them "nothing has been
+        entered yet" would be false, and an existing test has asserted since
+        Slice 12 that archiving your only licence brings the gap BACK —
+        archiving means out of scope, and that decision stands.
+
+        The active-only version broke that test, which is how the error was
+        found. The state exists to protect somebody who has not yet had the
+        opportunity to enter anything, and that is a fact about history.
+      */
+      this.prisma.license.count({ where: { tenantId } }),
     ]);
 
     return {
@@ -106,9 +155,14 @@ export class CoverageService {
       state:
         requirementCount === 0
           ? 'NOT_CONFIGURED'
-          : gaps.length === 0
-            ? 'ALL_SATISFIED'
-            : 'HAS_GAPS',
+          : // Checked BEFORE the gap count, because an empty register produces
+            // both a full gap list and an empty one depending only on the
+            // scope of what was declared. Neither is worth saying.
+            recordCount === 0
+            ? 'NOTHING_ENTERED'
+            : gaps.length === 0
+              ? 'ALL_SATISFIED'
+              : 'HAS_GAPS',
     };
   }
 

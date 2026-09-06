@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../auth/jwt.strategy';
 import { UsersService } from './users.service';
@@ -25,5 +25,32 @@ export class UsersController {
   @Get()
   findAll(@CurrentUser() user: AuthenticatedUser) {
     return this.usersService.findAssignable(user.tenantId);
+  }
+
+  /** The same people, with what each is accountable for. */
+  @Get('holdings')
+  findWithHoldings(@CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.findWithHoldings(user.tenantId);
+  }
+
+  /**
+   * Remove a person. See UsersService.remove for why this is transfer-then-
+   * remove rather than a delete: `License.owner` is `onDelete: SetNull`, so a
+   * plain delete silently unassigns every licence they held.
+   */
+  @Delete(':id')
+  @HttpCode(200)
+  remove(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() body: { transferToUserId?: string | null; acceptUnassigned?: boolean },
+  ) {
+    return this.usersService.remove({
+      tenantId: user.tenantId,
+      actorUserId: user.id,
+      userId: id,
+      transferToUserId: body?.transferToUserId ?? null,
+      acceptUnassigned: body?.acceptUnassigned ?? false,
+    });
   }
 }

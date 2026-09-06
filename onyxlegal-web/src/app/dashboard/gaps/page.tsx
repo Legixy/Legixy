@@ -44,8 +44,8 @@ export default function CoverageGapsPage() {
       */}
       <PageHeader
         backHref="/dashboard/sites"
-        backLabel="Locations"
-        title="Coverage gaps"
+        backLabel="Sites"
+        title="Not on record"
         subtitle="Licences your organisation is expected to hold, with no record in the system. This is about missing records, not expiry."
         actions={
           <Link href="/dashboard/requirements" style={ACTION_STYLE.secondary}>
@@ -83,6 +83,29 @@ export default function CoverageGapsPage() {
           action={
             <Link href="/dashboard/requirements">
               <Button size="lg">{DASHBOARD_COPY.gapsConfigure}</Button>
+            </Link>
+          }
+        />
+      ) : state === 'NOTHING_ENTERED' ? (
+        /*
+          Declared, but the register is empty.
+
+          This page previously listed every declared type as "Not recorded" to
+          a customer who had just ticked the boxes and entered nothing — the
+          product's best feature accusing somebody who had done nothing wrong,
+          on the screen where trust is established.
+
+          It keeps the declaration visible, because they did tell us and should
+          see that they did. It makes no claim about coverage in either
+          direction.
+        */
+        <EmptyState
+          title={DASHBOARD_COPY.gapsNothingEnteredTitle}
+          description={DASHBOARD_COPY.gapsNothingEntered(requirementCount)}
+          aside={DASHBOARD_COPY.gapsNothingEnteredHint}
+          action={
+            <Link href="/dashboard/licenses/new">
+              <Button size="lg">{DASHBOARD_COPY.gapsNothingEnteredCta}</Button>
             </Link>
           }
         />

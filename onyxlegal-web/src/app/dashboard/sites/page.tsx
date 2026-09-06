@@ -77,17 +77,26 @@ export default function SitesPage() {
         first thing a compliance officer opening this screen wants.
       */}
       <PageHeader
-        title="Your locations"
+        title="Your sites"
         subtitle={
           isLoading
             ? 'Loading your sites…'
             : sitesSummaryLine(totals.licences, totals.sites, totals.attention)
         }
         actions={
-          <Link href="/dashboard/sites/new" style={ACTION_STYLE.primary}>
-            <Plus size={14} aria-hidden="true" />
-            {SITE_FORM_COPY.addCta}
-          </Link>
+          /*
+            Suppressed while the list is empty, because the empty state below
+            carries the same link as its primary. Two identical primaries on
+            one screen make neither of them the answer to "what do I do now".
+            This is the empty tenant's screen, not the seeded one — the demo
+            never shows it, which is exactly why it went unnoticed.
+          */
+          isLoading || (data?.data.length ?? 0) > 0 ? (
+            <Link href="/dashboard/sites/new" style={ACTION_STYLE.primary}>
+              <Plus size={14} aria-hidden="true" />
+              {SITE_FORM_COPY.addCta}
+            </Link>
+          ) : null
         }
       />
 

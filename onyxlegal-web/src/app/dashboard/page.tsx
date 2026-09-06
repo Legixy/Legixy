@@ -9,6 +9,7 @@ import {
   Bell,
   Building2,
   CalendarClock,
+  Check,
   CircleAlert,
   ShieldCheck,
   UserX,
@@ -65,9 +66,18 @@ export default function DashboardPage() {
         >
           {DASHBOARD_COPY.greeting(firstName)}
         </h1>
-        <p className="mt-1.5 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-          {DASHBOARD_COPY.subtitle}
-        </p>
+        {/*
+          "Here is where your licences stand today" above a workspace where
+          nothing stands anywhere is furniture, and it argued for attention
+          against the real heading below it — "Let's get your licences in",
+          which is the true thing to say. One heading opens an empty
+          workspace; the summary line returns as soon as there is a summary.
+        */}
+        {data && data.licences.total === 0 ? null : (
+          <p className="mt-1.5 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+            {DASHBOARD_COPY.subtitle}
+          </p>
+        )}
       </header>
 
       {isLoading ? (
@@ -79,7 +89,10 @@ export default function DashboardPage() {
           onRetry={() => void refetch()}
         />
       ) : data.licences.total === 0 ? (
-        <EmptyDashboard />
+        <EmptyDashboard
+          sitesTotal={data.sites.total}
+          requirementCount={coverage.data?.requirementCount ?? 0}
+        />
       ) : (
         <DashboardBody
           data={data}
@@ -518,7 +531,26 @@ function Metric({
  * Deliberately NOT a wizard: nothing persists, nothing tracks completion,
  * nothing blocks. Someone who already has sites can go straight to step two.
  */
-function EmptyDashboard() {
+function EmptyDashboard({
+  sitesTotal,
+  requirementCount,
+}: {
+  sitesTotal: number;
+  requirementCount: number;
+}) {
+  /*
+    STILL NOT A WIZARD.
+
+    Nothing here persists, nothing is stored, nothing blocks, and a reload
+    recomputes it from scratch. `done` is read from data that already exists
+    on this screen — the sites count from the dashboard payload, the
+    requirement count from the coverage query — so this is a statement about
+    the workspace, not a record of the customer's progress through a flow.
+
+    It matters because the card rendered identically to somebody who had
+    declared two licence types and added four sites as to somebody who had
+    just signed up, which quietly told them their work had not registered.
+  */
   const steps = [
     {
       title: DASHBOARD_COPY.step1Title,
@@ -526,6 +558,8 @@ function EmptyDashboard() {
       cta: DASHBOARD_COPY.step1Cta,
       href: '/dashboard/sites/new',
       primary: false,
+      done: sitesTotal > 0,
+      doneLabel: DASHBOARD_COPY.step1Done(sitesTotal),
     },
     {
       title: DASHBOARD_COPY.step2Title,
@@ -534,6 +568,10 @@ function EmptyDashboard() {
       href: '/dashboard/licenses/import',
       primary: true,
       alt: { label: DASHBOARD_COPY.step2Alt, href: '/dashboard/licenses/new' },
+      // This card only renders when there are no licences, so step two is
+      // never done here. Stated rather than computed, so it cannot drift.
+      done: false,
+      doneLabel: null,
     },
     {
       title: DASHBOARD_COPY.step3Title,
@@ -541,6 +579,8 @@ function EmptyDashboard() {
       cta: DASHBOARD_COPY.step3Cta,
       href: '/dashboard/requirements',
       primary: false,
+      done: requirementCount > 0,
+      doneLabel: DASHBOARD_COPY.step3Done(requirementCount),
     },
   ];
 
@@ -582,7 +622,7 @@ function EmptyDashboard() {
               }}
               aria-hidden="true"
             >
-              {index + 1}
+              {step.done ? <Check size={13} /> : index + 1}
             </span>
             <div className="min-w-0 flex-1">
               <p
@@ -597,10 +637,21 @@ function EmptyDashboard() {
               >
                 {step.body}
               </p>
+              {step.done && step.doneLabel ? (
+                <p
+                  className="mt-1 text-sm"
+                  style={{ color: 'var(--status-current-fg)' }}
+                >
+                  {step.doneLabel}
+                </p>
+              ) : null}
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-3">
               <Link href={step.href}>
-                <Button variant={step.primary ? 'default' : 'outline'} size="lg">
+                <Button
+                  variant={step.primary && !step.done ? 'default' : 'outline'}
+                  size="lg"
+                >
                   {step.cta}
                 </Button>
               </Link>

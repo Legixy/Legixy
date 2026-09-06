@@ -8,8 +8,13 @@
  */
 
 export const REQUIREMENTS_COPY = {
-  back: 'Coverage gaps',
-  title: 'What you are expected to hold',
+  back: 'Not on record',
+  /*
+    Matches the nav and the link that reaches it ("Choose what to expect").
+    The screen had three names for itself, the same defect as the gaps screen
+    and found the same way — by reading the rendered h1 rather than the file.
+  */
+  title: 'What to expect',
   subtitle:
     'Tick the licences and permits your business is required to have. Anything '
     + 'ticked with no matching record becomes a gap. Nothing is assumed for '
@@ -39,8 +44,23 @@ export const REQUIREMENTS_COPY = {
 
   expectedBadge: 'Expected',
 
-  thenWhat: 'Anything selected with no matching record now shows on',
-  seeGaps: 'coverage gaps',
+  /*
+    WAS: "Anything selected with no matching record now shows on coverage gaps".
+
+    Two corrections. "coverage gaps" was a survivor of the Slice 22 rename —
+    the feature is called "Not on record" in the nav, the page title, the
+    dashboard card and the breadcrumb, and this link was the last place still
+    using the old name.
+
+    And "now shows" was a promise the product no longer keeps, deliberately:
+    once the register is empty, declaring a type does NOT produce a gap,
+    because everything is missing by definition at that point. The sentence
+    now states the precondition instead of asserting the outcome.
+  */
+  thenWhat:
+    'Once you have licences on record, anything selected without a matching ' +
+    'one shows on',
+  seeGaps: 'Not on record',
 } as const;
 
 /** Every string here, plus the functions on representative inputs. */

@@ -10,7 +10,26 @@ import { guarded } from './population';
  */
 
 export const DELIVERY_COPY = {
-  title: 'Where reminders go',
+  /*
+    RENAMED IN SLICE 25, from "Where reminders go".
+
+    The screen now does two jobs: it says where reminders go, and it is the
+    only place a second person can be put in a workspace. Its name described
+    one of them, and Slice 24 flagged the risk when it chose to extend this
+    screen rather than build a second people list: "a client looking to add
+    Faisal may not think to look under Where reminders go."
+
+    Measured at 1440x900 on a fresh workspace, "Add someone to this workspace"
+    begins at y=802 against a 900px viewport — its heading is barely visible
+    and its input and button are not. Reordering does not fix that, because
+    the invite block already sits directly beneath the people list where it
+    belongs; the page is simply long. A second entry point elsewhere would
+    add a place without repairing this one.
+
+    So the name changed instead. "People" is the word somebody uses when they
+    want to add a colleague, and the reminders half is still stated plainly.
+  */
+  title: 'People and reminders',
   subtitle:
     'Reminders are worked out from each licence’s expiry date and sent to the '
     + 'person responsible for it. This is who that is.',

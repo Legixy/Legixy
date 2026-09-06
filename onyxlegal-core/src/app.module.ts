@@ -19,6 +19,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ComplianceModule } from './modules/compliance/compliance.module';
 import { UsersModule } from './modules/users/users.module';
+import { InvitationsModule } from './modules/invitations/invitations.module';
 import { MailerModule } from './common/mailer/mailer.module';
 import { HealthModule } from './modules/health/health.module';
 import { logLevel, REDACT_PATHS } from './config/logging';
@@ -84,6 +85,7 @@ const bullModuleImport = BullModule.forRootAsync({
     // ── Compliance (sites & licences) ─────────────────────
     ComplianceModule,
     UsersModule,
+    InvitationsModule,
     HealthModule,
   ],
   providers: [

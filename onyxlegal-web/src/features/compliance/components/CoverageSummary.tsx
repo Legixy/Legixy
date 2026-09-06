@@ -64,7 +64,7 @@ export function CoverageSummary({
               style={{ color: 'var(--muted-foreground)' }}
             >
               <ShieldAlert size={13} aria-hidden="true" />
-              Coverage gaps
+              Not on record
             </h2>
             <p
               className="mt-2 text-3xl font-semibold tabular-nums"
@@ -76,7 +76,16 @@ export function CoverageSummary({
                 letterSpacing: '-0.02em',
               }}
             >
-              {state === 'NOT_CONFIGURED' ? '—' : gaps.length}
+              {/*
+                A gap count is only meaningful once there is a register to
+                compare a declaration against. NOTHING_ENTERED joins
+                NOT_CONFIGURED here: showing "2" to somebody who has entered
+                nothing accuses them of missing what they have not yet had the
+                chance to add.
+              */}
+              {state === 'NOT_CONFIGURED' || state === 'NOTHING_ENTERED'
+                ? '—'
+                : gaps.length}
             </p>
             <p
               className="mt-1 text-sm leading-relaxed"
@@ -88,9 +97,11 @@ export function CoverageSummary({
               */}
               {state === 'NOT_CONFIGURED'
                 ? DASHBOARD_COPY.gapsNotConfigured
-                : state === 'ALL_SATISFIED'
-                  ? DASHBOARD_COPY.gapsAllSatisfied(requirementCount)
-                  : DASHBOARD_COPY.gapsCount(gaps.length)}
+                : state === 'NOTHING_ENTERED'
+                  ? DASHBOARD_COPY.gapsNothingEntered(requirementCount)
+                  : state === 'ALL_SATISFIED'
+                    ? DASHBOARD_COPY.gapsAllSatisfied(requirementCount)
+                    : DASHBOARD_COPY.gapsCount(gaps.length)}
             </p>
           </div>
         </div>
@@ -100,14 +111,20 @@ export function CoverageSummary({
             href={
               state === 'NOT_CONFIGURED'
                 ? '/dashboard/requirements'
-                : '/dashboard/gaps'
+                : state === 'NOTHING_ENTERED'
+                  ? // The gaps page has nothing to show them yet; the useful
+                    // next step is entering something.
+                    '/dashboard/licenses/new'
+                  : '/dashboard/gaps'
             }
             className="mt-4 inline-flex text-sm font-medium underline-offset-2 hover:underline"
             style={{ color: 'var(--primary)' }}
           >
             {state === 'NOT_CONFIGURED'
               ? DASHBOARD_COPY.gapsConfigure
-              : DASHBOARD_COPY.gapsCta}
+              : state === 'NOTHING_ENTERED'
+                ? DASHBOARD_COPY.gapsNothingEnteredCta
+                : DASHBOARD_COPY.gapsCta}
           </Link>
         ) : null}
       </section>
